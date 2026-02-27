@@ -68,25 +68,25 @@ services:
       start_period: 20s
 
   pgbouncer:
-  build:
-    context: .
-    dockerfile: deploy/docker/pgbouncer/Dockerfile
-  image: thathwamasi-pgbouncer:latest
-  env_file:
-    - ./deploy/env/hostinger.env
-  depends_on:
-    postgres:
-      condition: service_healthy
-  ports:
-    - "6432:6432"   # Expose pgbouncer outside if needed
-  restart: unless-stopped
-  healthcheck:
-    test: ["CMD-SHELL", "pg_isready -h \"$${PGBOUNCER_DB_HOST}\" -p \"$${PGBOUNCER_DB_PORT}\" -U \"$${PGBOUNCER_DB_USER}\" -d \"$${PGBOUNCER_DB_NAME}\" || exit 1"]
-    interval: 20s
-    timeout: 5s
-    retries: 10
-    start_period: 20s
-
+    build:
+      context: .
+      dockerfile: deploy/docker/pgbouncer/Dockerfile
+    image: thathwamasi-pgbouncer:latest
+    env_file:
+      - ./deploy/env/hostinger.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "6432:6432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h \"$${PGBOUNCER_DB_HOST}\" -p \"$${PGBOUNCER_DB_PORT}\" -U \"$${PGBOUNCER_DB_USER}\" -d \"$${PGBOUNCER_DB_NAME}\" || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+      
   nginx:
     image: nginx:1.27-alpine
     depends_on:
