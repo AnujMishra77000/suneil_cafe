@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thathwamasi | Billing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'products/billing.css' %}?v=20260224-feedback1" />
+    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260224-1" />
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <div class="customer-menu" data-customer-menu>
+        <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
+        <nav class="customer-menu-panel" data-menu-panel>
+            <a href="/">Home</a>
+            <a href="/bakery/">Bakery</a>
+            <a href="/snacks/">Snacks</a>
+            <a href="/order-details/">Order Details</a>
+        </nav>
+    </div>
+
+    <main class="container">
+        <header class="top">
+            <a href="/" class="back-link">Continue Shopping</a>
+            <h1>Billing & Checkout</h1>
+            <button id="profileBtn" class="profile-btn">Save Phone (Optional)</button>
+        </header>
+
+        <section class="layout">
+            <section class="bill-card">
+                <div class="head">
+                    <h2>Your Cart</h2>
+                    <p id="itemCount">0 items</p>
+                </div>
+                <div id="cartList" class="cart-list"></div>
+            </section>
+
+            <aside class="summary-card">
+                <h3>Order Summary</h3>
+                <div class="row"><span>Items</span><strong id="summaryItems">0</strong></div>
+                <div class="row"><span>Subtotal</span><strong id="summarySubtotal">Rs 0.00</strong></div>
+                <div class="row total"><span>Total</span><strong id="summaryTotal">Rs 0.00</strong></div>
+                <button id="historyBtn" class="history-btn hidden">View Previous Orders</button>
+                <div id="historyPanel" class="history-panel hidden"></div>
+                <a id="orderDetailsBtn" href="/order-details/" class="history-btn">Open Full Order Details</a>
+                <button id="placeOrderBtn" class="place-btn">Proceed to Checkout</button>
+                <p class="note">Bills are generated for both customer and admin after order placement.</p>
+                <p id="statusMsg" class="status-msg"></p>
+            </aside>
+        </section>
+    </main>
+    <script src="{% static 'products/billing.js' %}?v=20260224-feedback1"></script>
+    <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({
+                mode: "USER",
+                storageKey: "thathwamasi_checkout_phone",
+                resolveIdentifier: function () {
+                    return (
+                        localStorage.getItem("thathwamasi_checkout_phone") ||
+                        localStorage.getItem("thathwamasi_cart_phone") ||
+                        ""
+                    ).trim();
+                },
+            });
+        }
+    </script>
+</body>
+</html>

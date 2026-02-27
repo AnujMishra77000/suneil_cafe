@@ -1,0 +1,45 @@
+from django.urls import path
+from .views import (
+    CreateOrderAPIView,
+    AdminAnalyticsAPIView,
+    BillsByOrderAPIView,
+    UserBillPDFDownloadView,
+    CustomerHistoryByPhoneAPIView,
+    OrderFeedbackAPIView,
+    ServiceablePincodeListAPIView,
+    AdminDashboardAnalyticsAPIView,
+    AdminDashboardOrdersAPIView,
+    AdminOrderAlertAPIView,
+    AdminProductSearchAPIView,
+    AdminSalesExportAPIView,
+    AdminOrdersExportAPIView,
+    AdminBillingDataAPIView,
+    AdminBillPDFDownloadView,
+    AdminBillCancelAPIView,
+    AdminSalesAnalyticsExportAPIView,
+    AdminCategorySalesExportAPIView,
+)
+
+urlpatterns = [
+    path('place-order/', CreateOrderAPIView.as_view()),
+    path('history-by-phone/', CustomerHistoryByPhoneAPIView.as_view()),
+    path('feedback/', OrderFeedbackAPIView.as_view()),
+    path('serviceable-pincodes/', ServiceablePincodeListAPIView.as_view()),
+    path('admin-analytics/', AdminAnalyticsAPIView.as_view()),
+    path('admin/dashboard/analytics/', AdminDashboardAnalyticsAPIView.as_view()),
+    path('admin/dashboard/orders/', AdminDashboardOrdersAPIView.as_view()),
+    path('admin/dashboard/order-alert/', AdminOrderAlertAPIView.as_view()),
+    path('admin/dashboard/product-search/', AdminProductSearchAPIView.as_view()),
+    path('admin/dashboard/export/sales/', AdminSalesExportAPIView.as_view()),
+    path('admin/dashboard/export/orders/', AdminOrdersExportAPIView.as_view()),
+    path('admin/dashboard/export/sales-summary-today/', AdminSalesAnalyticsExportAPIView.as_view()),
+    path(
+        'admin/dashboard/export/sales-category/<int:category_id>/',
+        AdminCategorySalesExportAPIView.as_view()
+    ),
+    path('admin/dashboard/billing/', AdminBillingDataAPIView.as_view()),
+    path('admin/dashboard/bills/<int:bill_id>/download/', AdminBillPDFDownloadView.as_view()),
+    path('admin/dashboard/bills/<int:bill_id>/cancel/', AdminBillCancelAPIView.as_view()),
+    path('bills/<int:bill_id>/download/', UserBillPDFDownloadView.as_view()),
+    path('bills/<int:order_id>/', BillsByOrderAPIView.as_view()),
+]

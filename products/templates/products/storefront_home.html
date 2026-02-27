@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thathwamasi | Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260215-hero2" />
+    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260224-1" />
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <div class="customer-menu" data-customer-menu>
+        <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
+        <nav class="customer-menu-panel" data-menu-panel>
+            <a href="/">Home</a>
+            <a href="/bakery/">Bakery</a>
+            <a href="/snacks/">Snacks</a>
+            <a href="/order-details/">Order Details</a>
+        </nav>
+    </div>
+
+    <header class="hero">
+        <nav class="topbar container">
+            <h1>Thathwamasi</h1>
+            <p>Bakery and Snacks Marketplace</p>
+        </nav>
+
+        <section class="carousel-wrap container">
+            <div class="carousel" id="heroCarousel">
+                <div class="slide active">
+                    <img class="slide-bg" src="{% static 'products/images/hero/cr1.jpg' %}" alt="Fresh Bakery Every Morning" />
+                    <div class="overlay">
+                        <h2>Fresh Bakery Every Morning</h2>
+                        <p>Handcrafted breads, cakes and warm bites delivered fast.</p>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img class="slide-bg" src="{% static 'products/images/hero/cr5.jpg' %}" alt="Hot Snacks, Fast Delivery" />
+                    <div class="overlay">
+                        <h2>Hot Snacks, Fast Delivery</h2>
+                        <p>Freshly packed snacks with consistent quality every time.</p>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img class="slide-bg" src="{% static 'products/images/hero/cr6.jpg' %}" alt="Daily Special Combos" />
+                    <div class="overlay">
+                        <h2>Daily Special Combos</h2>
+                        <p>Smart combos for family tea-time and office breaks.</p>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img class="slide-bg" src="{% static 'products/images/hero/cr4.jpg' %}" alt="Family Pack Offers" />
+                    <div class="overlay">
+                        <h2>Family Pack Offers</h2>
+                        <p>Best value packs curated for your everyday cravings.</p>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img class="slide-bg" src="{% static 'products/images/hero/cr3.jpg' %}" alt="Premium Taste, Better Prices" />
+                    <div class="overlay">
+                        <h2>Premium Taste, Better Prices</h2>
+                        <p>Top-quality bakery and snacks at affordable prices.</p>
+                    </div>
+                </div>
+                <button type="button" class="carousel-nav prev" id="heroPrev" aria-label="Previous slide">‹</button>
+                <button type="button" class="carousel-nav next" id="heroNext" aria-label="Next slide">›</button>
+            </div>
+            <div class="dots" id="carouselDots"></div>
+        </section>
+    </header>
+
+    <main class="container">
+        <section class="ad-strip">
+            <div class="ad-head">
+                <h2>Offers & Highlights</h2>
+                <p>Fresh picks from Thathwamasi</p>
+            </div>
+            <div class="ad-grid">
+                {% for ad in ads %}
+                <article class="ad-card">
+                    <img src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="lazy" />
+                    <div class="ad-overlay">
+                        <h3>{{ ad.title }}</h3>
+                        {% if ad.subtitle %}<p>{{ ad.subtitle }}</p>{% endif %}
+                        {% if ad.cta_url %}
+                        <a href="{{ ad.cta_url|default:'#' }}">{{ ad.cta_label|default:'Explore' }}</a>
+                        {% endif %}
+                    </div>
+                </article>
+                {% empty %}
+                <article class="ad-card ad-card--empty">
+                    <div class="ad-overlay">
+                        <h3>New Deals Coming Soon</h3>
+                        <p>Add cards from Admin Dashboard -> Advertising.</p>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section id="homeHistory" class="history-home hidden">
+            <div class="history-head">
+                <h2>Your Previous Orders</h2>
+                <p id="homeHistoryPhone"></p>
+            </div>
+            <div id="homeHistoryList" class="history-grid"></div>
+        </section>
+
+        <section class="sections">
+        <a href="/bakery/" class="section-card bakery">
+            <div>
+                <h3>Bakery</h3>
+                <p>Cakes, biscuits, breads, cookies and more.</p>
+            </div>
+            <span>Explore</span>
+        </a>
+        <a href="/snacks/" class="section-card snacks">
+            <div>
+                <h3>Snacks</h3>
+                <p>Namkeen, chips, mixtures and tasty quick bites.</p>
+            </div>
+            <span>Explore</span>
+        </a>
+        </section>
+    </main>
+    <script src="{% static 'products/home.js' %}?v=20260215-hero2"></script>
+    <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({
+                mode: "USER",
+                storageKey: "thathwamasi_checkout_phone",
+                resolveIdentifier: function () {
+                    return (
+                        localStorage.getItem("thathwamasi_checkout_phone") ||
+                        localStorage.getItem("thathwamasi_cart_phone") ||
+                        ""
+                    ).trim();
+                },
+            });
+        }
+    </script>
+</body>
+</html>

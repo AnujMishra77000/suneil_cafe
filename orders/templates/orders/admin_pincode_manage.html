@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pincode Manager | Thathwamasi Admin</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#1f2937}
+        .wrap{max-width:980px;margin:0 auto;padding:20px}
+        .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+        .top h1{margin:0;color:#5a2e16;font-size:30px}
+        .btn{display:inline-block;text-decoration:none;padding:8px 12px;border-radius:8px;border:1px solid #d0d5dd;background:#fff;color:#1f2937;font-weight:600;cursor:pointer}
+        .btn-primary{background:#5a2e16;border-color:#5a2e16;color:#fff}
+        .btn-danger{background:#b42318;border-color:#b42318;color:#fff}
+        .card{margin-top:14px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(16,24,40,.06)}
+        .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}
+        .field{display:flex;flex-direction:column;gap:6px}
+        .field label{font-size:12px;color:#667085;font-weight:700}
+        .field input{padding:9px 10px;border:1px solid #d0d5dd;border-radius:8px;font-size:14px}
+        .actions{display:flex;align-items:center;gap:8px}
+        .hint{font-size:12px;color:#667085;margin:8px 0 0}
+        .msg{margin-top:10px;padding:10px 12px;border-radius:8px;font-size:13px}
+        .msg-ok{background:#ecfdf3;color:#027a48;border:1px solid #abefc6}
+        .msg-err{background:#fef3f2;color:#b42318;border:1px solid #fecdca}
+        table{width:100%;border-collapse:collapse}
+        th,td{padding:10px 8px;border-bottom:1px solid #edf1f5;text-align:left;font-size:13px}
+        th{background:#f8fafc;color:#334155}
+        .status-pill{display:inline-block;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;border:1px solid transparent}
+        .status-active{background:#ecfdf3;color:#027a48;border-color:#abefc6}
+        .status-inactive{background:#fef3f2;color:#b42318;border-color:#fecdca}
+        .inline-form{display:inline}
+        @media (max-width:820px){.form-grid{grid-template-columns:1fr}}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <header class="top">
+            <h1>Pincode Manager</h1>
+            <div>
+                <a href="/admin-dashboard/" class="btn">Back to Dashboard</a>
+                <a href="/admin/" class="btn">Django Admin</a>
+            </div>
+        </header>
+
+        <section class="card">
+            <form method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add" />
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="code">Pincode</label>
+                        <input id="code" name="code" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="e.g. 400001" required />
+                    </div>
+                    <div class="field">
+                        <label for="area_name">Area Name</label>
+                        <input id="area_name" name="area_name" maxlength="150" placeholder="Optional area label" />
+                    </div>
+                    <div class="actions">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#475467;">
+                            <input type="checkbox" name="is_active" value="1" checked /> Active
+                        </label>
+                        <button type="submit" class="btn btn-primary">Save Pincode</button>
+                    </div>
+                </div>
+            </form>
+            <p class="hint">If pincode already exists, saving updates its area name and active status.</p>
+
+            {% if saved == "1" %}
+            <div class="msg msg-ok">Pincode saved successfully.</div>
+            {% elif saved == "status" %}
+            <div class="msg msg-ok">Pincode status updated successfully.</div>
+            {% endif %}
+            {% if error %}
+            <div class="msg msg-err">{{ error }}</div>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pincode</th>
+                        <th>Area</th>
+                        <th>Status</th>
+                        <th>Updated At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <td>{{ row.code }}</td>
+                        <td>{{ row.area_name|default:"-" }}</td>
+                        <td>
+                            {% if row.is_active %}
+                            <span class="status-pill status-active">Active</span>
+                            {% else %}
+                            <span class="status-pill status-inactive">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.updated_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            <form method="post" action="" class="inline-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle" />
+                                <input type="hidden" name="code" value="{{ row.code }}" />
+                                {% if row.is_active %}
+                                <input type="hidden" name="target" value="0" />
+                                <button type="submit" class="btn btn-danger">Deactivate</button>
+                                {% else %}
+                                <input type="hidden" name="target" value="1" />
+                                <button type="submit" class="btn btn-primary">Activate</button>
+                                {% endif %}
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5">No pincodes added yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

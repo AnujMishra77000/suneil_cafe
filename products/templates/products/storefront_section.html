@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thathwamasi | {{ section_title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'products/section.css' %}?v=20260215-1" />
+    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260224-1" />
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body data-section="{{ section_name }}">
+    <div class="customer-menu" data-customer-menu>
+        <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
+        <nav class="customer-menu-panel" data-menu-panel>
+            <a href="/">Home</a>
+            <a href="/bakery/">Bakery</a>
+            <a href="/snacks/">Snacks</a>
+            <a href="/order-details/">Order Details</a>
+        </nav>
+    </div>
+
+    <header class="top container">
+        <a href="/" class="back-link">Home</a>
+        <h1>Thathwamasi - {{ section_title }}</h1>
+        <div class="top-actions">
+            <button id="profileBtn" class="profile-btn">Save Profile (Optional)</button>
+            <a href="/billing/" class="cart-link">
+                Cart
+                <span id="cartCount" class="cart-count">0</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="toolbar">
+            <div class="search-wrap">
+                <input id="searchInput" type="text" placeholder="Search product by name..." />
+                <button id="searchBtn">Search</button>
+            </div>
+        </section>
+
+        <section class="categories">
+            <div class="head">
+                <h2>Categories</h2>
+                <p id="categoryCount">0 categories</p>
+            </div>
+            <div id="categoryGrid" class="category-grid"></div>
+        </section>
+
+        <section class="products">
+            <div class="head">
+                <h2 id="pageTitle">Select a category</h2>
+                <p id="countLabel">0 items</p>
+            </div>
+            <div id="selectedCategoryBar" class="selected-category hidden"></div>
+            <div id="productGrid" class="grid"></div>
+        </section>
+    </main>
+
+    <script src="{% static 'products/section.js' %}?v=20260215-1"></script>
+    <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({
+                mode: "USER",
+                storageKey: "thathwamasi_checkout_phone",
+                resolveIdentifier: function () {
+                    return (
+                        localStorage.getItem("thathwamasi_checkout_phone") ||
+                        localStorage.getItem("thathwamasi_cart_phone") ||
+                        ""
+                    ).trim();
+                },
+            });
+        }
+    </script>
+</body>
+</html>

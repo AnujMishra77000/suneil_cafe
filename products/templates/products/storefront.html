@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thathwamasi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'products/storefront.css' %}" />
+</head>
+<body>
+    <header class="hero">
+        <nav class="topbar container">
+            <div class="brand-wrap">
+                <div class="brand-dot"></div>
+                <div>
+                    <p class="brand-kicker">Freshly Curated</p>
+                    <h1 class="brand">Thathwamasi</h1>
+                </div>
+            </div>
+            <button id="profileBtn" class="outline-btn">Set Delivery Profile</button>
+        </nav>
+        <section class="hero-content container">
+            <h2>Bakery and Snacks delivered with flavor and speed.</h2>
+            <p>Find your favorites, search instantly, and order in a few taps.</p>
+            <div class="search-wrap">
+                <input id="searchInput" type="text" placeholder="Search cake, khari, chips, namkeen..." />
+                <button id="searchBtn">Search</button>
+            </div>
+        </section>
+    </header>
+
+    <main class="container">
+        <section class="filter-section">
+            <div id="sectionTabs" class="tabs"></div>
+            <div id="categoryTabs" class="chips"></div>
+        </section>
+
+        <section class="products-section">
+            <div class="section-head">
+                <h3 id="productTitle">All Products</h3>
+                <p id="productCount">0 items</p>
+            </div>
+            <div id="productGrid" class="product-grid"></div>
+        </section>
+    </main>
+
+    <div id="relatedPanel" class="related-panel hidden">
+        <div class="related-header">
+            <h4>Related Products</h4>
+            <button id="closeRelated" aria-label="Close">x</button>
+        </div>
+        <div id="relatedList" class="related-list"></div>
+    </div>
+
+    <script src="{% static 'products/storefront.js' %}"></script>
+</body>
+</html>

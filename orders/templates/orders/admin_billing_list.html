@@ -1,0 +1,249 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Billing | Thathwamasi Admin</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:#f3f5f7;color:#1b1f24}
+        .wrap{max-width:1260px;margin:0 auto;padding:20px}
+        .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+        .title h1{margin:0;color:#5a2e16;font-size:30px}
+        .title p{margin:6px 0 0;color:#6b7280;font-size:13px}
+        .btn{display:inline-block;text-decoration:none;padding:9px 12px;border-radius:8px;border:1px solid #d8dee6;background:#fff;color:#23272f;font-weight:600;cursor:pointer}
+        .btn-primary{background:#5a2e16;border-color:#5a2e16;color:#fff}
+        .btn-danger{background:#b42318;border-color:#b42318;color:#fff}
+        .btn:disabled,.btn.disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
+        .meta{margin:10px 0 16px;color:#667085;font-size:12px}
+        .search-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 12px}
+        .search-input{padding:8px 10px;border:1px solid #d8dee6;border-radius:8px;min-width:260px}
+        .table-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:auto;box-shadow:0 6px 18px rgba(16,24,40,.06)}
+        table{border-collapse:collapse;width:100%;min-width:1250px}
+        th,td{padding:10px 12px;border-bottom:1px solid #eef1f4;text-align:left;vertical-align:top;font-size:13px}
+        th{background:#f8fafc;color:#334155;position:sticky;top:0;z-index:1}
+        .products{display:flex;flex-direction:column;gap:6px}
+        .pitem{background:#f8fafc;border:1px solid #e8edf3;border-radius:7px;padding:5px 7px;color:#344054;font-size:12px}
+        .price{font-weight:700;color:#5a2e16;white-space:nowrap}
+        .actions{display:flex;flex-wrap:wrap;gap:6px}
+        .actions .btn{padding:6px 10px;font-size:12px}
+        .empty{padding:16px;color:#667085;text-align:center}
+        .hint{font-size:12px;color:#667085;margin:0}
+        .status-pill{display:inline-block;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;border:1px solid transparent;white-space:nowrap}
+        .status-active{background:#ecfdf3;color:#027a48;border-color:#abefc6}
+        .status-cancelled{background:#fef3f2;color:#b42318;border-color:#fecdca}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <header class="top">
+            <div class="title">
+                <h1>Billing</h1>
+                <p>Live admin billing feed. Auto-refresh every 2 minutes.</p>
+            </div>
+            <div>
+                <a href="/admin-dashboard/" class="btn">Dashboard</a>
+                <button class="btn btn-primary" id="refresh-btn" type="button">Refresh Now</button>
+            </div>
+        </header>
+
+        <form class="search-row" id="billing-search-form" action="/admin-dashboard/billing/" method="get">
+            <input
+                type="text"
+                id="phone-search"
+                name="phone"
+                value="{{ query_phone }}"
+                class="search-input"
+                placeholder="Search by mobile number"
+                autocomplete="off"
+            />
+            <button class="btn" type="submit">Search</button>
+            <a href="/admin-dashboard/billing/" class="btn">Clear</a>
+        </form>
+
+        <div class="meta">
+            Last updated: <span id="last-updated">never</span>
+        </div>
+        <p class="hint">Latest billing entries appear first. You can edit bill details or cancel a bill to restore stock automatically.</p>
+
+        <section class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bill #</th>
+                        <th>Customer Name</th>
+                        <th>Phone Number</th>
+                        <th>Products (Qty x Price)</th>
+                        <th>Total Price</th>
+                        <th>Address</th>
+                        <th>Created At</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="billing-tbody">
+                    {% for bill in rows %}
+                    <tr>
+                        <td>{{ bill.bill_number }}</td>
+                        <td>{{ bill.customer_name }}</td>
+                        <td>{{ bill.phone }}</td>
+                        <td>
+                            <div class="products">
+                                {% for item in bill.items.all %}
+                                <div class="pitem">{{ item.product_name }} | Rs {{ item.unit_price }} x {{ item.quantity }}</div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td class="price">Rs {{ bill.total_amount }}</td>
+                        <td>{{ bill.shipping_address }}</td>
+                        <td>{{ bill.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            {% if bill.order.status|lower == "cancelled" %}
+                            <span class="status-pill status-cancelled">Cancelled</span>
+                            {% else %}
+                            <span class="status-pill status-active">{{ bill.order.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="actions">
+                            <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/">View</a>
+                            <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/edit/">Edit</a>
+                            <button
+                                class="btn btn-danger"
+                                type="button"
+                                data-action="cancel"
+                                data-bill-id="{{ bill.id }}"
+                                {% if bill.order.status|lower == "cancelled" %}disabled{% endif %}
+                            >
+                                Cancel
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="9" class="empty">No billing entries yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        const tbody = document.getElementById('billing-tbody');
+        const lastUpdated = document.getElementById('last-updated');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const phoneInput = document.getElementById('phone-search');
+
+        function esc(value) {
+            return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return '';
+        }
+
+        function renderStatus(bill) {
+            const cancelled = Boolean(bill.is_cancelled);
+            if (cancelled) {
+                return '<span class="status-pill status-cancelled">Cancelled</span>';
+            }
+            const label = esc(bill.order_status || 'Placed');
+            return `<span class="status-pill status-active">${label}</span>`;
+        }
+
+        function renderRows(items) {
+            if (!items.length) {
+                tbody.innerHTML = '<tr><td colspan="9" class="empty">No billing entries found for this mobile number.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = items.map((bill) => {
+                const productHtml = (bill.items || []).map((it) => (
+                    `<div class="pitem">${esc(it.product_name)} | Rs ${esc(it.unit_price)} x ${esc(it.quantity)} = Rs ${esc(it.line_total)}</div>`
+                )).join('');
+                const createdAt = bill.created_at ? new Date(bill.created_at).toLocaleString() : '-';
+                const isCancelled = Boolean(bill.is_cancelled);
+                const cancelDisabled = isCancelled ? 'disabled' : '';
+                return `
+                    <tr>
+                        <td>${esc(bill.bill_number)}</td>
+                        <td>${esc(bill.customer_name)}</td>
+                        <td>${esc(bill.phone)}</td>
+                        <td><div class="products">${productHtml}</div></td>
+                        <td class="price">Rs ${esc(bill.total_amount)}</td>
+                        <td>${esc(bill.shipping_address)}</td>
+                        <td>${esc(createdAt)}</td>
+                        <td>${renderStatus(bill)}</td>
+                        <td class="actions">
+                            <a class="btn" href="/admin-dashboard/billing/${bill.id}/">View</a>
+                            <a class="btn" href="/admin-dashboard/billing/${bill.id}/edit/">Edit</a>
+                            <button class="btn btn-danger" type="button" data-action="cancel" data-bill-id="${bill.id}" ${cancelDisabled}>Cancel</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function loadBilling() {
+            try {
+                const phone = (phoneInput.value || '').trim();
+                const qs = new URLSearchParams({ limit: '150' });
+                if (phone) qs.set('phone', phone);
+                const resp = await fetch(`/api/orders/admin/dashboard/billing/?${qs.toString()}`, { credentials: 'same-origin' });
+                if (!resp.ok) return;
+                const data = await resp.json();
+                renderRows(data.bills || []);
+                lastUpdated.textContent = new Date().toLocaleString();
+            } catch (err) {
+                // Keep current table visible if refresh fails.
+            }
+        }
+
+        async function cancelBill(billId) {
+            const confirmed = window.confirm('Cancel this bill? Stock for all items in this order will be restored.');
+            if (!confirmed) return;
+
+            try {
+                const csrfToken = getCookie('csrftoken');
+                const resp = await fetch(`/api/orders/admin/dashboard/bills/${billId}/cancel/`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: '{}',
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    window.alert(data.detail || 'Unable to cancel bill.');
+                    return;
+                }
+                window.alert(data.detail || 'Bill cancelled successfully.');
+                await loadBilling();
+            } catch (err) {
+                window.alert('Unable to cancel bill right now. Please try again.');
+            }
+        }
+
+        tbody.addEventListener('click', (event) => {
+            const btn = event.target.closest('button[data-action="cancel"]');
+            if (!btn) return;
+            const billId = btn.getAttribute('data-bill-id');
+            if (!billId) return;
+            cancelBill(billId);
+        });
+
+        refreshBtn.addEventListener('click', loadBilling);
+        loadBilling();
+        setInterval(loadBilling, 120000);
+    </script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

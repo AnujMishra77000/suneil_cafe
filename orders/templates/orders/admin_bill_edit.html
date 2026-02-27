@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Bill {{ bill.bill_number }} | Thathwamasi</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#111827}
+        .wrap{max-width:980px;margin:20px auto;padding:0 16px}
+        .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+        .btn{display:inline-block;text-decoration:none;padding:8px 12px;border-radius:8px;border:1px solid #d0d5dd;background:#fff;color:#1f2937;font-weight:600;cursor:pointer}
+        .btn-primary{background:#5a2e16;border-color:#5a2e16;color:#fff}
+        .btn:disabled{opacity:.55;cursor:not-allowed}
+        .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;box-shadow:0 8px 20px rgba(15,23,42,.08)}
+        h1{margin:0 0 6px;color:#5a2e16;font-size:30px}
+        .sub{margin:0 0 14px;color:#667085;font-size:13px}
+        .banner{padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px}
+        .banner-ok{background:#ecfdf3;color:#027a48;border:1px solid #abefc6}
+        .banner-err{background:#fef3f2;color:#b42318;border:1px solid #fecdca}
+        .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+        .field{display:flex;flex-direction:column;gap:5px}
+        .field label{font-size:12px;font-weight:700;color:#4b5563}
+        .field input,.field textarea{border:1px solid #d0d5dd;border-radius:8px;padding:9px 10px;font-size:14px;font-family:inherit}
+        .field textarea{min-height:84px;resize:vertical}
+        .field-full{grid-column:1 / -1}
+        .meta{margin-top:14px;padding-top:14px;border-top:1px solid #eaecf0;color:#475467;font-size:13px;display:grid;gap:4px}
+        .stock-note{margin-top:10px;color:#5f6d7e;font-size:12px}
+        table{width:100%;border-collapse:collapse;margin-top:12px}
+        th,td{padding:9px 8px;border-bottom:1px solid #eef1f4;text-align:left;font-size:13px;vertical-align:middle}
+        th{background:#f8fafc;color:#334155}
+        .qty-input{width:110px;border:1px solid #d0d5dd;border-radius:8px;padding:6px 8px;font-size:13px}
+        .stock-pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#f2f4f7;color:#344054;font-size:12px;font-weight:600}
+        .footer{margin-top:14px;display:flex;justify-content:flex-end;gap:8px}
+        @media (max-width:720px){.grid{grid-template-columns:1fr}.qty-input{width:100%}}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <div class="toolbar">
+            <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/">Back to Bill</a>
+            <a class="btn" href="/admin-dashboard/billing/">Back to Billing List</a>
+        </div>
+
+        <section class="card">
+            <h1>Edit Bill</h1>
+            <p class="sub">Bill Number: {{ bill.bill_number }} | Created At: {{ bill.created_at|date:"Y-m-d H:i" }}</p>
+
+            {% if saved %}
+            <div class="banner banner-ok">Bill details and quantities updated successfully. Stock adjusted in real time.</div>
+            {% endif %}
+
+            {% if error %}
+                {% if error == "cancelled" %}
+                <div class="banner banner-err">This bill is already cancelled. Cancelled bills cannot be edited.</div>
+                {% else %}
+                <div class="banner banner-err">{{ error }}</div>
+                {% endif %}
+            {% endif %}
+
+            {% if is_cancelled %}
+            <div class="banner banner-err">This bill has status <strong>Cancelled</strong>. Editing is disabled.</div>
+            {% endif %}
+
+            <form method="post" action="">
+                {% csrf_token %}
+                <div class="grid">
+                    <div class="field">
+                        <label for="customer_name">Customer Name</label>
+                        <input id="customer_name" name="customer_name" value="{{ bill.customer_name }}" required {% if is_cancelled %}disabled{% endif %} />
+                    </div>
+                    <div class="field">
+                        <label for="phone">Customer Phone</label>
+                        <input id="phone" name="phone" value="{{ bill.phone }}" required {% if is_cancelled %}disabled{% endif %} />
+                    </div>
+                    <div class="field field-full">
+                        <label for="shipping_address">Shipping Address</label>
+                        <textarea id="shipping_address" name="shipping_address" required {% if is_cancelled %}disabled{% endif %}>{{ bill.shipping_address }}</textarea>
+                    </div>
+                </div>
+
+                <div class="meta">
+                    <div><strong>Order Status:</strong> {{ bill.order.status }}</div>
+                    <div><strong>Current Total Amount:</strong> <span id="totalAmountPreview">Rs {{ bill.total_amount }}</span></div>
+                </div>
+                <p class="stock-note">Edit quantities below. On save, order stock will be updated immediately. Set quantity to <strong>0</strong> to remove that product from this order.</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Available Stock</th>
+                            <th>Edit Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Line Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order_item_rows %}
+                        <tr>
+                            <td>{{ item.product_name }}</td>
+                            <td><span class="stock-pill">{{ item.product_stock_qty }}</span></td>
+                            <td>
+                                <input
+                                    class="qty-input"
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    name="item_qty_{{ item.id }}"
+                                    value="{{ item.quantity }}"
+                                    data-unit-price="{{ item.unit_price }}"
+                                    data-line-target="line-total-{{ item.id }}"
+                                    {% if is_cancelled %}disabled{% endif %}
+                                    required
+                                />
+                            </td>
+                            <td>Rs {{ item.unit_price }}</td>
+                            <td id="line-total-{{ item.id }}">Rs {{ item.line_total }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No order items found for this bill.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="footer">
+                    <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/">Cancel</a>
+                    <button class="btn btn-primary" type="submit" {% if is_cancelled %}disabled{% endif %}>Save Changes</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        (function () {
+            const qtyInputs = Array.from(document.querySelectorAll('.qty-input'));
+            const totalEl = document.getElementById('totalAmountPreview');
+            if (!qtyInputs.length || !totalEl) return;
+
+            const formatAmount = (value) => {
+                const safe = Number.isFinite(value) ? value : 0;
+                return 'Rs ' + safe.toFixed(2);
+            };
+
+            const readQty = (input) => {
+                const value = Number(input.value || 0);
+                if (!Number.isFinite(value) || value < 0) return 0;
+                return Math.floor(value);
+            };
+
+            const recalc = () => {
+                let total = 0;
+                qtyInputs.forEach((input) => {
+                    const qty = readQty(input);
+                    input.value = String(qty);
+                    const unitPrice = Number(input.dataset.unitPrice || 0);
+                    const lineTotal = unitPrice * qty;
+                    total += lineTotal;
+
+                    const lineTargetId = input.dataset.lineTarget;
+                    const lineTarget = lineTargetId ? document.getElementById(lineTargetId) : null;
+                    if (lineTarget) {
+                        lineTarget.textContent = formatAmount(lineTotal);
+                    }
+                });
+                totalEl.textContent = formatAmount(total);
+            };
+
+            qtyInputs.forEach((input) => {
+                input.addEventListener('input', recalc);
+                input.addEventListener('change', recalc);
+            });
+
+            recalc();
+        })();
+    </script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

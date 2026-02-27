@@ -1,0 +1,198 @@
+{
+  "report_dir": "/Users/anujmishra/Desktop/Thathwamasi/e_com/core/load_test_reports/20260226_202814",
+  "test_start_utc": "2026-02-26T14:58:01.523075+00:00",
+  "locust": {
+    "aggregate": {
+      "requests": 582690,
+      "fails": 659,
+      "error_rate_pct": 0.1131,
+      "avg_ms": 1131.304,
+      "p50_ms": 240.0,
+      "p95_ms": 4800.0,
+      "p99_ms": 11000.0,
+      "max_ms": 70785.413,
+      "rps": 478.209
+    },
+    "critical_endpoints": {
+      "/api/cart/place/": {
+        "requests": 41112,
+        "fails": 0,
+        "error_rate_pct": 0.0,
+        "avg_ms": 5159.488,
+        "p50_ms": 4000.0,
+        "p95_ms": 12000.0,
+        "p99_ms": 27000.0,
+        "max_ms": 70785.413,
+        "rps": 33.74
+      },
+      "/api/cart/add/": {
+        "requests": 41321,
+        "fails": 206,
+        "error_rate_pct": 0.4985,
+        "avg_ms": 606.316,
+        "p50_ms": 8.0,
+        "p95_ms": 3000.0,
+        "p99_ms": 7800.0,
+        "max_ms": 35866.039,
+        "rps": 33.912
+      },
+      "/api/cart/view/": {
+        "requests": 73905,
+        "fails": 41,
+        "error_rate_pct": 0.0555,
+        "avg_ms": 1652.909,
+        "p50_ms": 820.0,
+        "p95_ms": 5600.0,
+        "p99_ms": 13000.0,
+        "max_ms": 43135.654,
+        "rps": 60.653
+      },
+      "/api/products/category-cards/": {
+        "requests": 98156,
+        "fails": 83,
+        "error_rate_pct": 0.0846,
+        "avg_ms": 593.895,
+        "p50_ms": 7.0,
+        "p95_ms": 2700.0,
+        "p99_ms": 7300.0,
+        "max_ms": 38800.334,
+        "rps": 80.556
+      },
+      "/api/products/categories/[id]/products/": {
+        "requests": 98424,
+        "fails": 89,
+        "error_rate_pct": 0.0904,
+        "avg_ms": 597.231,
+        "p50_ms": 8.0,
+        "p95_ms": 2700.0,
+        "p99_ms": 7400.0,
+        "max_ms": 36082.836,
+        "rps": 80.776
+      },
+      "/api/products/search/": {
+        "requests": 65961,
+        "fails": 69,
+        "error_rate_pct": 0.1046,
+        "avg_ms": 606.293,
+        "p50_ms": 8.0,
+        "p95_ms": 2800.0,
+        "p99_ms": 7400.0,
+        "max_ms": 35951.492,
+        "rps": 54.134
+      },
+      "/api/notifications/unread-count/": {
+        "requests": 76,
+        "fails": 0,
+        "error_rate_pct": 0.0,
+        "avg_ms": 781.419,
+        "p50_ms": 750.0,
+        "p95_ms": 1200.0,
+        "p99_ms": 1200.0,
+        "max_ms": 1225.252,
+        "rps": 0.062
+      },
+      "/api/notifications/feed/": {
+        "requests": 76,
+        "fails": 0,
+        "error_rate_pct": 0.0,
+        "avg_ms": 1215.34,
+        "p50_ms": 1200.0,
+        "p95_ms": 1900.0,
+        "p99_ms": 2200.0,
+        "max_ms": 2235.994,
+        "rps": 0.062
+      },
+      "/api/orders/history-by-phone/": {
+        "requests": 62,
+        "fails": 0,
+        "error_rate_pct": 0.0,
+        "avg_ms": 1583.577,
+        "p50_ms": 1500.0,
+        "p95_ms": 2000.0,
+        "p99_ms": 2200.0,
+        "max_ms": 2209.717,
+        "rps": 0.051
+      }
+    }
+  },
+  "execution_integrity": {
+    "orders_created_for_test_phone_prefix": 150,
+    "order_status_breakdown": [
+      {
+        "status": "Placed",
+        "count": 150
+      }
+    ],
+    "place_order_requests": 41112,
+    "order_creation_ratio_vs_place_requests_pct": 0.3649,
+    "notifications_total_for_test_orders": 300,
+    "orders_with_user_notification": 150,
+    "orders_with_admin_notification": 150,
+    "orders_with_both_notifications": 150,
+    "orders_missing_user_notification": 0,
+    "orders_missing_admin_notification": 0,
+    "notification_coverage_pct_user": 100.0,
+    "notification_coverage_pct_admin": 100.0
+  },
+  "sla": {
+    "overall_pass": false,
+    "failed_checks": [
+      {
+        "key": "max_avg_ms",
+        "passed": false,
+        "description": "Aggregate average response time within limit",
+        "actual": 1131.303575613283,
+        "threshold": "<= 900.0"
+      },
+      {
+        "key": "max_p95_ms",
+        "passed": false,
+        "description": "Aggregate p95 response time within limit",
+        "actual": 4800.0,
+        "threshold": "<= 1600.0"
+      },
+      {
+        "key": "max_p99_ms",
+        "passed": false,
+        "description": "Aggregate p99 response time within limit",
+        "actual": 11000.0,
+        "threshold": "<= 3200.0"
+      },
+      {
+        "key": "critical_p95:/api/products/category-cards/",
+        "passed": false,
+        "description": "Critical endpoint p95 within limit",
+        "actual": 2700.0,
+        "threshold": "<= 2200.0"
+      },
+      {
+        "key": "critical_p95:/api/products/categories/[id]/products/",
+        "passed": false,
+        "description": "Critical endpoint p95 within limit",
+        "actual": 2700.0,
+        "threshold": "<= 2200.0"
+      },
+      {
+        "key": "critical_p95:/api/cart/view/",
+        "passed": false,
+        "description": "Critical endpoint p95 within limit",
+        "actual": 5600.0,
+        "threshold": "<= 2200.0"
+      },
+      {
+        "key": "critical_p95:/api/cart/add/",
+        "passed": false,
+        "description": "Critical endpoint p95 within limit",
+        "actual": 3000.0,
+        "threshold": "<= 2200.0"
+      },
+      {
+        "key": "critical_p95:/api/cart/place/",
+        "passed": false,
+        "description": "Critical endpoint p95 within limit",
+        "actual": 12000.0,
+        "threshold": "<= 2200.0"
+      }
+    ]
+  }
+}

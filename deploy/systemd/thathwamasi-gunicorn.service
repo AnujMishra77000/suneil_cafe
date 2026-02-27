@@ -1,0 +1,22 @@
+[Unit]
+Description=Thathwamasi Django Gunicorn Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/srv/thathwamasi/core
+EnvironmentFile=/srv/thathwamasi/core/.env
+ExecStart=/srv/thathwamasi/venv/bin/gunicorn core.wsgi:application -c /srv/thathwamasi/core/deploy/gunicorn.conf.py
+ExecReload=/bin/kill -s HUP $MAINPID
+KillSignal=SIGTERM
+TimeoutStopSec=30
+Restart=always
+RestartSec=5
+PrivateTmp=true
+NoNewPrivileges=true
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

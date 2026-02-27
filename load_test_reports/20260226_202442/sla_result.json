@@ -1,0 +1,161 @@
+{
+  "timestamp_utc": "2026-02-26T14:55:55.184333+00:00",
+  "stats_csv": "/Users/anujmishra/Desktop/Thathwamasi/e_com/core/load_test_reports/20260226_202442/locust_stats.csv",
+  "overall_pass": false,
+  "aggregate": {
+    "request_count": 4194,
+    "failure_count": 92,
+    "error_rate": 0.021936099189318072,
+    "avg_ms": 1090.6456965791604,
+    "p95_ms": 7800.0,
+    "p99_ms": 17000.0,
+    "rps": 62.32891497360036,
+    "error_rate_pct": 2.1936
+  },
+  "checks": [
+    {
+      "key": "min_requests",
+      "passed": false,
+      "description": "Aggregate request count must be high enough for reliable result",
+      "actual": 4194,
+      "threshold": ">= 8000"
+    },
+    {
+      "key": "max_error_rate",
+      "passed": true,
+      "description": "Aggregate failure ratio within limit",
+      "actual": 0.021936099189318072,
+      "threshold": "<= 0.03"
+    },
+    {
+      "key": "max_avg_ms",
+      "passed": false,
+      "description": "Aggregate average response time within limit",
+      "actual": 1090.6456965791604,
+      "threshold": "<= 900.0"
+    },
+    {
+      "key": "max_p95_ms",
+      "passed": false,
+      "description": "Aggregate p95 response time within limit",
+      "actual": 7800.0,
+      "threshold": "<= 1600.0"
+    },
+    {
+      "key": "max_p99_ms",
+      "passed": false,
+      "description": "Aggregate p99 response time within limit",
+      "actual": 17000.0,
+      "threshold": "<= 3200.0"
+    },
+    {
+      "key": "min_rps",
+      "passed": true,
+      "description": "Aggregate throughput meets minimum",
+      "actual": 62.32891497360036,
+      "threshold": ">= 20.0"
+    },
+    {
+      "key": "critical_p95:/api/products/category-cards/",
+      "passed": true,
+      "description": "Critical endpoint p95 within limit",
+      "actual": 250.0,
+      "threshold": "<= 2200.0"
+    },
+    {
+      "key": "critical_p95:/api/products/categories/[id]/products/",
+      "passed": true,
+      "description": "Critical endpoint p95 within limit",
+      "actual": 200.0,
+      "threshold": "<= 2200.0"
+    },
+    {
+      "key": "critical_p95:/api/cart/view/",
+      "passed": false,
+      "description": "Critical endpoint p95 within limit",
+      "actual": 3000.0,
+      "threshold": "<= 2200.0"
+    },
+    {
+      "key": "critical_p95:/api/cart/add/",
+      "passed": false,
+      "description": "Critical endpoint p95 within limit",
+      "actual": 7800.0,
+      "threshold": "<= 2200.0"
+    },
+    {
+      "key": "critical_p95:/api/cart/place/",
+      "passed": false,
+      "description": "Critical endpoint p95 within limit",
+      "actual": 32000.0,
+      "threshold": "<= 2200.0"
+    }
+  ],
+  "critical_endpoints": [
+    {
+      "endpoint": "/api/products/category-cards/",
+      "present": true,
+      "request_count": 787,
+      "failure_count": 26,
+      "error_rate": 0.03303684879288437,
+      "avg_ms": 310.4420081435846,
+      "p95_ms": 250.0,
+      "p99_ms": 7800.0,
+      "rps": 11.695959962857293
+    },
+    {
+      "endpoint": "/api/products/categories/[id]/products/",
+      "present": true,
+      "request_count": 747,
+      "failure_count": 19,
+      "error_rate": 0.025435073627844713,
+      "avg_ms": 249.19148496786505,
+      "p95_ms": 200.0,
+      "p99_ms": 7800.0,
+      "rps": 11.101502023194914
+    },
+    {
+      "endpoint": "/api/cart/view/",
+      "present": true,
+      "request_count": 403,
+      "failure_count": 2,
+      "error_rate": 0.004962779156327543,
+      "avg_ms": 1063.5491606724534,
+      "p95_ms": 3000.0,
+      "p99_ms": 3900.0,
+      "rps": 5.9891637420984605
+    },
+    {
+      "endpoint": "/api/cart/add/",
+      "present": true,
+      "request_count": 174,
+      "failure_count": 14,
+      "error_rate": 0.08045977011494253,
+      "avg_ms": 1034.2197957413782,
+      "p95_ms": 7800.0,
+      "p99_ms": 7800.0,
+      "rps": 2.5858920375313454
+    },
+    {
+      "endpoint": "/api/cart/place/",
+      "present": true,
+      "request_count": 155,
+      "failure_count": 0,
+      "error_rate": 0.0,
+      "avg_ms": 14991.041498696772,
+      "p95_ms": 32000.0,
+      "p99_ms": 44000.0,
+      "rps": 2.3035245161917155
+    }
+  ],
+  "thresholds": {
+    "max_error_rate": 0.03,
+    "max_avg_ms": 900.0,
+    "max_p95_ms": 1600.0,
+    "max_p99_ms": 3200.0,
+    "min_rps": 20.0,
+    "min_requests": 8000,
+    "endpoint_max_p95_ms": 2200.0,
+    "allow_missing_critical": false
+  }
+}

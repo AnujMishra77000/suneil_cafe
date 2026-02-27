@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales Visualization | Thathwamasi Admin</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#f3eee9,#f8fafc);color:#1f2937}
+        .wrap{max-width:1050px;margin:0 auto;padding:24px}
+        .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+        h1{margin:0;color:#5a2e16;font-size:34px}
+        .sub{margin:8px 0 0;color:#6b7280}
+        .btn{display:inline-block;text-decoration:none;padding:10px 14px;border-radius:10px;border:1px solid #d8dee6;background:#fff;color:#1f2937;font-weight:700}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:18px}
+        .card{background:#fff;border:1px solid #eadfce;border-radius:16px;padding:18px;box-shadow:0 14px 30px rgba(90,46,22,.08);transition:transform .18s ease,box-shadow .18s ease}
+        .card:hover{transform:translateY(-3px);box-shadow:0 20px 34px rgba(90,46,22,.15)}
+        .badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#f3e4d6;color:#5a2e16;font-weight:700;font-size:12px}
+        .title{margin:12px 0 8px;font-size:28px;font-weight:800;color:#5a2e16}
+        .desc{margin:0;color:#6b7280;font-size:14px;min-height:40px}
+        .cta{margin-top:14px}
+        .cta .btn{background:#5a2e16;color:#fff;border-color:#5a2e16}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <header class="top">
+            <div>
+                <h1>Visualization Hub</h1>
+                <p class="sub">Choose a section and open category-wise sales visualization dashboard.</p>
+            </div>
+            <a class="btn" href="/admin-dashboard/">Back to Dashboard</a>
+        </header>
+
+        <section class="grid">
+            {% for section in sections %}
+            <article class="card">
+                <span class="badge">Section</span>
+                <h2 class="title">{{ section.name }}</h2>
+                <p class="desc">Open pie-chart insights and identify top-performing categories across time ranges.</p>
+                <div class="cta">
+                    <a class="btn" href="/admin-dashboard/analytics/visualization/{{ section.slug }}/">Show Visualization</a>
+                </div>
+            </article>
+            {% empty %}
+            <article class="card">
+                <h2 class="title">No section found</h2>
+                <p class="desc">Please add sections from admin before using visualization.</p>
+            </article>
+            {% endfor %}
+        </section>
+    </main>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

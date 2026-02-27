@@ -1,0 +1,597 @@
+from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from django.http import Http404
+from django.db.models import Q
+from django.db import transaction
+from django.contrib.postgres.search import SearchQuery, SearchRank
+from django.views.generic import TemplateView
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.files.storage import default_storage
+from django.utils.text import get_valid_filename
+from django.core.cache import cache
+from django.conf import settings
+from .models import Advertisement, Product, Section, Category, ProductViewLog
+from .services import ProductService
+from .forms import AdminAdvertisementForm, AdminProductCreateForm
+from .tasks import process_product_image_upload_task
+from .serializers import (
+    ProductSerializer,
+    ProductCardSerializer,
+    SectionSerializer,
+    CategorySerializer,
+    ProductViewLogSerializer,
+    RelatedProductSerializer,
+)
+
+
+class StorefrontHomeView(TemplateView):
+    template_name = "products/storefront_home.html"
+    OFFER_SLOTS = (1, 2, 3)
+
+    @classmethod
+    def _active_ads_by_slot(cls):
+        slot_ads = {}
+        field_names = (
+            "id",
+            "title",
+            "subtitle",
+            "image",
+            "cta_label",
+            "cta_url",
+            "display_order",
+        )
+
+        queryset = Advertisement.objects.filter(
+            is_active=True,
+            display_order__in=cls.OFFER_SLOTS,
+        ).only(*field_names).order_by("display_order", "-created_at")
+
+        for ad in queryset:
+            slot_ads.setdefault(ad.display_order, ad)
+            if len(slot_ads) == len(cls.OFFER_SLOTS):
+                break
+
+        if len(slot_ads) < len(cls.OFFER_SLOTS):
+            selected_ids = [ad.id for ad in slot_ads.values()]
+            fallback_qs = Advertisement.objects.filter(is_active=True).exclude(
+                id__in=selected_ids
+            ).only(*field_names).order_by("-created_at")
+            empty_slots = [slot for slot in cls.OFFER_SLOTS if slot not in slot_ads]
+            for slot, ad in zip(empty_slots, fallback_qs):
+                slot_ads[slot] = ad
+
+        return [slot_ads[slot] for slot in cls.OFFER_SLOTS if slot in slot_ads]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["ads"] = self._active_ads_by_slot()
+        return context
+
+
+class StorefrontSectionView(TemplateView):
+    template_name = "products/storefront_section.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        section = self.kwargs["section_name"].strip().lower()
+        if section not in {"bakery", "snacks"}:
+            raise Http404("Section not found")
+        context["section_name"] = section
+        context["section_title"] = section.title()
+        return context
+
+
+class BillingPageView(TemplateView):
+    template_name = "products/billing.html"
+
+
+class CustomerOrderDetailsPageView(TemplateView):
+    template_name = "products/order_details.html"
+
+
+class CheckoutPageView(TemplateView):
+    template_name = "products/checkout.html"
+
+
+class BuyProductPageView(TemplateView):
+    template_name = "products/buy_product.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["product_id"] = self.kwargs["product_id"]
+        return context
+
+
+class LatencyDashboardView(TemplateView):
+    template_name = "products/latency_dashboard.html"
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class AdminProductSectionSelectView(TemplateView):
+    template_name = "products/admin_product_section_select.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["sections"] = Section.objects.order_by("name")
+        return context
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class AdminProductCreateView(TemplateView):
+    template_name = "products/admin_product_add.html"
+
+    def _resolve_section(self):
+        return get_object_or_404(Section.objects.only("id", "name"), id=self.kwargs["section_id"])
+
+    @staticmethod
+    def _load_related_flag(request):
+        return (request.GET.get("load_related") or request.POST.get("load_related") or "").strip() == "1"
+
+    def _build_form(self, section, data=None, files=None, load_related=False):
+        options = ProductService.admin_form_options(section.id, load_related=load_related)
+        return AdminProductCreateForm(
+            data,
+            files,
+            section=section,
+            category_queryset=options["categories"],
+            related_choices=options["related"],
+            load_related=load_related,
+        )
+
+    @staticmethod
+    def _save_temp_upload(uploaded_file):
+        safe_name = get_valid_filename(uploaded_file.name or "upload.bin")
+        temp_path = f"tmp/product_uploads/{safe_name}"
+        return default_storage.save(temp_path, uploaded_file)
+
+    def get(self, request, *args, **kwargs):
+        section = self._resolve_section()
+        load_related = self._load_related_flag(request)
+        form = self._build_form(section, load_related=load_related)
+        return self.render_to_response(
+            {
+                "section": section,
+                "form": form,
+                "created": request.GET.get("created") == "1",
+                "product_name": request.GET.get("product_name", ""),
+                "load_related": load_related,
+            }
+        )
+
+    def post(self, request, *args, **kwargs):
+        section = self._resolve_section()
+        load_related = self._load_related_flag(request)
+        form = self._build_form(section, request.POST, request.FILES, load_related=load_related)
+        if form.is_valid():
+            uploaded_image = form.cleaned_data.get("image")
+            temp_path = None
+            if uploaded_image is not None:
+                temp_path = self._save_temp_upload(uploaded_image)
+
+            product = form.save(commit=False)
+            if temp_path:
+                # Save product first; attach image asynchronously in background.
+                product.image = ""
+            product.save()
+            form.save_m2m()
+
+            if temp_path:
+                transaction.on_commit(
+                    lambda: process_product_image_upload_task.delay(product.id, temp_path)
+                )
+
+            fresh_form = self._build_form(section, load_related=load_related)
+            return self.render_to_response(
+                {
+                    "section": section,
+                    "form": fresh_form,
+                    "created": True,
+                    "product_name": product.name,
+                    "load_related": load_related,
+                }
+            )
+
+        return self.render_to_response(
+            {
+                "section": section,
+                "form": form,
+                "created": False,
+                "product_name": "",
+                "load_related": load_related,
+            }
+        )
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class AdminStockTrackerView(TemplateView):
+    template_name = "products/admin_stock_tracker.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["sections"] = Section.objects.only("id", "name").order_by("name")
+        return context
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class AdminAdvertisingManageView(TemplateView):
+    template_name = "products/admin_advertising_manage.html"
+    OFFER_SLOTS = (1, 2, 3)
+
+    def _latest_ads_by_slot(self):
+        slot_ads = {}
+        field_names = (
+            "id",
+            "title",
+            "subtitle",
+            "image",
+            "cta_label",
+            "cta_url",
+            "display_order",
+            "is_active",
+        )
+
+        queryset = Advertisement.objects.filter(
+            display_order__in=self.OFFER_SLOTS
+        ).only(*field_names).order_by("display_order", "-created_at")
+
+        for ad in queryset:
+            slot_ads.setdefault(ad.display_order, ad)
+            if len(slot_ads) == len(self.OFFER_SLOTS):
+                break
+
+        if len(slot_ads) < len(self.OFFER_SLOTS):
+            selected_ids = [ad.id for ad in slot_ads.values()]
+            fallback_qs = Advertisement.objects.exclude(id__in=selected_ids).only(
+                *field_names
+            ).order_by("-created_at")
+            empty_slots = [slot for slot in self.OFFER_SLOTS if slot not in slot_ads]
+            for slot, ad in zip(empty_slots, fallback_qs):
+                slot_ads[slot] = ad
+
+        return slot_ads
+
+    def _build_slot_forms(self, post_data=None, files_data=None):
+        slot_ads = self._latest_ads_by_slot()
+        slot_forms = []
+        for slot in self.OFFER_SLOTS:
+            prefix = f"slot_{slot}"
+            instance = slot_ads.get(slot)
+            form = AdminAdvertisementForm(
+                post_data,
+                files_data,
+                instance=instance,
+                prefix=prefix,
+            )
+            form.initial["display_order"] = slot
+            form.fields["display_order"].initial = slot
+            slot_forms.append({"slot": slot, "form": form, "ad": instance})
+        return slot_forms
+
+    @staticmethod
+    def _slot_has_input(slot, post_data, files_data):
+        prefix = f"slot_{slot}"
+        for name in ("title", "subtitle", "cta_label", "cta_url"):
+            if (post_data.get(f"{prefix}-{name}") or "").strip():
+                return True
+        return bool(files_data.get(f"{prefix}-image"))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["slot_forms"] = kwargs.get("slot_forms") or self._build_slot_forms()
+        context["saved"] = kwargs.get("saved", False)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        action = (request.POST.get("action") or "save_slots").strip().lower()
+        if action != "save_slots":
+            return self.render_to_response(self.get_context_data())
+
+        slot_forms = self._build_slot_forms(request.POST, request.FILES)
+        rendered_slot_forms = []
+        has_errors = False
+        saved_any = False
+
+        for slot_entry in slot_forms:
+            slot = slot_entry["slot"]
+            form = slot_entry["form"]
+            instance = slot_entry["ad"]
+
+            if instance is None and not self._slot_has_input(slot, request.POST, request.FILES):
+                blank_form = AdminAdvertisementForm(prefix=f"slot_{slot}")
+                blank_form.initial["display_order"] = slot
+                blank_form.fields["display_order"].initial = slot
+                rendered_slot_forms.append({"slot": slot, "form": blank_form, "ad": None})
+                continue
+
+            if form.is_valid():
+                ad = form.save(commit=False)
+                ad.display_order = slot
+                ad.save()
+                saved_any = True
+                rendered_slot_forms.append({"slot": slot, "form": form, "ad": ad})
+            else:
+                has_errors = True
+                rendered_slot_forms.append(slot_entry)
+
+        if has_errors:
+            return self.render_to_response(self.get_context_data(slot_forms=rendered_slot_forms))
+
+        return self.render_to_response(
+            self.get_context_data(
+                slot_forms=self._build_slot_forms(),
+                saved=saved_any,
+            )
+        )
+
+
+class AdminStockListAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        section_key = (request.GET.get("section") or "").strip().lower()
+        products = Product.objects.select_related("category", "category__section").only(
+            "id",
+            "name",
+            "stock_qty",
+            "is_available",
+            "price",
+            "category__id",
+            "category__name",
+            "category__section__name",
+        )
+
+        if section_key:
+            if section_key in {"bakery", "backery"}:
+                products = products.filter(category__section__name__in=["Bakery", "Backery"])
+            elif section_key in {"snacks", "snack"}:
+                products = products.filter(category__section__name__in=["Snacks", "Snack"])
+            elif section_key.isdigit():
+                products = products.filter(category__section_id=int(section_key))
+            else:
+                products = products.filter(category__section__name__icontains=section_key)
+
+        products = products.order_by("category__section__name", "category__name", "name")
+        payload = [
+            {
+                "id": product.id,
+                "name": product.name,
+                "category": product.category.name,
+                "section": product.category.section.name,
+                "price": str(product.price),
+                "stock_qty": product.stock_qty,
+                "is_available": product.is_available,
+            }
+            for product in products
+        ]
+        return Response({"items": payload})
+
+
+class AdminStockUpdateAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        try:
+            product_id = int(request.data.get("product_id"))
+            stock_qty = int(request.data.get("stock_qty"))
+        except (TypeError, ValueError):
+            return Response({"detail": "product_id and stock_qty must be valid integers"}, status=400)
+
+        if stock_qty < 0:
+            return Response({"detail": "stock_qty cannot be negative"}, status=400)
+
+        product = get_object_or_404(Product, pk=product_id)
+        product.stock_qty = stock_qty
+        product.is_available = stock_qty > 0
+        product.save(update_fields=["stock_qty", "is_available"])
+
+        return Response(
+            {
+                "id": product.id,
+                "stock_qty": product.stock_qty,
+                "is_available": product.is_available,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+# 🧁 List all Sections (Bakery, Snacks)
+@method_decorator(cache_page(60), name='dispatch')
+class SectionListAPIView(generics.ListAPIView):
+    queryset = Section.objects.all()
+    serializer_class = SectionSerializer
+    pagination_class = None
+
+
+# 🍞 Categories by Section
+@method_decorator(cache_page(60), name='dispatch')
+class CategoryBySectionAPIView(generics.ListAPIView):
+    serializer_class = CategorySerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        section_id = self.kwargs['section_id']
+        return Category.objects.filter(section_id=section_id).order_by("name")
+
+
+@method_decorator(cache_page(60), name='dispatch')
+class CategoryCardAPIView(APIView):
+    """
+    Returns lightweight category cards by section name.
+    Uses case-insensitive section filtering.
+    """
+
+    def get(self, request):
+        section = request.GET.get("section", "").strip()
+        if not section:
+            return Response({"detail": "section query param is required"}, status=400)
+
+        if settings.USE_LAYERED_ARCHITECTURE:
+            return Response(ProductService.category_cards(section))
+
+        section_key = section.lower()
+        cache_key = f"products:category_cards:v4:{section_key}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+
+        if section_key in {"snack", "snacks"}:
+            category_filter = Q(section__name__in=["Snacks", "Snack"])
+        elif section_key in {"bakery", "backery"}:
+            category_filter = Q(section__name__in=["Bakery", "Backery"])
+        else:
+            category_filter = Q(section__name__icontains=section)
+
+        categories = Category.objects.select_related("section").filter(category_filter).order_by("name")
+
+        data = [
+            {
+                "id": category.id,
+                "name": category.name,
+                "section": category.section.name,
+            }
+            for category in categories
+        ]
+        cache.set(cache_key, data, 120 if not data else 600)
+        return Response(data)
+
+
+# 🍩 Products by Category
+@method_decorator(cache_page(300), name='dispatch')
+class ProductByCategoryAPIView(generics.ListAPIView):
+    serializer_class = ProductCardSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        category_id = self.kwargs['category_id']
+        if settings.USE_LAYERED_ARCHITECTURE:
+            return ProductService.products_by_category(category_id)
+
+        products = (
+            Product.objects.select_related("category", "category__section")
+            .only(
+                "id",
+                "name",
+                "description",
+                "price",
+                "stock_qty",
+                "is_available",
+                "image",
+                "category__id",
+                "category__name",
+                "category__section__name",
+            )
+            .filter(category_id=category_id)
+            .order_by("-created_at", "name")
+        )
+
+        # log unavailable views
+        return products
+
+
+@method_decorator(cache_page(300), name='dispatch')
+class ProductBySectionAPIView(generics.ListAPIView):
+    serializer_class = ProductCardSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        section_id = self.kwargs['section_id']
+        if settings.USE_LAYERED_ARCHITECTURE:
+            return ProductService.products_by_section(section_id)
+
+        return (
+            Product.objects.select_related("category", "category__section")
+            .only(
+                "id",
+                "name",
+                "description",
+                "price",
+                "stock_qty",
+                "is_available",
+                "image",
+                "category__id",
+                "category__name",
+                "category__section__name",
+            )
+            .filter(category__section_id=section_id)
+            .order_by("-created_at", "name")
+        )
+
+#single product details
+class ProductDetailAPIView(generics.RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # 🚨 Log ONLY when product is unavailable
+        if not instance.is_available:
+            ProductViewLog.objects.create(product=instance)
+
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+class ProductSearchAPIView(APIView):
+    @method_decorator(cache_page(120))
+    def get(self, request):
+        query = request.GET.get('q', '')
+
+        if not query:
+            return Response([])
+
+        if settings.USE_LAYERED_ARCHITECTURE:
+            products = ProductService.search(query)
+            serializer = ProductCardSerializer(products, many=True, context={'request': request})
+            return Response(serializer.data)
+
+        search_query = SearchQuery(query)
+        products = Product.objects.select_related("category", "category__section").annotate(
+            rank=SearchRank("search_vector", search_query)
+        ).filter(
+            rank__gte=0.05
+        ).order_by("-rank", "name")
+
+        if not products.exists():
+            products = Product.objects.select_related("category", "category__section").filter(
+                Q(name__icontains=query)
+                | Q(description__icontains=query)
+                | Q(category__name__icontains=query)
+                | Q(category__section__name__icontains=query)
+            ).distinct().order_by('name')
+
+        serializer = ProductCardSerializer(products, many=True, context={'request': request})
+        return Response(serializer.data)
+
+class ProductViewLogCreateAPIView(generics.CreateAPIView):
+    serializer_class = ProductViewLogSerializer
+
+    def perform_create(self, serializer):
+        product = serializer.validated_data['product']
+        serializer.save(product=product)
+
+
+class RelatedProductAPIView(generics.ListAPIView):
+    serializer_class = RelatedProductSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        product_id = self.kwargs["pk"]
+        product = get_object_or_404(
+            Product.objects.select_related("category").prefetch_related("related_products"),
+            pk=product_id,
+        )
+
+        explicit_related = product.related_products.filter(is_available=True)
+        if explicit_related.exists():
+            return explicit_related.select_related("category", "category__section")
+
+        return Product.objects.filter(
+            category=product.category,
+            is_available=True,
+        ).exclude(pk=product.pk).select_related("category", "category__section")[:8]

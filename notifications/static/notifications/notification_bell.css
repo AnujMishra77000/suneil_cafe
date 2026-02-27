@@ -1,0 +1,236 @@
+.thn-root {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 12000;
+    font-family: "Sora", Arial, sans-serif;
+}
+
+.thn-btn {
+    width: 48px;
+    height: 48px;
+    border: 0;
+    border-radius: 999px;
+    background: #5a2e16;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.thn-btn:hover {
+    transform: translateY(-1px);
+}
+
+.thn-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    padding: 0 5px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 20px;
+    text-align: center;
+    border: 2px solid #fff;
+}
+
+.thn-panel {
+    display: none;
+    width: min(95vw, 420px);
+    max-height: min(72vh, 620px);
+    margin-top: 10px;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e6e9ee;
+    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.2);
+    overflow: hidden;
+}
+
+.thn-panel.open {
+    display: block;
+}
+
+.thn-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 12px 10px;
+    border-bottom: 1px solid #eef2f6;
+}
+
+.thn-head h3 {
+    margin: 0;
+    font-size: 15px;
+    color: #1f2937;
+}
+
+.thn-mark-all {
+    border: 1px solid #d0d5dd;
+    border-radius: 7px;
+    background: #fff;
+    color: #1f2937;
+    padding: 6px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.thn-mark-all:hover {
+    background: #f8fafc;
+}
+
+.thn-list {
+    overflow: auto;
+    max-height: min(62vh, 560px);
+    background: #fff;
+}
+
+.thn-item {
+    border-bottom: 1px solid #eef2f6;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.thn-item:hover {
+    background: #f8fafc;
+}
+
+.thn-item.unread {
+    background: #fff7ed;
+}
+
+.thn-item-title {
+    margin: 0 0 4px;
+    font-size: 13px;
+    color: #111827;
+    font-weight: 800;
+}
+
+.thn-item-time {
+    margin: 0 0 8px;
+    color: #6b7280;
+    font-size: 11px;
+}
+
+.thn-receipt {
+    border: 1px solid #e6e9ee;
+    border-radius: 10px;
+    background: #fff;
+    padding: 8px;
+}
+
+.thn-meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 6px;
+    font-size: 12px;
+    color: #475467;
+}
+
+.thn-meta-row strong {
+    color: #111827;
+    font-weight: 700;
+}
+
+.thn-products {
+    border-top: 1px dashed #e5e7eb;
+    border-bottom: 1px dashed #e5e7eb;
+    padding: 7px 0;
+    margin: 6px 0;
+}
+
+.thn-product {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.thn-product:last-child {
+    margin-bottom: 0;
+}
+
+.thn-product-name {
+    font-size: 12px;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.thn-product-meta {
+    font-size: 12px;
+    color: #334155;
+    text-align: right;
+}
+
+.thn-item-msg {
+    margin: 6px 0 0;
+    color: #334155;
+    white-space: pre-line;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.thn-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.thn-action-btn {
+    display: inline-block;
+    text-decoration: none;
+    background: #5a2e16;
+    color: #fff;
+    border: 1px solid #5a2e16;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.thn-action-btn:hover {
+    background: #4a2512;
+    border-color: #4a2512;
+}
+
+.thn-empty {
+    padding: 16px 12px;
+    color: #667085;
+    font-size: 13px;
+}
+
+.thn-empty button {
+    margin-top: 8px;
+    border: 1px solid #d0d5dd;
+    border-radius: 7px;
+    background: #fff;
+    padding: 6px 9px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+@media (max-width: 700px) {
+    .thn-root {
+        right: 10px;
+        top: 10px;
+    }
+
+    .thn-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .thn-panel {
+        width: min(96vw, 390px);
+    }
+}

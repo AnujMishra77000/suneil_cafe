@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buy Product | Thathwamasi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'products/buy_product.css' %}" />
+    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260224-1" />
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body data-product-id="{{ product_id }}">
+    <div class="customer-menu" data-customer-menu>
+        <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
+        <nav class="customer-menu-panel" data-menu-panel>
+            <a href="/">Home</a>
+            <a href="/bakery/">Bakery</a>
+            <a href="/snacks/">Snacks</a>
+            <a href="/order-details/">Order Details</a>
+        </nav>
+    </div>
+
+    <main class="buy-wrap">
+        <a href="javascript:history.back()" class="back-link">Back</a>
+        <section class="buy-card" id="buyCard">
+            <div id="stateText" class="state">Loading product...</div>
+        </section>
+    </main>
+    <script src="{% static 'products/buy_product.js' %}"></script>
+    <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({
+                mode: "USER",
+                storageKey: "thathwamasi_checkout_phone",
+                resolveIdentifier: function () {
+                    return (
+                        localStorage.getItem("thathwamasi_checkout_phone") ||
+                        localStorage.getItem("thathwamasi_cart_phone") ||
+                        ""
+                    ).trim();
+                },
+            });
+        }
+    </script>
+</body>
+</html>

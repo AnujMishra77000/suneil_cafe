@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales Analytics | Thathwamasi Admin</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:#f3f5f7;color:#1f2937}
+        .wrap{max-width:1200px;margin:0 auto;padding:20px}
+        .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+        h1{margin:0;color:#5a2e16}
+        .subtitle{margin:6px 0 0;color:#667085;font-size:13px}
+        .btn{display:inline-block;text-decoration:none;padding:9px 12px;border-radius:8px;border:1px solid #d8dee6;background:#fff;color:#23272f;font-weight:600}
+        .btn-primary{background:#5a2e16;color:#fff;border-color:#5a2e16}
+        .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}
+        .stat{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(16,24,40,.06)}
+        .stat label{display:block;font-size:12px;color:#667085;margin-bottom:6px}
+        .stat .value{font-size:30px;font-weight:800;color:#5a2e16}
+        .section{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(16,24,40,.06);margin-top:14px}
+        .section h2{margin:0 0 12px;color:#111827}
+        .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+        .card{display:block;text-decoration:none;border:1px solid #e8edf3;border-radius:10px;padding:12px;background:#f8fafc;color:#1f2937;transition:transform .16s ease,box-shadow .16s ease}
+        .card:hover{transform:translateY(-2px);box-shadow:0 10px 18px rgba(15,23,42,.08)}
+        .card .title{font-weight:800;color:#5a2e16}
+        .card .meta{margin-top:5px;font-size:12px;color:#667085}
+        table{width:100%;border-collapse:collapse}
+        th,td{border-bottom:1px solid #edf1f5;padding:10px 8px;text-align:left;font-size:13px}
+        th{background:#f8fafc;color:#334155}
+        .empty{padding:12px;color:#667085}
+        .filters{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(16,24,40,.06);margin-top:14px}
+        .filters .row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+        .field{display:flex;flex-direction:column;gap:6px}
+        .field label{font-size:12px;color:#667085}
+        .field input,.field select{padding:8px 10px;border:1px solid #d8dee6;border-radius:8px;min-width:170px;background:#fff}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <header class="top">
+            <div>
+                <h1>Sales Analytics</h1>
+                <p class="subtitle">Selected window: {{ window_start|date:"Y-m-d H:i" }} to {{ window_end|date:"Y-m-d H:i" }}</p>
+            </div>
+            <div>
+                <a class="btn" href="/admin-dashboard/">Dashboard</a>
+                <a class="btn" href="/admin-dashboard/analytics/visualization/">Visualization</a>
+                <a class="btn btn-primary" href="/api/orders/admin/dashboard/export/sales-summary-today/?{{ query_string }}">Download Summary CSV</a>
+            </div>
+        </header>
+
+        <section class="filters">
+            <form method="get" class="row" id="range-form">
+                <div class="field">
+                    <label>Range</label>
+                    <select name="range" id="range-select">
+                        <option value="daily" {% if range_key == "daily" %}selected{% endif %}>Daily</option>
+                        <option value="weekly" {% if range_key == "weekly" %}selected{% endif %}>Weekly</option>
+                        <option value="monthly" {% if range_key == "monthly" %}selected{% endif %}>Monthly</option>
+                        <option value="custom" {% if range_key == "custom" %}selected{% endif %}>Custom</option>
+                    </select>
+                </div>
+                <div class="field" id="date-field">
+                    <label>Date (for Daily/Weekly/Monthly)</label>
+                    <input type="date" name="date" value="{{ date_input }}" />
+                </div>
+                <div class="field" id="start-field">
+                    <label>Start Date (Custom)</label>
+                    <input type="date" name="start_date" value="{{ start_date_input }}" />
+                </div>
+                <div class="field" id="end-field">
+                    <label>End Date (Custom)</label>
+                    <input type="date" name="end_date" value="{{ end_date_input }}" />
+                </div>
+                <button class="btn btn-primary" type="submit">Apply</button>
+            </form>
+        </section>
+
+        <section class="stats">
+            <article class="stat">
+                <label>Total Sales Earning</label>
+                <div class="value">Rs {{ total_earning }}</div>
+            </article>
+            <article class="stat">
+                <label>Total Quantity Sold</label>
+                <div class="value">{{ total_items }}</div>
+            </article>
+            <article class="stat">
+                <label>Total Sales Entries</label>
+                <div class="value">{{ total_entries }}</div>
+            </article>
+        </section>
+
+        <section class="section">
+            <h2>A) Category Buttons</h2>
+            <div class="cards">
+                {% for item in categories %}
+                <a class="card" href="/admin-dashboard/analytics/category/{{ item.id }}/?{{ query_string }}">
+                    <div class="title">{{ item.name }}</div>
+                    <div class="meta">Section: {{ item.section }}</div>
+                    <div class="meta">Qty: {{ item.total_qty }}</div>
+                    <div class="meta">Sales: Rs {{ item.total_amount }}</div>
+                </a>
+                {% empty %}
+                <div class="empty">No categories available.</div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>B) Category Wise Sales Records</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Section</th>
+                        <th>Sold Quantity</th>
+                        <th>Total Amount</th>
+                        <th>View</th>
+                        <th>Download</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in categories %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.section }}</td>
+                        <td>{{ item.total_qty }}</td>
+                        <td>Rs {{ item.total_amount }}</td>
+                        <td><a class="btn" href="/admin-dashboard/analytics/category/{{ item.id }}/?{{ query_string }}">View</a></td>
+                        <td><a class="btn" href="/api/orders/admin/dashboard/export/sales-category/{{ item.id }}/?{{ query_string }}">CSV</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="empty">No category data available.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <script>
+        const rangeSelect = document.getElementById("range-select");
+        const dateField = document.getElementById("date-field");
+        const startField = document.getElementById("start-field");
+        const endField = document.getElementById("end-field");
+
+        function toggleFields() {
+            const isCustom = rangeSelect.value === "custom";
+            dateField.style.display = isCustom ? "none" : "flex";
+            startField.style.display = isCustom ? "flex" : "none";
+            endField.style.display = isCustom ? "flex" : "none";
+        }
+
+        rangeSelect.addEventListener("change", toggleFields);
+        toggleFields();
+    </script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | Thathwamasi</title>
+    <link rel="stylesheet" href="{% static 'orders/admin_dashboard.css' %}" />
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <header class="top">
+            <h1>Thathwamasi Admin Dashboard</h1>
+            <a href="/admin/" class="btn">Django Admin</a>
+        </header>
+
+        <section class="quick-cards quick-cards--two">
+            <a class="quick-link" href="/admin-dashboard/order-details/">
+                <h2>Order Details</h2>
+                <p>Open live order detail table with customer and product fields.</p>
+            </a>
+            <a class="quick-link" href="/admin-dashboard/billing/">
+                <h2>Billing</h2>
+                <p>See all bills with product quantity, price, total and address details.</p>
+            </a>
+            <a class="quick-link" href="/admin-dashboard/analytics/">
+                <h2>Analytics</h2>
+                <p>Track total sales and category-wise performance from 6:00 AM to 11:59 PM.</p>
+            </a>
+            <a class="quick-link" href="/admin-dashboard/analytics/visualization/">
+                <h2>Sales Visualization</h2>
+                <p>View pie-chart insights by section with daily, weekly, monthly and yearly toggles.</p>
+            </a>
+            <a class="quick-link" href="/admin-dashboard/products/add/">
+                <h2>Add Product</h2>
+                <p>Select section, choose category, and add product details with image and stock.</p>
+            </a>
+            <a class="quick-link" href="/admin-dashboard/stock/">
+                <h2>Stock Tracker</h2>
+                <p>Track live stock by section/category/product and update quantity instantly.</p>
+            </a>
+            <a class="quick-link" href="/admin-dashboard/advertising/">
+                <h2>Advertising</h2>
+                <p>Add dynamic ad cards with image and stylish overlay text for homepage display.</p>
+            </a>
+            <a class="quick-link" href="/admin-dashboard/pincodes/">
+                <h2>Pincode Manager</h2>
+                <p>Add and manage serviceable delivery pincodes used for order validation.</p>
+            </a>
+        </section>
+    </main>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

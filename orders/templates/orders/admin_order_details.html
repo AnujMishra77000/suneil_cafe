@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Order Details | Admin</title>
+    <link rel="stylesheet" href="{% static 'orders/admin_dashboard.css' %}" />
+    <style>
+        .table-wrap{background:#fff;border:1px solid #e1e4e8;border-radius:12px;padding:12px;overflow:auto}
+        table{width:100%;border-collapse:collapse;min-width:1140px}
+        th,td{border:1px solid #eceff2;padding:8px;text-align:left;font-size:13px;vertical-align:top}
+        th{background:#f8fafc;color:#374151}
+        .title-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+        .title-row h1{margin:0;color:#5a2e16;font-size:26px}
+        .search-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 12px}
+        .search-input{padding:8px 10px;border:1px solid #d8dee6;border-radius:8px;min-width:260px}
+        .hint{font-size:12px;color:#667085;margin:0 0 10px}
+        .btn-light{background:#fff;color:#1f2937;border:1px solid #d8dee6;border-radius:8px;padding:8px 12px;text-decoration:none}
+        .feedback-msg{max-width:280px;white-space:normal;line-height:1.35}
+        .muted{color:#94a3b8}
+        .star-rating{color:#b45309;font-weight:700;letter-spacing:1px}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <div class="title-row">
+            <h1>Customer Order Details</h1>
+            <a href="/admin-dashboard/" class="btn">Back to Dashboard</a>
+        </div>
+
+        <form method="get" class="search-row">
+            <input
+                type="text"
+                name="phone"
+                value="{{ query_phone }}"
+                class="search-input"
+                placeholder="Search by mobile number"
+                autocomplete="off"
+            />
+            <button class="btn" type="submit">Search</button>
+            <a class="btn-light" href="/admin-dashboard/order-details/">Clear</a>
+        </form>
+
+        <p class="hint">Latest orders are shown first. Search by mobile number to get first-time and repeat customer details.</p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Phone Number</th>
+                        <th>Customer Address</th>
+                        <th>Product Name</th>
+                        <th>Product Quantity</th>
+                        <th>Product Price</th>
+                        <th>Total Price</th>
+                        <th>Order Date & Time</th>
+                        <th>Rating</th>
+                        <th>Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in rows %}
+                    <tr>
+                        <td>{{ item.order.customer_name }}</td>
+                        <td>{{ item.order.phone }}</td>
+                        <td>{{ item.order.shipping_address }}</td>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price }}</td>
+                        <td>{{ item.order.total_price }}</td>
+                        <td>{{ item.order.created_at|date:"Y-m-d H:i:s" }}</td>
+                        <td>
+                            {% if item.order.feedback and item.order.feedback.rating %}
+                                <span class="star-rating">
+                                {% if item.order.feedback.rating == 1 %}★☆☆☆☆{% elif item.order.feedback.rating == 2 %}★★☆☆☆{% elif item.order.feedback.rating == 3 %}★★★☆☆{% elif item.order.feedback.rating == 4 %}★★★★☆{% else %}★★★★★{% endif %}
+                                </span>
+                                <span class="muted">({{ item.order.feedback.rating }}/5)</span>
+                            {% else %}
+                                <span class="muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="feedback-msg">
+                            {% if item.order.feedback and item.order.feedback.message %}
+                                {{ item.order.feedback.message }}
+                            {% else %}
+                                <span class="muted">No feedback</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10">No order data found for this mobile number.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

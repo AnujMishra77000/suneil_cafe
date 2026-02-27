@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bill {{ bill.bill_number }} | Thathwamasi</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#1f2937}
+        .wrap{max-width:980px;margin:20px auto;padding:0 16px}
+        .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+        .toolbar-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+        .btn{display:inline-block;text-decoration:none;padding:8px 12px;border-radius:8px;border:1px solid #d0d5dd;background:#fff;color:#1f2937;font-weight:600;cursor:pointer}
+        .btn-primary{background:#5a2e16;border-color:#5a2e16;color:#fff}
+        .btn-danger{background:#b42318;border-color:#b42318;color:#fff}
+        .btn:disabled{opacity:.55;cursor:not-allowed}
+        .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;box-shadow:0 8px 20px rgba(15,23,42,.08)}
+        .heading{text-align:center;margin-bottom:14px}
+        .heading h1{margin:0;color:#5a2e16;font-size:32px;letter-spacing:.5px}
+        .heading p{margin:4px 0 0;color:#6b7280}
+        .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;margin:14px 0 16px}
+        .label{font-size:12px;color:#6b7280;display:block;margin-bottom:2px}
+        .value{font-weight:700;color:#111827}
+        .value.address{font-weight:600;line-height:1.4}
+        .status-pill{display:inline-block;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;border:1px solid transparent}
+        .status-active{background:#ecfdf3;color:#027a48;border-color:#abefc6}
+        .status-cancelled{background:#fef3f2;color:#b42318;border-color:#fecdca}
+        table{width:100%;border-collapse:collapse;margin-top:12px}
+        th,td{padding:10px 8px;border-bottom:1px solid #edf1f5;text-align:left;font-size:13px}
+        th{background:#f8fafc;color:#334155}
+        .total{margin-top:14px;text-align:right;font-size:20px;font-weight:800;color:#5a2e16}
+        @media (max-width: 760px){.grid{grid-template-columns:1fr}}
+        @media print {.toolbar{display:none}body{background:#fff}.wrap{max-width:none;margin:0;padding:0}.card{border:none;box-shadow:none;border-radius:0}}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <div class="toolbar">
+            <a class="btn" href="/admin-dashboard/billing/">Back to Billing</a>
+            <div class="toolbar-actions">
+                <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/edit/">Edit Bill</a>
+                <button
+                    id="cancel-bill-btn"
+                    class="btn btn-danger"
+                    type="button"
+                    data-bill-id="{{ bill.id }}"
+                    {% if is_cancelled %}disabled{% endif %}
+                >
+                    Cancel Bill
+                </button>
+                <a class="btn btn-primary" href="/api/orders/admin/dashboard/bills/{{ bill.id }}/download/">Download</a>
+                <button class="btn" onclick="window.print()" type="button">Print</button>
+            </div>
+        </div>
+
+        <section class="card">
+            <header class="heading">
+                <h1>Thathwamasi</h1>
+                <p>Billing Invoice</p>
+            </header>
+
+            <div class="grid">
+                <div>
+                    <span class="label">Bill Number</span>
+                    <div class="value">{{ bill.bill_number }}</div>
+                </div>
+                <div>
+                    <span class="label">Created At</span>
+                    <div class="value">{{ bill.created_at|date:"Y-m-d H:i" }}</div>
+                </div>
+                <div>
+                    <span class="label">Name of Customer</span>
+                    <div class="value">{{ bill.customer_name }}</div>
+                </div>
+                <div>
+                    <span class="label">Phone Number of Customer</span>
+                    <div class="value">{{ bill.phone }}</div>
+                </div>
+                <div>
+                    <span class="label">Bill Status</span>
+                    <div class="value">
+                        {% if is_cancelled %}
+                        <span class="status-pill status-cancelled">Cancelled</span>
+                        {% else %}
+                        <span class="status-pill status-active">{{ bill.order.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <span class="label">Address of Customer</span>
+                    <div class="value address">{{ bill.shipping_address }}</div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Line Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in item_rows %}
+                    <tr>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>Rs {{ item.unit_price }}</td>
+                        <td>Rs {{ item.unit_price }} x {{ item.quantity }} = Rs {{ item.line_total }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="total">Total Price: Rs {{ bill.total_amount }}</div>
+        </section>
+    </main>
+
+    <script>
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return '';
+        }
+
+        async function cancelBill(billId, button) {
+            const confirmed = window.confirm('Cancel this bill? Stock for all items in this order will be restored.');
+            if (!confirmed) return;
+
+            button.disabled = true;
+            try {
+                const csrfToken = getCookie('csrftoken');
+                const resp = await fetch(`/api/orders/admin/dashboard/bills/${billId}/cancel/`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: '{}',
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    button.disabled = false;
+                    window.alert(data.detail || 'Unable to cancel bill.');
+                    return;
+                }
+                window.alert(data.detail || 'Bill cancelled successfully.');
+                window.location.reload();
+            } catch (err) {
+                button.disabled = false;
+                window.alert('Unable to cancel bill right now. Please try again.');
+            }
+        }
+
+        const cancelButton = document.getElementById('cancel-bill-btn');
+        if (cancelButton) {
+            cancelButton.addEventListener('click', () => {
+                const billId = cancelButton.getAttribute('data-bill-id');
+                if (!billId) return;
+                cancelBill(billId, cancelButton);
+            });
+        }
+    </script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thathwamasi | Order Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'products/order_details.css' %}?v=20260224-1" />
+    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260224-1" />
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <div class="customer-menu" data-customer-menu>
+        <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
+        <nav class="customer-menu-panel" data-menu-panel>
+            <a href="/">Home</a>
+            <a href="/bakery/">Bakery</a>
+            <a href="/snacks/">Snacks</a>
+            <a href="/order-details/">Order Details</a>
+        </nav>
+    </div>
+
+    <main class="page">
+        <header class="topbar">
+            <a class="back-link" href="/">Back to Home</a>
+            <h1>Order Details</h1>
+            <p>View all your previous orders and submit feedback per order.</p>
+        </header>
+
+        <section class="control-panel">
+            <div class="control-row">
+                <input id="orderPhoneInput" class="phone-input" placeholder="Enter mobile number" autocomplete="off" />
+                <button id="loadOrdersBtn" class="load-btn" type="button">Load Orders</button>
+            </div>
+            <p id="pageStatus" class="page-status"></p>
+        </section>
+
+        <section id="ordersList" class="orders-wrap">
+            <div class="empty-block">Enter phone number to load your orders.</div>
+        </section>
+    </main>
+
+    <div id="feedbackModal" class="feedback-modal hidden" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+        <div class="feedback-modal-card">
+            <h3 id="feedbackTitle">Feedback</h3>
+            <form id="feedbackForm" class="feedback-form">
+                <label>
+                    Rating
+                    <select id="feedbackRating">
+                        <option value="">Select rating</option>
+                        <option value="1">1 Star</option>
+                        <option value="2">2 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="5">5 Stars</option>
+                    </select>
+                </label>
+                <label>
+                    Feedback Message
+                    <textarea id="feedbackMessage" placeholder="Write your feedback for this order" required></textarea>
+                </label>
+                <p id="feedbackStatus" class="feedback-inline-status"></p>
+                <div class="feedback-form-actions">
+                    <button id="feedbackCancelBtn" class="feedback-cancel-btn" type="button">Cancel</button>
+                    <button class="feedback-submit-btn" type="submit">Submit Feedback</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'products/order_details.js' %}?v=20260224-1"></script>
+    <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({
+                mode: "USER",
+                storageKey: "thathwamasi_checkout_phone",
+                resolveIdentifier: function () {
+                    return (
+                        localStorage.getItem("thathwamasi_checkout_phone") ||
+                        localStorage.getItem("thathwamasi_cart_phone") ||
+                        ""
+                    ).trim();
+                },
+            });
+        }
+    </script>
+</body>
+</html>

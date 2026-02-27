@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Product | Select Section</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#1f2937}
+        .wrap{max-width:1000px;margin:0 auto;padding:22px}
+        .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+        .top h1{margin:0;color:#5a2e16}
+        .btn{display:inline-block;text-decoration:none;padding:9px 12px;border-radius:8px;border:1px solid #d8dee6;background:#fff;color:#1f2937;font-weight:700}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:16px}
+        .card{background:#fff;border:1px solid #e6e9ee;border-radius:14px;padding:16px;box-shadow:0 8px 18px rgba(15,23,42,.08)}
+        .card h2{margin:0;color:#5a2e16;font-size:26px}
+        .card p{margin:10px 0;color:#6b7280;font-size:13px}
+        .cta{margin-top:12px}
+        .cta .btn{background:#5a2e16;color:#fff;border-color:#5a2e16}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <header class="top">
+            <h1>Add Product - Select Section</h1>
+            <a class="btn" href="/admin-dashboard/">Back to Dashboard</a>
+        </header>
+
+        <section class="grid">
+            {% for section in sections %}
+            <article class="card">
+                <h2>{{ section.name }}</h2>
+                <p>Select this section, then choose category and add product details.</p>
+                <div class="cta">
+                    <a class="btn" href="/admin-dashboard/products/add/{{ section.id }}/">Continue</a>
+                </div>
+            </article>
+            {% empty %}
+            <article class="card">
+                <h2>No Section Found</h2>
+                <p>Please add at least one section from Django admin first.</p>
+            </article>
+            {% endfor %}
+        </section>
+    </main>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

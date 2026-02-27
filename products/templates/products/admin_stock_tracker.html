@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Tracker | Thathwamasi Admin</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#1f2937}
+        .wrap{max-width:1200px;margin:0 auto;padding:20px}
+        .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+        h1{margin:0;color:#5a2e16}
+        .sub{margin:6px 0 0;color:#667085;font-size:13px}
+        .btn{display:inline-block;text-decoration:none;padding:8px 12px;border-radius:8px;border:1px solid #d8dee6;background:#fff;color:#1f2937;font-weight:700;cursor:pointer}
+        .btn-primary{background:#5a2e16;color:#fff;border-color:#5a2e16}
+        .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0}
+        .table-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:auto}
+        table{border-collapse:collapse;width:100%;min-width:980px}
+        th,td{padding:10px 8px;border-bottom:1px solid #edf1f5;text-align:left;font-size:13px}
+        th{background:#f8fafc;color:#334155}
+        .status{font-weight:700}
+        .in{color:#067647}
+        .out{color:#b42318}
+        .qty-input{width:90px;padding:6px 8px;border:1px solid #d8dee6;border-radius:8px}
+        .empty{padding:14px;color:#667085;text-align:center}
+        .meta{margin:8px 0 12px;color:#667085;font-size:12px}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <header class="top">
+            <div>
+                <h1>Stock Tracker</h1>
+                <p class="sub">Live quantity tracker by section/category/product. Auto-refresh every 20 seconds.</p>
+            </div>
+            <a class="btn" href="/admin-dashboard/">Back to Dashboard</a>
+        </header>
+
+        <div class="toolbar">
+            <button class="btn btn-primary" data-section="">All</button>
+            {% for section in sections %}
+            <button class="btn" data-section="{{ section.name|lower }}">{{ section.name }}</button>
+            {% endfor %}
+            <button class="btn" id="refreshBtn">Refresh</button>
+        </div>
+
+        <div class="meta">Last updated: <span id="lastUpdated">never</span></div>
+
+        <section class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Section</th>
+                        <th>Category</th>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Current Stock</th>
+                        <th>Status</th>
+                        <th>Update Quantity</th>
+                        <th>Save</th>
+                    </tr>
+                </thead>
+                <tbody id="stockBody">
+                    <tr><td colspan="8" class="empty">Loading...</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        const stockBody = document.getElementById("stockBody");
+        const refreshBtn = document.getElementById("refreshBtn");
+        const lastUpdated = document.getElementById("lastUpdated");
+        let selectedSection = "";
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return "";
+        }
+
+        function esc(value) {
+            return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+        }
+
+        function rowTemplate(item) {
+            const status = item.is_available ? '<span class="status in">In Stock</span>' : '<span class="status out">Out of Stock</span>';
+            return `
+                <tr data-product-id="${item.id}">
+                    <td>${esc(item.section)}</td>
+                    <td>${esc(item.category)}</td>
+                    <td>${esc(item.name)}</td>
+                    <td>Rs ${esc(item.price)}</td>
+                    <td class="current-stock">${esc(item.stock_qty)}</td>
+                    <td class="stock-status">${status}</td>
+                    <td><input class="qty-input" type="number" min="0" value="${esc(item.stock_qty)}" /></td>
+                    <td><button class="btn save-btn">Update</button></td>
+                </tr>
+            `;
+        }
+
+        async function loadStocks() {
+            try {
+                const qs = selectedSection ? `?section=${encodeURIComponent(selectedSection)}` : "";
+                const resp = await fetch(`/api/products/admin/stock/${qs}`, { credentials: "same-origin" });
+                if (!resp.ok) throw new Error("Failed to load stock");
+                const data = await resp.json();
+                const items = data.items || [];
+                if (!items.length) {
+                    stockBody.innerHTML = '<tr><td colspan="8" class="empty">No products found.</td></tr>';
+                } else {
+                    stockBody.innerHTML = items.map(rowTemplate).join("");
+                }
+                lastUpdated.textContent = new Date().toLocaleString();
+            } catch (err) {
+                stockBody.innerHTML = '<tr><td colspan="8" class="empty">Unable to load stock tracker data.</td></tr>';
+            }
+        }
+
+        async function updateStock(row) {
+            const productId = Number(row.dataset.productId);
+            const input = row.querySelector(".qty-input");
+            const stockQty = Number(input.value);
+            if (!Number.isFinite(stockQty) || stockQty < 0) {
+                alert("Enter a valid non-negative quantity.");
+                return;
+            }
+
+            const btn = row.querySelector(".save-btn");
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+            try {
+                const resp = await fetch("/api/products/admin/stock/update/", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    body: JSON.stringify({ product_id: productId, stock_qty: stockQty }),
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || "Update failed");
+
+                row.querySelector(".current-stock").textContent = data.stock_qty;
+                row.querySelector(".stock-status").innerHTML = data.is_available
+                    ? '<span class="status in">In Stock</span>'
+                    : '<span class="status out">Out of Stock</span>';
+            } catch (err) {
+                alert(err.message || "Unable to update stock");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Update";
+            }
+        }
+
+        document.querySelectorAll("[data-section]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll("[data-section]").forEach((b) => b.classList.remove("btn-primary"));
+                btn.classList.add("btn-primary");
+                selectedSection = btn.dataset.section || "";
+                loadStocks();
+            });
+        });
+
+        stockBody.addEventListener("click", (event) => {
+            const btn = event.target.closest(".save-btn");
+            if (!btn) return;
+            const row = event.target.closest("tr[data-product-id]");
+            if (!row) return;
+            updateStock(row);
+        });
+
+        refreshBtn.addEventListener("click", loadStocks);
+        setInterval(loadStocks, 20000);
+        loadStocks();
+    </script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

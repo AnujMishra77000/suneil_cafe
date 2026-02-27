@@ -1,0 +1,38 @@
+{
+  "runserver": {
+    "window_start_utc": "2026-02-27T05:49:30+00:00",
+    "window_end_utc": "2026-02-27T06:00:59+00:00",
+    "phone_prefix": "5",
+    "place_order_requests_recorded": 884,
+    "place_order_failures_recorded": 442,
+    "orders_created_including_drain": 451,
+    "order_creation_vs_recorded_place_req_pct": 51.0181,
+    "orders_status": {
+      "Placed": 451
+    },
+    "notifications_total": 902,
+    "orders_with_user_notification": 451,
+    "orders_with_admin_notification": 451,
+    "orders_with_both_notifications": 451,
+    "notification_coverage_user_pct": 100.0,
+    "notification_coverage_admin_pct": 100.0
+  },
+  "gunicorn": {
+    "window_start_utc": "2026-02-27T05:57:35+00:00",
+    "window_end_utc": "2026-02-27T06:09:02+00:00",
+    "phone_prefix": "6",
+    "place_order_requests_recorded": 55,
+    "place_order_failures_recorded": 0,
+    "orders_created_including_drain": 297,
+    "order_creation_vs_recorded_place_req_pct": 540.0,
+    "orders_status": {
+      "Placed": 297
+    },
+    "notifications_total": 594,
+    "orders_with_user_notification": 297,
+    "orders_with_admin_notification": 297,
+    "orders_with_both_notifications": 297,
+    "notification_coverage_user_pct": 100.0,
+    "notification_coverage_admin_pct": 100.0
+  }
+}

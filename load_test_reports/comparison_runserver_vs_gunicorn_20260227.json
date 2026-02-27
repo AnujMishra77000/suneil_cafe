@@ -1,0 +1,98 @@
+{
+  "runserver": {
+    "report_dir": "/Users/anujmishra/Desktop/Thathwamasi/e_com/core/load_test_reports/20260227_111929",
+    "locust": {
+      "requests": 66548,
+      "failures": 1445,
+      "error_rate_pct": 2.1714,
+      "avg_ms": 6573.923492367457,
+      "p95_ms": 27000.0,
+      "p99_ms": 86000.0,
+      "rps": 170.88014830988377,
+      "cart_add_requests": 1511,
+      "cart_add_failures": 332,
+      "cart_place_requests": 884,
+      "cart_place_failures": 442,
+      "notification_unread_requests": 443,
+      "notification_feed_requests": 442
+    },
+    "sla": {
+      "overall_pass": false,
+      "failed_checks": [
+        "max_avg_ms",
+        "max_p95_ms",
+        "max_p99_ms",
+        "critical_p95:/api/products/category-cards/",
+        "critical_p95:/api/products/categories/[id]/products/",
+        "critical_p95:/api/cart/view/",
+        "critical_p95:/api/cart/add/",
+        "critical_p95:/api/cart/place/"
+      ]
+    },
+    "execution_integrity": {
+      "orders_created_for_prefix": 451,
+      "order_status_breakdown": {
+        "Placed": 451
+      },
+      "place_order_requests": 884,
+      "order_creation_ratio_vs_place_requests_pct": 51.0181,
+      "notifications_total_for_test_orders": 902,
+      "orders_with_user_notification": 451,
+      "orders_with_admin_notification": 451,
+      "orders_with_both_notifications": 451,
+      "orders_missing_user_notification": 0,
+      "orders_missing_admin_notification": 0,
+      "notification_coverage_pct_user": 100.0,
+      "notification_coverage_pct_admin": 100.0
+    }
+  },
+  "gunicorn": {
+    "report_dir": "/Users/anujmishra/Desktop/Thathwamasi/e_com/core/load_test_reports/20260227_112734",
+    "locust": {
+      "requests": 5297,
+      "failures": 1,
+      "error_rate_pct": 0.0189,
+      "avg_ms": 65254.0982525814,
+      "p95_ms": 220000.0,
+      "p99_ms": 302000.0,
+      "rps": 13.621204038523555,
+      "cart_add_requests": 623,
+      "cart_add_failures": 0,
+      "cart_place_requests": 55,
+      "cart_place_failures": 0,
+      "notification_unread_requests": 69,
+      "notification_feed_requests": 55
+    },
+    "sla": {
+      "overall_pass": false,
+      "failed_checks": [
+        "min_requests",
+        "max_avg_ms",
+        "max_p95_ms",
+        "max_p99_ms",
+        "min_rps",
+        "critical_p95:/api/products/category-cards/",
+        "critical_p95:/api/products/categories/[id]/products/",
+        "critical_p95:/api/cart/view/",
+        "critical_p95:/api/cart/add/",
+        "critical_p95:/api/cart/place/"
+      ]
+    },
+    "execution_integrity": {
+      "orders_created_for_prefix": 236,
+      "order_status_breakdown": {
+        "Placed": 236
+      },
+      "place_order_requests": 55,
+      "order_creation_ratio_vs_place_requests_pct": 429.0909,
+      "notifications_total_for_test_orders": 472,
+      "orders_with_user_notification": 236,
+      "orders_with_admin_notification": 236,
+      "orders_with_both_notifications": 236,
+      "orders_missing_user_notification": 0,
+      "orders_missing_admin_notification": 0,
+      "notification_coverage_pct_user": 100.0,
+      "notification_coverage_pct_admin": 100.0
+    }
+  }
+}

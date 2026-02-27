@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advertising | Admin Dashboard</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#1f2937}
+        .wrap{max-width:1200px;margin:0 auto;padding:22px}
+        .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+        .top h1{margin:0;color:#5a2e16}
+        .sub{margin:6px 0 0;color:#6b7280;font-size:13px}
+        .btn{display:inline-block;text-decoration:none;padding:9px 12px;border-radius:8px;border:1px solid #d8dee6;background:#fff;color:#1f2937;font-weight:700;cursor:pointer}
+        .btn-primary{background:#5a2e16;color:#fff;border-color:#5a2e16}
+        .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px;box-shadow:0 8px 20px rgba(15,23,42,.08);margin-top:14px}
+        .ok{background:#ecfdf3;border:1px solid #abefc6;color:#067647;padding:10px;border-radius:10px;margin-bottom:12px}
+        .slot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+        .slot-card{border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#fcfcfd}
+        .slot-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+        .slot-head h3{margin:0;color:#5a2e16;font-size:17px}
+        .badge{font-size:11px;padding:4px 8px;border-radius:999px;font-weight:700;border:1px solid #d8dee6;background:#fff;color:#334155}
+        .badge-on{background:#ecfdf3;border-color:#abefc6;color:#067647}
+        .badge-off{background:#fef3f2;border-color:#fecdca;color:#b42318}
+        .preview{height:130px;border-radius:10px;overflow:hidden;background:#0f172a;margin-bottom:10px}
+        .preview img{width:100%;height:100%;object-fit:cover;display:block}
+        .preview-empty{display:flex;align-items:center;justify-content:center;background:#f1f5f9;color:#64748b;font-size:12px}
+        .field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+        .field label{font-size:13px;font-weight:700;color:#334155}
+        .field input{padding:9px 10px;border:1px solid #d8dee6;border-radius:8px;font-size:14px;background:#fff}
+        .field input[type="file"]{padding:7px;background:#fff}
+        .field-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+        .errors{color:#b42318;font-size:12px;line-height:1.35;margin-top:4px}
+        .actions-row{display:flex;justify-content:flex-end;margin-top:12px}
+        @media (max-width: 1024px){.slot-grid{grid-template-columns:1fr 1fr}}
+        @media (max-width: 700px){.slot-grid{grid-template-columns:1fr}}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <header class="top">
+            <div>
+                <h1>Advertising Section</h1>
+                <p class="sub">Manage exactly 3 offer cards. Save updates for all cards in one click.</p>
+            </div>
+            <div>
+                <a class="btn" href="/admin-dashboard/">Back to Dashboard</a>
+            </div>
+        </header>
+
+        <section class="card">
+            {% if saved %}<div class="ok">Offer cards saved successfully.</div>{% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save_slots" />
+
+                <div class="slot-grid">
+                    {% for slot_entry in slot_forms %}
+                    {% with slot=slot_entry.slot form=slot_entry.form ad=slot_entry.ad %}
+                    <article class="slot-card">
+                        <div class="slot-head">
+                            <h3>Offer Card {{ slot }}</h3>
+                            {% if ad %}
+                                <span class="badge {% if ad.is_active %}badge-on{% else %}badge-off{% endif %}">{% if ad.is_active %}ACTIVE{% else %}INACTIVE{% endif %}</span>
+                            {% else %}
+                                <span class="badge">EMPTY</span>
+                            {% endif %}
+                        </div>
+
+                        {% if ad and ad.image %}
+                            <div class="preview"><img src="{{ ad.image.url }}" alt="Offer {{ slot }}" /></div>
+                        {% else %}
+                            <div class="preview preview-empty">No image uploaded yet</div>
+                        {% endif %}
+
+                        <div class="field">
+                            <label for="{{ form.title.id_for_label }}">Title</label>
+                            {{ form.title }}
+                            <div class="errors">{{ form.title.errors }}</div>
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.subtitle.id_for_label }}">Subtitle</label>
+                            {{ form.subtitle }}
+                            <div class="errors">{{ form.subtitle.errors }}</div>
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.image.id_for_label }}">Image</label>
+                            {{ form.image }}
+                            <div class="errors">{{ form.image.errors }}</div>
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.cta_label.id_for_label }}">Button Text</label>
+                            {{ form.cta_label }}
+                            <div class="errors">{{ form.cta_label.errors }}</div>
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.cta_url.id_for_label }}">Button URL</label>
+                            {{ form.cta_url }}
+                            <div class="errors">{{ form.cta_url.errors }}</div>
+                        </div>
+
+                        <div class="field-row">
+                            <label for="{{ form.is_active.id_for_label }}" style="font-size:13px;font-weight:700;color:#334155;">Active Offer</label>
+                            {{ form.is_active }}
+                        </div>
+                        <div class="errors">{{ form.is_active.errors }}</div>
+
+                        <input type="hidden" name="{{ form.display_order.html_name }}" value="{{ slot }}" />
+                        <div class="errors">{{ form.display_order.errors }}</div>
+                    </article>
+                    {% endwith %}
+                    {% endfor %}
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" type="submit">Save 3 Offer Cards</button>
+                </div>
+            </form>
+        </section>
+    </main>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

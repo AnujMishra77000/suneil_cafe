@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ section.name }} Visualization | Thathwamasi Admin</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#f8f2ea,#f8fafc);color:#1f2937}
+        .wrap{max-width:1200px;margin:0 auto;padding:22px}
+        .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+        h1{margin:0;color:#5a2e16;font-size:32px}
+        .sub{margin:7px 0 0;color:#6b7280}
+        .btn{display:inline-block;text-decoration:none;padding:9px 12px;border-radius:9px;border:1px solid #d8dee6;background:#fff;color:#1f2937;font-weight:700}
+        .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+        .toolbar form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+        .toolbar input{padding:8px 10px;border:1px solid #d8dee6;border-radius:8px;background:#fff}
+        .periods{display:flex;gap:8px;flex-wrap:wrap}
+        .period{display:inline-block;padding:8px 12px;border:1px solid #d8dee6;border-radius:999px;background:#fff;color:#374151;text-decoration:none;font-weight:700}
+        .period.active{background:#5a2e16;color:#fff;border-color:#5a2e16}
+        .headline{margin-top:14px;padding:12px 14px;background:#fff;border:1px solid #eadfce;border-radius:12px;color:#5a2e16;font-weight:800;box-shadow:0 8px 18px rgba(90,46,22,.08)}
+        .layout{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;margin-top:14px}
+        .panel{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;box-shadow:0 10px 20px rgba(15,23,42,.07)}
+        .panel h2{margin:0 0 8px;color:#111827}
+        .chart-img{width:100%;height:auto;border:1px solid #eef2f6;border-radius:10px;background:#fff}
+        .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
+        .stat{border:1px solid #eceff3;border-radius:10px;padding:10px;background:#f8fafc}
+        .stat label{display:block;font-size:12px;color:#667085}
+        .stat .val{display:block;margin-top:4px;font-size:20px;font-weight:800;color:#5a2e16}
+        .list{max-height:420px;overflow:auto}
+        .row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #eef2f6}
+        .row .name{font-weight:700;color:#334155}
+        .row .meta{font-size:12px;color:#667085}
+        @media (max-width: 980px){.layout{grid-template-columns:1fr}}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <header class="top">
+            <div>
+                <h1>{{ section.name }} Sales Visualization</h1>
+                <p class="sub">Window: {{ window_start|date:"Y-m-d H:i" }} to {{ window_end|date:"Y-m-d H:i" }}</p>
+            </div>
+            <a class="btn" href="/admin-dashboard/analytics/visualization/">Change Section</a>
+        </header>
+
+        <div class="toolbar">
+            <div class="periods">
+                <a class="period {% if period == 'daily' %}active{% endif %}" href="?period=daily&date={{ date_input }}">Daily</a>
+                <a class="period {% if period == 'weekly' %}active{% endif %}" href="?period=weekly&date={{ date_input }}">Weekly</a>
+                <a class="period {% if period == 'monthly' %}active{% endif %}" href="?period=monthly&date={{ date_input }}">Monthly</a>
+                <a class="period {% if period == 'yearly' %}active{% endif %}" href="?period=yearly&date={{ date_input }}">Yearly</a>
+            </div>
+            <form method="get">
+                <input type="hidden" name="period" value="{{ period }}" />
+                <input type="date" name="date" value="{{ date_input }}" />
+                <button class="btn" type="submit">Apply Date</button>
+            </form>
+        </div>
+
+        <div class="headline">{{ top_headline }}</div>
+
+        <section class="layout">
+            <article class="panel">
+                <h2>Category Share (%)</h2>
+                <img class="chart-img" src="{{ chart_image_url }}" alt="Category sales pie chart" />
+            </article>
+
+            <article class="panel">
+                <div class="stats">
+                    <div class="stat">
+                        <label>Total Sales Amount</label>
+                        <span class="val">Rs {{ total_amount }}</span>
+                    </div>
+                    <div class="stat">
+                        <label>Total Quantity Sold</label>
+                        <span class="val">{{ total_qty }}</span>
+                    </div>
+                </div>
+                <h2>Category Breakdown</h2>
+                <div class="list">
+                    {% for row in category_cards %}
+                    <div class="row">
+                        <div>
+                            <div class="name">{{ row.category }}</div>
+                            <div class="meta">Qty: {{ row.qty }}</div>
+                        </div>
+                        <div>
+                            <div class="name">{{ row.pct }}%</div>
+                            <div class="meta">Rs {{ row.amount }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="row">
+                        <div class="name">No sales data for this range.</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </article>
+        </section>
+    </main>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>

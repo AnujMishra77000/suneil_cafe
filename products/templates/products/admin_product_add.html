@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Product | {{ section.name }}</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#1f2937}
+        .wrap{max-width:980px;margin:0 auto;padding:22px}
+        .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+        .top h1{margin:0;color:#5a2e16}
+        .top p{margin:4px 0 0;color:#6b7280;font-size:13px}
+        .btn{display:inline-block;text-decoration:none;padding:9px 12px;border-radius:8px;border:1px solid #d8dee6;background:#fff;color:#1f2937;font-weight:700}
+        .card{margin-top:14px;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px;box-shadow:0 8px 20px rgba(15,23,42,.08)}
+        .ok{background:#ecfdf3;border:1px solid #abefc6;color:#067647;padding:10px;border-radius:10px;margin-bottom:12px}
+        .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+        .field{display:flex;flex-direction:column;gap:6px}
+        .field label{font-size:13px;font-weight:700;color:#334155}
+        .field input,.field textarea,.field select{padding:9px 10px;border:1px solid #d8dee6;border-radius:8px;font-size:14px}
+        .field.full{grid-column:1/-1}
+        .errors{color:#b42318;font-size:12px;line-height:1.35}
+        .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+        .btn-primary{background:#5a2e16;color:#fff;border-color:#5a2e16}
+        @media (max-width: 760px){.grid{grid-template-columns:1fr}}
+    </style>
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+</head>
+<body>
+    <main class="wrap">
+        <header class="top">
+            <div>
+                <h1>Add Product</h1>
+                <p>Section: <strong>{{ section.name }}</strong> | Categories are filtered by this section.</p>
+            </div>
+            <div>
+                <a class="btn" href="/admin-dashboard/products/add/">Change Section</a>
+                <a class="btn" href="/admin-dashboard/">Dashboard</a>
+            </div>
+        </header>
+
+        <section class="card">
+            {% if created %}
+            <div class="ok">Product <strong>{{ product_name }}</strong> added successfully.</div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="load_related" value="{% if load_related %}1{% else %}0{% endif %}" />
+
+                {% if form.non_field_errors %}
+                <div class="errors">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="grid">
+                    <div class="field">
+                        <label for="id_name">Product Name</label>
+                        {{ form.name }}
+                        <div class="errors">{{ form.name.errors }}</div>
+                    </div>
+
+                    <div class="field">
+                        <label for="id_category">Category</label>
+                        {{ form.category }}
+                        <div class="errors">{{ form.category.errors }}</div>
+                    </div>
+
+                    <div class="field">
+                        <label for="id_price">Price</label>
+                        {{ form.price }}
+                        <div class="errors">{{ form.price.errors }}</div>
+                    </div>
+
+                    <div class="field">
+                        <label for="id_stock_qty">Stock Quantity</label>
+                        {{ form.stock_qty }}
+                        <div class="errors">{{ form.stock_qty.errors }}</div>
+                    </div>
+
+                    <div class="field full">
+                        <label for="id_image">Product Image</label>
+                        {{ form.image }}
+                        <div class="errors">{{ form.image.errors }}</div>
+                    </div>
+
+                    <div class="field full">
+                        <label for="id_description">Description</label>
+                        {{ form.description }}
+                        <div class="errors">{{ form.description.errors }}</div>
+                    </div>
+
+                    <div class="field full">
+                        <label>Related Products (Optional)</label>
+                        {% if not load_related %}
+                        <div style="font-size:12px;color:#667085;margin-bottom:6px;">
+                            Fast mode is enabled. Related products are not loaded.
+                            <a href="?load_related=1" style="font-weight:700;color:#5a2e16;">Load related products</a>
+                        </div>
+                        {% elif form.related_products %}
+                        <div style="font-size:12px;color:#667085;margin-bottom:6px;">
+                            Showing recent related products from this section.
+                            <a href="?load_related=0" style="font-weight:700;color:#5a2e16;">Hide for fast mode</a>
+                        </div>
+                        {{ form.related_products }}
+                        <div class="errors">{{ form.related_products.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-primary" type="submit">Add Product</button>
+                    <a class="btn" href="/admin-dashboard/products/add/{{ section.id }}/?load_related={% if load_related %}1{% else %}0{% endif %}">Reset</a>
+                </div>
+            </form>
+        </section>
+    </main>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script>
+        if (window.ThathwamasiNotifications) {
+            window.ThathwamasiNotifications.mount({ mode: "ADMIN" });
+        }
+    </script>
+</body>
+</html>
