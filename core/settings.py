@@ -246,9 +246,7 @@ else:
         "TIMEOUT": int(os.getenv("CACHE_TIMEOUT", "120")),
     }
 
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+
 ADMIN_PHONE = os.getenv("ADMIN_PHONE", "")
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "")
 CART_DEBUG_TOKEN = os.getenv("CART_DEBUG_TOKEN", "")
