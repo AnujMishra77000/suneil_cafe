@@ -1,20 +1,22 @@
-from django.db import models
 from django.core.exceptions import ValidationError
-from users.models import Customer
+from django.db import models
+
 from products.models import Product
+from users.models import Customer
 
 
 class Order(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, db_index=True)
     customer_name = models.CharField(max_length=200, blank=True, default="")
-    phone = models.CharField(max_length=20, blank=True, default="")
+    phone = models.CharField(max_length=20, blank=True, default="", db_index=True)
     shipping_address = models.TextField(blank=True, default="")
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
-    status = models.CharField(max_length=50, default='Placed')
-    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50, default="Placed", db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         indexes = [
+            models.Index(fields=["customer", "created_at"]),
             models.Index(fields=["phone", "created_at"]),
             models.Index(fields=["status", "created_at"]),
         ]
@@ -24,14 +26,16 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items", db_index=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["order", "product"], name="orders_unique_item_per_product"),
+        ]
         indexes = [
-            models.Index(fields=["order", "product"]),
             models.Index(fields=["product"]),
         ]
 
@@ -41,7 +45,7 @@ class OrderFeedback(models.Model):
     phone = models.CharField(max_length=20)
     rating = models.PositiveSmallIntegerField(blank=True, null=True)
     message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -66,13 +70,13 @@ class OrderFeedback(models.Model):
 class SMSLog(models.Model):
     phone_number = models.CharField(max_length=20)
     message = models.TextField()
-    status = models.CharField(max_length=20, default="PENDING")  
+    status = models.CharField(max_length=20, default="PENDING")
     # PENDING / SENT / FAILED
 
     error_message = models.TextField(blank=True, null=True)
     attempt_count = models.IntegerField(default=0)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     last_attempt_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -81,20 +85,20 @@ class SMSLog(models.Model):
 
 class Bill(models.Model):
     RECIPIENT_TYPE = (
-        ('USER', 'User'),
-        ('ADMIN', 'Admin'),
+        ("USER", "User"),
+        ("ADMIN", "Admin"),
     )
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='bills')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="bills", db_index=True)
     recipient_type = models.CharField(max_length=10, choices=RECIPIENT_TYPE)
     bill_number = models.CharField(max_length=50)
     customer_name = models.CharField(max_length=200)
-    phone = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20, db_index=True)
     shipping_address = models.TextField(blank=True, default="")
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
-        unique_together = ('order', 'recipient_type')
+        unique_together = ("order", "recipient_type")
         indexes = [
             models.Index(fields=["recipient_type", "created_at"]),
             models.Index(fields=["phone", "created_at"]),
@@ -105,19 +109,19 @@ class Bill(models.Model):
 
 
 class BillItem(models.Model):
-    bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='items')
+    bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name="items", db_index=True)
     product_name = models.CharField(max_length=200)
     quantity = models.PositiveIntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
 
 
 class SalesRecord(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="sales_records")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="sales_records", db_index=True)
     category = models.CharField(max_length=120)
     product_name = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField()
-    sold_at = models.DateTimeField(auto_now_add=True)
+    sold_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         indexes = [
@@ -134,7 +138,7 @@ class ServiceablePincode(models.Model):
     code = models.CharField(max_length=6, unique=True)
     area_name = models.CharField(max_length=150, blank=True, default="")
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

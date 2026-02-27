@@ -42,10 +42,11 @@ class NotificationFeedAPIView(NotificationRecipientMixin, PublicAPIView):
         limit = query_serializer.validated_data["limit"]
         since_id = query_serializer.validated_data.get("since_id")
 
-        qs = Notification.objects.filter(
+        # `select_related("order")` avoids per-notification FK fetches in serializer.
+        qs = Notification.objects.select_related("order").filter(
             recipient_type=recipient_type,
             recipient_identifier=recipient_identifier,
-        ).order_by("-id")
+        ).order_by("-created_at", "-id")
 
         if since_id:
             qs = qs.filter(id__gt=since_id)

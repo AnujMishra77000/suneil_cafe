@@ -16,7 +16,7 @@ class Notification(models.Model):
         ORDER_PLACED = "ORDER_PLACED", "Order Placed"
         ORDER_CONFIRMED = "ORDER_CONFIRMED", "Order Confirmed"
 
-    order = models.ForeignKey("orders.Order", on_delete=models.CASCADE)
+    order = models.ForeignKey("orders.Order", on_delete=models.CASCADE, db_index=True)
     recipient_type = models.CharField(
         max_length=10,
         choices=RecipientType.choices,
@@ -27,6 +27,7 @@ class Notification(models.Model):
         max_length=32,
         choices=EventType.choices,
         default=EventType.ORDER_PLACED,
+        db_index=True,
     )
     title = models.CharField(max_length=255)
     message = models.TextField()
@@ -35,14 +36,16 @@ class Notification(models.Model):
         max_length=10,
         choices=StatusChoices.choices,
         default=StatusChoices.CREATED,
+        db_index=True,
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_read = models.BooleanField(default=False)
+    is_read = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         indexes = [
             models.Index(fields=["recipient_type", "recipient_identifier", "is_read", "created_at"]),
+            models.Index(fields=["recipient_type", "recipient_identifier", "id"]),
             models.Index(fields=["order", "event_type", "recipient_type"]),
         ]
         ordering = ["-created_at", "-id"]

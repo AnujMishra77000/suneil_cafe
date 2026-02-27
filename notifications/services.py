@@ -147,18 +147,24 @@ def create_order_notifications(order, event_type=Notification.EventType.ORDER_PL
         },
     ]
 
+    recipient_pairs = {
+        (row["recipient_type"], row["recipient_identifier"])
+        for row in recipients
+        if row["recipient_identifier"]
+    }
+    existing_pairs = set(
+        Notification.objects.filter(
+            order=order,
+            event_type=event_type,
+            recipient_type__in=[pair[0] for pair in recipient_pairs] or [None],
+            recipient_identifier__in=[pair[1] for pair in recipient_pairs] or [None],
+        ).values_list("recipient_type", "recipient_identifier")
+    )
+
     created_rows = []
     for row in recipients:
-        if not row["recipient_identifier"]:
-            continue
-
-        exists = Notification.objects.filter(
-            order=order,
-            recipient_type=row["recipient_type"],
-            recipient_identifier=row["recipient_identifier"],
-            event_type=event_type,
-        ).exists()
-        if exists:
+        pair = (row["recipient_type"], row["recipient_identifier"])
+        if not row["recipient_identifier"] or pair in existing_pairs:
             continue
 
         created_rows.append(

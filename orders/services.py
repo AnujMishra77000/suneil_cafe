@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.db.models import F, Case, When, Value, BooleanField
+from products.cache_utils import invalidate_catalog_cache
 from products.models import Product
 from users.customer_resolver import resolve_primary_customer
 from .models import Order, OrderItem, Bill, BillItem, SalesRecord
@@ -28,7 +29,8 @@ def create_bills_for_order(order):
         shipping_address=order.shipping_address,
         total_amount=order.total_price,
     )
-    for item in order.items.all():
+    order_items = list(order.items.select_related("product").all())
+    for item in order_items:
         BillItem.objects.create(
             bill=user_bill,
             product_name=item.product.name,
@@ -140,6 +142,7 @@ def create_order(validated_data):
                     output_field=BooleanField(),
                 ),
             )
+        invalidate_catalog_cache()
         create_bills_for_order(order)
         create_sales_records_for_order(order)
         create_order_notifications(order, event_type='ORDER_PLACED')

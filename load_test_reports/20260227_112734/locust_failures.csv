@@ -1,2 +1,0 @@
-Method,Name,Error,Occurrences
-GET,/api/orders/history-by-phone/,"ConnectionResetError(54, 'Connection reset by peer')",1

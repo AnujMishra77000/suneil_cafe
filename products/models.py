@@ -1,9 +1,10 @@
-from django.db import models
-from django.contrib.postgres.search import SearchVectorField, SearchVector
 from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
+from django.db import models
+
 
 # this models is to store section (Bakery/Snacks)
-class Section(models.Model): 
+class Section(models.Model):
     class SectionType(models.TextChoices):
         BAKERY = "Bakery", "Bakery"
         SNACKS = "Snacks", "Snacks"
@@ -19,10 +20,11 @@ class Section(models.Model):
     def __str__(self):
         return self.name
 
-# category of product like Backery -> pav, khari, cacke, butter. Snacks -> dosa, idli, sambhar,medu_wada
+
+# category of product like Bakery -> pav, khari, cake, butter.
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='categories')
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="categories", db_index=True)
 
     class Meta:
         ordering = ["name"]
@@ -35,26 +37,24 @@ class Category(models.Model):
 
     def __str__(self):
         return f"{self.section.name} - {self.name}"
-    
-
-# products according to the Category
 
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="products", db_index=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock_qty = models.PositiveIntegerField(default=20)
-    is_available = models.BooleanField(default=True)
-    image = models.ImageField(upload_to='products/')
+    is_available = models.BooleanField(default=True, db_index=True)
+    image = models.ImageField(upload_to="products/")
     description = models.TextField(blank=True, null=True)
     search_vector = SearchVectorField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     related_products = models.ManyToManyField("self", blank=True, symmetrical=False)
 
     class Meta:
         indexes = [
-            GinIndex(fields=['search_vector']),
+            GinIndex(fields=["search_vector"]),
+            models.Index(fields=["category", "created_at"]),
             models.Index(fields=["category", "name"]),
             models.Index(fields=["category", "is_available"]),
             models.Index(fields=["is_available", "created_at"]),
@@ -70,10 +70,9 @@ class Product(models.Model):
         return self.name
 
 
-
 class ProductViewLog(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    viewed_at = models.DateTimeField(auto_now_add=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
+    viewed_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         indexes = [
@@ -92,7 +91,7 @@ class Advertisement(models.Model):
     cta_url = models.CharField(max_length=500, blank=True, default="")
     display_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         ordering = ["display_order", "-created_at"]

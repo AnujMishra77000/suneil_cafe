@@ -1,3 +1,19 @@
+# Environment and secrets
 .env
 .env.*
 !.env.example
+!.env.production.example
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Runtime and test artifacts
+media/
+load_test_reports/
+logs/
+db.sqlite3
+
+# Local tooling
+.DS_Store

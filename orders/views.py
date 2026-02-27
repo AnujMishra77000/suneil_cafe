@@ -30,6 +30,7 @@ from .models import Bill
 from .models import Order, OrderItem, OrderFeedback, BillItem, SalesRecord, ServiceablePincode
 from .serializers import OrderSerializer, OrderFeedbackWriteSerializer, BillSerializer
 from .services import create_order, create_order_from_cart
+from products.cache_utils import invalidate_catalog_cache
 from products.models import Category, Product, Section
 from users.customer_resolver import resolve_primary_customer
 from .pincode_service import normalize_pincode
@@ -103,7 +104,8 @@ class CustomerHistoryByPhoneAPIView(APIView):
             )
 
         orders = list(
-            Order.objects.filter(phone=phone)
+            # Use indexed customer FK and prefetch line items to avoid N+1 in history payload.
+            Order.objects.filter(customer_id=customer.id)
             .select_related("feedback")
             .prefetch_related("items__product")
             .order_by("-created_at")
@@ -630,6 +632,7 @@ class AdminBillCancelAPIView(APIView):
             order.status = "Cancelled"
             order.save(update_fields=["status"])
             SalesRecord.objects.filter(order_id=order.id).delete()
+            invalidate_catalog_cache()
 
         return Response(
             {

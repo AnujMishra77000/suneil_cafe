@@ -10,13 +10,13 @@ from django.db import transaction
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.files.storage import default_storage
 from django.utils.text import get_valid_filename
 from django.core.cache import cache
 from django.conf import settings
 from .models import Advertisement, Product, Section, Category, ProductViewLog
+from .cache_utils import catalog_cache_key, invalidate_catalog_cache
 from .services import ProductService
 from .forms import AdminAdvertisementForm, AdminProductCreateForm
 from .tasks import process_product_image_upload_task
@@ -36,6 +36,14 @@ class StorefrontHomeView(TemplateView):
 
     @classmethod
     def _active_ads_by_slot(cls):
+        cache_key = catalog_cache_key("home_ads")
+        cached_ids = cache.get(cache_key)
+        if cached_ids:
+            ordered_ids = [item["id"] for item in cached_ids]
+            ads_map = Advertisement.objects.in_bulk(ordered_ids)
+            if len(ads_map) == len(ordered_ids):
+                return [ads_map[ad_id] for ad_id in ordered_ids]
+
         slot_ads = {}
         field_names = (
             "id",
@@ -66,6 +74,8 @@ class StorefrontHomeView(TemplateView):
             for slot, ad in zip(empty_slots, fallback_qs):
                 slot_ads[slot] = ad
 
+        payload = [{"id": ad.id} for ad in [slot_ads[slot] for slot in cls.OFFER_SLOTS if slot in slot_ads]]
+        cache.set(cache_key, payload, 180)
         return [slot_ads[slot] for slot in cls.OFFER_SLOTS if slot in slot_ads]
 
     def get_context_data(self, **kwargs):
@@ -389,6 +399,7 @@ class AdminStockUpdateAPIView(APIView):
         product.stock_qty = stock_qty
         product.is_available = stock_qty > 0
         product.save(update_fields=["stock_qty", "is_available"])
+        invalidate_catalog_cache()
 
         return Response(
             {
@@ -401,25 +412,43 @@ class AdminStockUpdateAPIView(APIView):
 
 
 # 🧁 List all Sections (Bakery, Snacks)
-@method_decorator(cache_page(60), name='dispatch')
 class SectionListAPIView(generics.ListAPIView):
-    queryset = Section.objects.all()
     serializer_class = SectionSerializer
     pagination_class = None
 
+    def list(self, request, *args, **kwargs):
+        cache_key = catalog_cache_key("sections")
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+
+        queryset = Section.objects.only("id", "name").order_by("name")
+        payload = self.get_serializer(queryset, many=True).data
+        cache.set(cache_key, payload, 180)
+        return Response(payload)
+
 
 # 🍞 Categories by Section
-@method_decorator(cache_page(60), name='dispatch')
 class CategoryBySectionAPIView(generics.ListAPIView):
     serializer_class = CategorySerializer
     pagination_class = None
 
     def get_queryset(self):
-        section_id = self.kwargs['section_id']
-        return Category.objects.filter(section_id=section_id).order_by("name")
+        section_id = self.kwargs["section_id"]
+        return Category.objects.filter(section_id=section_id).only("id", "name", "section_id").order_by("name")
+
+    def list(self, request, *args, **kwargs):
+        section_id = self.kwargs["section_id"]
+        cache_key = catalog_cache_key("section_categories", section_id)
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+
+        payload = self.get_serializer(self.get_queryset(), many=True).data
+        cache.set(cache_key, payload, 180)
+        return Response(payload)
 
 
-@method_decorator(cache_page(60), name='dispatch')
 class CategoryCardAPIView(APIView):
     """
     Returns lightweight category cards by section name.
@@ -431,14 +460,16 @@ class CategoryCardAPIView(APIView):
         if not section:
             return Response({"detail": "section query param is required"}, status=400)
 
-        if settings.USE_LAYERED_ARCHITECTURE:
-            return Response(ProductService.category_cards(section))
-
         section_key = section.lower()
-        cache_key = f"products:category_cards:v4:{section_key}"
+        cache_key = catalog_cache_key("category_cards", section_key)
         cached = cache.get(cache_key)
         if cached is not None:
             return Response(cached)
+
+        if settings.USE_LAYERED_ARCHITECTURE:
+            data = ProductService.category_cards(section)
+            cache.set(cache_key, data, 180)
+            return Response(data)
 
         if section_key in {"snack", "snacks"}:
             category_filter = Q(section__name__in=["Snacks", "Snack"])
@@ -447,7 +478,12 @@ class CategoryCardAPIView(APIView):
         else:
             category_filter = Q(section__name__icontains=section)
 
-        categories = Category.objects.select_related("section").filter(category_filter).order_by("name")
+        categories = (
+            Category.objects.select_related("section")
+            .only("id", "name", "section__name")
+            .filter(category_filter)
+            .order_by("name")
+        )
 
         data = [
             {
@@ -457,22 +493,22 @@ class CategoryCardAPIView(APIView):
             }
             for category in categories
         ]
-        cache.set(cache_key, data, 120 if not data else 600)
+        cache.set(cache_key, data, 120 if not data else 300)
         return Response(data)
 
 
 # 🍩 Products by Category
-@method_decorator(cache_page(300), name='dispatch')
 class ProductByCategoryAPIView(generics.ListAPIView):
     serializer_class = ProductCardSerializer
     pagination_class = None
 
     def get_queryset(self):
-        category_id = self.kwargs['category_id']
+        category_id = self.kwargs["category_id"]
         if settings.USE_LAYERED_ARCHITECTURE:
             return ProductService.products_by_category(category_id)
 
-        products = (
+        # `select_related` prevents per-item FK fetches for category + section.
+        return (
             Product.objects.select_related("category", "category__section")
             .only(
                 "id",
@@ -490,20 +526,28 @@ class ProductByCategoryAPIView(generics.ListAPIView):
             .order_by("-created_at", "name")
         )
 
-        # log unavailable views
-        return products
+    def list(self, request, *args, **kwargs):
+        category_id = self.kwargs["category_id"]
+        cache_key = catalog_cache_key("category_products", category_id)
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+
+        payload = self.get_serializer(self.get_queryset(), many=True, context={"request": request}).data
+        cache.set(cache_key, payload, 180)
+        return Response(payload)
 
 
-@method_decorator(cache_page(300), name='dispatch')
 class ProductBySectionAPIView(generics.ListAPIView):
     serializer_class = ProductCardSerializer
     pagination_class = None
 
     def get_queryset(self):
-        section_id = self.kwargs['section_id']
+        section_id = self.kwargs["section_id"]
         if settings.USE_LAYERED_ARCHITECTURE:
             return ProductService.products_by_section(section_id)
 
+        # `select_related` keeps section/category joins in a single SQL query.
         return (
             Product.objects.select_related("category", "category__section")
             .only(
@@ -522,51 +566,72 @@ class ProductBySectionAPIView(generics.ListAPIView):
             .order_by("-created_at", "name")
         )
 
-#single product details
+    def list(self, request, *args, **kwargs):
+        section_id = self.kwargs["section_id"]
+        cache_key = catalog_cache_key("section_products", section_id)
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+
+        payload = self.get_serializer(self.get_queryset(), many=True, context={"request": request}).data
+        cache.set(cache_key, payload, 180)
+        return Response(payload)
+
+
+# single product details
 class ProductDetailAPIView(generics.RetrieveAPIView):
-    queryset = Product.objects.all()
+    queryset = Product.objects.select_related("category", "category__section").prefetch_related("related_products")
     serializer_class = ProductSerializer
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        # 🚨 Log ONLY when product is unavailable
+        # Log only when product is unavailable.
         if not instance.is_available:
             ProductViewLog.objects.create(product=instance)
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-class ProductSearchAPIView(APIView):
-    @method_decorator(cache_page(120))
-    def get(self, request):
-        query = request.GET.get('q', '')
 
+class ProductSearchAPIView(APIView):
+    def get(self, request):
+        query = (request.GET.get("q") or "").strip()
         if not query:
             return Response([])
 
+        cache_key = catalog_cache_key("search", query.lower()[:64])
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+
         if settings.USE_LAYERED_ARCHITECTURE:
             products = ProductService.search(query)
-            serializer = ProductCardSerializer(products, many=True, context={'request': request})
-            return Response(serializer.data)
+        else:
+            search_query = SearchQuery(query)
+            products = (
+                Product.objects.select_related("category", "category__section")
+                .annotate(rank=SearchRank("search_vector", search_query))
+                .filter(rank__gte=0.05)
+                .order_by("-rank", "name")
+            )
 
-        search_query = SearchQuery(query)
-        products = Product.objects.select_related("category", "category__section").annotate(
-            rank=SearchRank("search_vector", search_query)
-        ).filter(
-            rank__gte=0.05
-        ).order_by("-rank", "name")
+            if not products.exists():
+                products = (
+                    Product.objects.select_related("category", "category__section")
+                    .filter(
+                        Q(name__icontains=query)
+                        | Q(description__icontains=query)
+                        | Q(category__name__icontains=query)
+                        | Q(category__section__name__icontains=query)
+                    )
+                    .distinct()
+                    .order_by("name")
+                )
 
-        if not products.exists():
-            products = Product.objects.select_related("category", "category__section").filter(
-                Q(name__icontains=query)
-                | Q(description__icontains=query)
-                | Q(category__name__icontains=query)
-                | Q(category__section__name__icontains=query)
-            ).distinct().order_by('name')
-
-        serializer = ProductCardSerializer(products, many=True, context={'request': request})
-        return Response(serializer.data)
+        payload = ProductCardSerializer(products, many=True, context={"request": request}).data
+        cache.set(cache_key, payload, 120 if len(payload) < 10 else 180)
+        return Response(payload)
 
 class ProductViewLogCreateAPIView(generics.CreateAPIView):
     serializer_class = ProductViewLogSerializer

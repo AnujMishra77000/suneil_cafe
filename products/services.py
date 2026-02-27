@@ -1,4 +1,6 @@
 from django.core.cache import cache
+
+from .cache_utils import catalog_cache_key
 from .repositories import ProductRepository
 
 
@@ -6,14 +8,13 @@ class ProductService:
     @staticmethod
     def category_cards(section):
         section_key = (section or "").strip().lower()
-        cache_key = f"products:category_cards:v5:{section_key}"
+        cache_key = catalog_cache_key("category_cards", section_key)
         cached = cache.get(cache_key)
         if cached is not None:
             return cached
 
         data = ProductRepository.category_cards(section)
-        # Avoid long-lived blank caches.
-        cache.set(cache_key, data, 120 if not data else 600)
+        cache.set(cache_key, data, 120 if not data else 300)
         return data
 
     @staticmethod
@@ -33,7 +34,7 @@ class ProductService:
         categories = ProductRepository.admin_categories_by_section(section_id)
         related = []
         if load_related:
-            cache_key = f"products:admin_related:v1:{section_id}"
+            cache_key = catalog_cache_key("admin_related", section_id)
             cached = cache.get(cache_key)
             if cached is not None:
                 related = cached

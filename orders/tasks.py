@@ -1,12 +1,12 @@
 from celery import shared_task
-from .models import Order,SMSLog
+from .models import Order, SMSLog
 from .utils import build_customer_message, build_admin_message
 from .gateway import send_sms_via_twilio, send_whatsapp_via_twilio, send_email_notification
 from django.conf import settings
 
 @shared_task
 def send_order_notifications(order_id):
-    order = Order.objects.prefetch_related('items__product', 'customer').get(id=order_id)
+    order = Order.objects.select_related('customer').prefetch_related('items__product').get(id=order_id)
 
     customer_msg = build_customer_message(order)
     admin_msg = build_admin_message(order)

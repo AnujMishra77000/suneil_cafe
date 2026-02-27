@@ -3,6 +3,7 @@ from django.db.models import F, Case, When, Value, BooleanField
 from users.customer_resolver import merge_phone_carts
 from cart.models import Cart, CartItem
 from cart.cache_store import get_cached_cart, clear_cached_cart
+from products.cache_utils import invalidate_catalog_cache
 from products.models import Product
 from orders.models import Order, OrderItem
 from orders.tasks import send_order_notifications
@@ -83,6 +84,7 @@ def convert_cart_to_order(data):
         if source_phone != phone:
             clear_cached_cart(phone)
 
+        invalidate_catalog_cache()
         create_bills_for_order(order)
         create_sales_records_for_order(order)
         create_order_notifications(order, event_type='ORDER_PLACED')
@@ -183,6 +185,8 @@ def convert_cart_to_order(data):
 
     # Clear cart
     cart.items.all().delete()
+
+    invalidate_catalog_cache()
 
     # Async notification
     create_bills_for_order(order)
