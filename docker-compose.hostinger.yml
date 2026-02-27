@@ -86,7 +86,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 20s
-      
+
   nginx:
     image: nginx:1.27-alpine
     depends_on:
@@ -110,7 +110,8 @@ services:
 
   certbot:
     image: certbot/certbot:latest
-    profiles: ["ops"]
+    profiles:
+      - ops
     volumes:
       - certbot_www:/var/www/certbot
       - letsencrypt:/etc/letsencrypt
