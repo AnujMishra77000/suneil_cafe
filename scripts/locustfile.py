@@ -25,6 +25,7 @@ import json
 import os
 import random
 import threading
+import uuid
 from typing import Dict, List
 
 from locust import HttpUser, LoadTestShape, between, task
@@ -342,6 +343,7 @@ class BuyerUser(BaseStoreUser):
             "address": f"{self.address}, {pincode}",
             "pincode": pincode,
             "cart_phone": self.phone,
+            "idempotency_key": str(uuid.uuid4()),
         }
         with self.client.post(
             "/api/cart/place/",
