@@ -10,6 +10,15 @@ import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
+try:
+    import sentry_sdk
+    from sentry_sdk.integrations.celery import CeleryIntegration
+    from sentry_sdk.integrations.django import DjangoIntegration
+except ImportError:  # optional until dependency is installed
+    sentry_sdk = None
+    CeleryIntegration = None
+    DjangoIntegration = None
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -193,7 +202,8 @@ if REDIS_URL:
             "LOCATION": REDIS_URL,
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
-                "IGNORE_EXCEPTIONS": True,
+                # Never swallow cache/lock failures in production.
+                "IGNORE_EXCEPTIONS": bool(DEBUG),
             },
             "TIMEOUT": CACHE_TIMEOUT,
             "KEY_PREFIX": "thathwamasi",
@@ -208,13 +218,7 @@ elif DEBUG:
         }
     }
 else:
-    CACHES = {
-        "default": {
-            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-            "LOCATION": str(BASE_DIR / ".cache"),
-            "TIMEOUT": CACHE_TIMEOUT,
-        }
-    }
+    raise ImproperlyConfigured("REDIS_URL must be set when DEBUG=False")
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
@@ -229,6 +233,9 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_THROTTLE_RATES": {
         "cart_add": os.getenv("THROTTLE_CART_ADD", "60/minute"),
+        "checkout_place": os.getenv("THROTTLE_CHECKOUT_PLACE", "12/minute"),
+        "order_history": os.getenv("THROTTLE_ORDER_HISTORY", "30/minute"),
+        "buy_now": os.getenv("THROTTLE_BUY_NOW", "20/minute"),
     },
 }
 
@@ -262,7 +269,30 @@ TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER", "")
 TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER", "")
 
 CART_DEBUG_TOKEN = os.getenv("CART_DEBUG_TOKEN", "")
+SYSTEM_ARCH_DEBUG_TOKEN = os.getenv("SYSTEM_ARCH_DEBUG_TOKEN", "")
 USE_LAYERED_ARCHITECTURE = os.getenv("USE_LAYERED_ARCHITECTURE", "true").lower() == "true"
+
+# Sentry
+SENTRY_DSN = (os.getenv("SENTRY_DSN") or "").strip()
+SENTRY_ENVIRONMENT = (
+    (os.getenv("SENTRY_ENVIRONMENT") or "").strip()
+    or ("development" if DEBUG else "production")
+)
+SENTRY_TRACES_SAMPLE_RATE = float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.0"))
+SENTRY_SEND_DEFAULT_PII = os.getenv("SENTRY_SEND_DEFAULT_PII", "true").lower() == "true"
+
+if SENTRY_DSN:
+    if sentry_sdk is None or DjangoIntegration is None or CeleryIntegration is None:
+        raise ImproperlyConfigured(
+            "SENTRY_DSN is set but sentry-sdk is not installed. Install requirements first."
+        )
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration(), CeleryIntegration()],
+        environment=SENTRY_ENVIRONMENT,
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        send_default_pii=SENTRY_SEND_DEFAULT_PII,
+    )
 
 
 # Proxy + security hardening

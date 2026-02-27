@@ -1,25 +1,32 @@
-from django.db import transaction
-from django.db.models import F, Case, When, Value, BooleanField
-from users.customer_resolver import merge_phone_carts
+from django.db import IntegrityError, transaction
+from django.db.models import BooleanField, Case, F, Value, When
+
+from cart.cache_store import clear_cached_cart, get_cached_cart
 from cart.models import Cart, CartItem
-from cart.cache_store import get_cached_cart, clear_cached_cart
+from notifications.services import create_order_notifications
+from orders.models import Order, OrderItem
+from orders.pincode_service import ensure_serviceable_pincode
+from orders.services import create_bills_for_order, create_sales_records_for_order
+from orders.tasks import send_order_notifications
 from products.cache_utils import invalidate_catalog_cache
 from products.models import Product
-from orders.models import Order, OrderItem
-from orders.tasks import send_order_notifications
-from orders.services import create_bills_for_order, create_sales_records_for_order
-from orders.pincode_service import ensure_serviceable_pincode
-from notifications.services import create_order_notifications
+from users.customer_resolver import merge_phone_carts
+from users.phone_utils import normalize_phone
 
 
 @transaction.atomic
 def convert_cart_to_order(data):
-    phone = data['phone']
-    name = data['customer_name']
-    whatsapp_no = data.get('whatsapp_no') or phone
-    address = data['address']
-    pincode = data.get('pincode', '')
-    source_phone = data.get('cart_phone') or phone
+    idempotency_key = data["idempotency_key"]
+    existing = Order.objects.filter(idempotency_key=idempotency_key).first()
+    if existing:
+        return existing
+
+    phone = normalize_phone(data["phone"])
+    name = data["customer_name"]
+    whatsapp_no = normalize_phone(data.get("whatsapp_no") or phone)
+    address = data["address"]
+    pincode = data.get("pincode", "")
+    source_phone = normalize_phone(data.get("cart_phone") or phone)
 
     ensure_serviceable_pincode(pincode=pincode, address=address)
 
@@ -56,23 +63,30 @@ def convert_cart_to_order(data):
         if not products:
             raise Exception("Cart is empty")
 
-        order = Order.objects.create(
-            customer=customer,
-            customer_name=name,
-            phone=phone,
-            shipping_address=address,
-            total_price=total_price,
-        )
+        try:
+            order = Order.objects.create(
+                customer=customer,
+                customer_name=name,
+                phone=phone,
+                shipping_address=address,
+                idempotency_key=idempotency_key,
+                total_price=total_price,
+            )
+        except IntegrityError:
+            existing = Order.objects.filter(idempotency_key=idempotency_key).first()
+            if existing:
+                return existing
+            raise
 
         for product, qty in products:
             OrderItem.objects.create(
                 order=order,
                 product=product,
                 quantity=qty,
-                price=product.price
+                price=product.price,
             )
             Product.objects.filter(pk=product.pk).update(
-                stock_qty=F('stock_qty') - qty,
+                stock_qty=F("stock_qty") - qty,
                 is_available=Case(
                     When(stock_qty__gt=qty, then=Value(True)),
                     default=Value(False),
@@ -87,7 +101,7 @@ def convert_cart_to_order(data):
         invalidate_catalog_cache()
         create_bills_for_order(order)
         create_sales_records_for_order(order)
-        create_order_notifications(order, event_type='ORDER_PLACED')
+        create_order_notifications(order, event_type="ORDER_PLACED")
         send_order_notifications.delay(order.id)
         return order
 
@@ -133,7 +147,7 @@ def convert_cart_to_order(data):
     customer.save(update_fields=["name", "whatsapp_no", "address"])
 
     cart = Cart.objects.select_for_update().get(pk=cart.pk)
-    cart_items = cart.items.select_related('product')
+    cart_items = cart.items.select_related("product")
 
     if not cart_items.exists():
         raise Exception("Cart is empty")
@@ -141,7 +155,7 @@ def convert_cart_to_order(data):
     total_price = 0
     products = []
 
-    # 🔒 Lock product rows
+    # Lock product rows
     product_ids = [item.product.id for item in cart_items]
     product_qs = Product.objects.select_for_update().filter(id__in=product_ids)
     product_map = {p.id: p for p in product_qs}
@@ -156,14 +170,20 @@ def convert_cart_to_order(data):
         total_price += product.price * item.quantity
         products.append((product, item.quantity))
 
-    # Create order
-    order = Order.objects.create(
-        customer=customer,
-        customer_name=name,
-        phone=phone,
-        shipping_address=address,
-        total_price=total_price,
-    )
+    try:
+        order = Order.objects.create(
+            customer=customer,
+            customer_name=name,
+            phone=phone,
+            shipping_address=address,
+            idempotency_key=idempotency_key,
+            total_price=total_price,
+        )
+    except IntegrityError:
+        existing = Order.objects.filter(idempotency_key=idempotency_key).first()
+        if existing:
+            return existing
+        raise
 
     # Create order items + deduct stock
     for product, qty in products:
@@ -171,11 +191,11 @@ def convert_cart_to_order(data):
             order=order,
             product=product,
             quantity=qty,
-            price=product.price
+            price=product.price,
         )
 
         Product.objects.filter(pk=product.pk).update(
-            stock_qty=F('stock_qty') - qty,
+            stock_qty=F("stock_qty") - qty,
             is_available=Case(
                 When(stock_qty__gt=qty, then=Value(True)),
                 default=Value(False),
@@ -191,7 +211,7 @@ def convert_cart_to_order(data):
     # Async notification
     create_bills_for_order(order)
     create_sales_records_for_order(order)
-    create_order_notifications(order, event_type='ORDER_PLACED')
+    create_order_notifications(order, event_type="ORDER_PLACED")
     send_order_notifications.delay(order.id)
 
     return order

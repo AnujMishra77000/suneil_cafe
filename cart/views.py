@@ -10,7 +10,8 @@ from users.customer_resolver import (
     merge_phone_carts,
     get_primary_customer_and_cart,
 )
-from core.throttles import CartAddRateThrottle
+from core.throttles import CartAddRateThrottle, CheckoutPlaceRateThrottle
+from users.phone_utils import PhoneNormalizationError, normalize_phone
 from products.models import Product
 from .models import Cart, CartItem
 from .cache_store import (
@@ -67,10 +68,15 @@ class AddToCartAPIView(PublicAPIView):
 
 class ViewCartAPIView(PublicAPIView):
     def get(self, request):
-        phone = request.GET.get("phone")
+        raw_phone = request.GET.get("phone")
 
-        if not phone:
+        if not raw_phone:
             return Response({"error": "Phone required"}, status=400)
+
+        try:
+            phone = normalize_phone(raw_phone)
+        except PhoneNormalizationError as exc:
+            return Response({"error": str(exc)}, status=400)
 
         # Cart is user-specific and write-heavy; avoid response caching for consistency.
         anon_payload = build_payload_from_cached_cart(phone, request=request)
@@ -225,6 +231,8 @@ class RemoveCartItemAPIView(PublicAPIView):
 
 
 class PlaceOrderAPIView(PublicAPIView):
+    throttle_classes = [CheckoutPlaceRateThrottle]
+    throttle_scope = "checkout_place"
 
     def post(self, request):
         serializer = PlaceOrderSerializer(data=request.data)

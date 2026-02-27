@@ -20,6 +20,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAdminUser
+
+from core.throttles import BuyNowRateThrottle, OrderHistoryRateThrottle
+from users.phone_utils import PhoneNormalizationError, normalize_phone
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -42,6 +45,9 @@ class CreateOrderAPIView(APIView):
     - Add to cart checkout
     - Buy now single product
     """
+
+    throttle_classes = [BuyNowRateThrottle]
+    throttle_scope = "buy_now"
 
     def post(self, request):
         serializer = OrderSerializer(data=request.data)
@@ -84,14 +90,21 @@ class BillsByOrderAPIView(APIView):
 class CustomerHistoryByPhoneAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
+    throttle_classes = [OrderHistoryRateThrottle]
+    throttle_scope = "order_history"
 
     def get(self, request):
-        phone = (request.GET.get("phone") or "").strip()
-        if not phone:
+        raw_phone = (request.GET.get("phone") or "").strip()
+        if not raw_phone:
             return Response(
                 {"detail": "phone query param is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        try:
+            phone = normalize_phone(raw_phone)
+        except PhoneNormalizationError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         customer = resolve_primary_customer(phone=phone, create_if_missing=False)
         if not customer:

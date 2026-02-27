@@ -6,6 +6,7 @@ const state = {
         pincode: ""
     },
     cart_phone: "",
+    idempotency_key: "",
     cart: {
         items: [],
         total_items: 0,
@@ -110,6 +111,32 @@ function writeProfile() {
     if (state.profile.phone) {
         localStorage.setItem("thathwamasi_checkout_phone", state.profile.phone);
     }
+}
+
+function newIdempotencyKey() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+    }
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
+        const rand = Math.random() * 16 | 0;
+        const value = char === "x" ? rand : (rand & 0x3 | 0x8);
+        return value.toString(16);
+    });
+}
+
+function loadIdempotencyKey() {
+    let key = localStorage.getItem("thathwamasi_checkout_idempotency_key");
+    if (!key) {
+        key = newIdempotencyKey();
+        localStorage.setItem("thathwamasi_checkout_idempotency_key", key);
+    }
+    state.idempotency_key = key;
+}
+
+function rotateIdempotencyKey() {
+    const key = newIdempotencyKey();
+    localStorage.setItem("thathwamasi_checkout_idempotency_key", key);
+    state.idempotency_key = key;
 }
 
 function fillForm() {
@@ -254,13 +281,15 @@ async function submitOrder(event) {
             whatsapp_no: state.profile.phone,
             address: state.profile.address,
             pincode: state.profile.pincode,
-            cart_phone: state.cart_phone
+            cart_phone: state.cart_phone,
+            idempotency_key: state.idempotency_key
         });
         setStatus(`Order placed successfully. Order ID: ${result.order_id}`, "ok");
         localStorage.setItem("thathwamasi_checkout_phone", state.profile.phone);
         if (state.cart_phone !== state.profile.phone) {
             localStorage.setItem("thathwamasi_cart_phone", state.profile.phone);
         }
+        rotateIdempotencyKey();
         setTimeout(() => {
             window.location.href = "/";
         }, 1200);
@@ -282,6 +311,7 @@ async function submitOrder(event) {
 async function bootstrap() {
     readProfile();
     getOrCreateCartPhone();
+    loadIdempotencyKey();
     fillForm();
     await loadServiceablePincodes();
     try {

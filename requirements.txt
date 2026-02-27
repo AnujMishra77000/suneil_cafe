@@ -12,3 +12,4 @@ twilio==9.4.3
 Pillow==11.1.0
 matplotlib==3.10.0
 seaborn==0.13.2
+sentry-sdk[django,celery]==2.22.0

@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.http import Http404
@@ -118,6 +118,7 @@ class BuyProductPageView(TemplateView):
         return context
 
 
+@method_decorator(staff_member_required, name="dispatch")
 class LatencyDashboardView(TemplateView):
     template_name = "products/latency_dashboard.html"
 
@@ -579,6 +580,15 @@ class ProductBySectionAPIView(generics.ListAPIView):
 
 
 # single product details
+def _record_unavailable_view(product_id):
+    """Aggregate unavailable product views in cache to avoid per-request DB writes."""
+    cache_key = catalog_cache_key("unavailable_view", product_id)
+    try:
+        cache.incr(cache_key)
+    except ValueError:
+        cache.set(cache_key, 1, 24 * 60 * 60)
+
+
 class ProductDetailAPIView(generics.RetrieveAPIView):
     queryset = Product.objects.select_related("category", "category__section").prefetch_related("related_products")
     serializer_class = ProductSerializer
@@ -586,9 +596,8 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        # Log only when product is unavailable.
         if not instance.is_available:
-            ProductViewLog.objects.create(product=instance)
+            _record_unavailable_view(instance.id)
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
@@ -633,12 +642,16 @@ class ProductSearchAPIView(APIView):
         cache.set(cache_key, payload, 120 if len(payload) < 10 else 180)
         return Response(payload)
 
-class ProductViewLogCreateAPIView(generics.CreateAPIView):
-    serializer_class = ProductViewLogSerializer
+class ProductViewLogCreateAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
-    def perform_create(self, serializer):
-        product = serializer.validated_data['product']
-        serializer.save(product=product)
+    def post(self, request):
+        serializer = ProductViewLogSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        product = serializer.validated_data["product"]
+        _record_unavailable_view(product.id)
+        return Response({"status": "accepted"}, status=status.HTTP_202_ACCEPTED)
 
 
 class RelatedProductAPIView(generics.ListAPIView):

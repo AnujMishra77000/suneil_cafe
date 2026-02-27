@@ -180,6 +180,6 @@ def create_order_notifications(order, event_type=Notification.EventType.ORDER_PL
         )
 
     if created_rows:
-        Notification.objects.bulk_create(created_rows)
+        Notification.objects.bulk_create(created_rows, ignore_conflicts=True)
 
     return created_rows

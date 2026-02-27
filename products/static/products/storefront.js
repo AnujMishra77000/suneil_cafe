@@ -8,7 +8,8 @@ const state = {
         name: "",
         phone: "",
         whatsapp_no: ""
-    }
+    },
+    buyNowInFlight: {}
 };
 
 const sectionTabsEl = document.getElementById("sectionTabs");
@@ -237,24 +238,64 @@ async function addToCart(productId) {
     notify("Product added to cart");
 }
 
+function newIdempotencyKey() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+    }
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
+        const rand = Math.random() * 16 | 0;
+        const value = char === "x" ? rand : (rand & 0x3 | 0x8);
+        return value.toString(16);
+    });
+}
+
+function buyNowKeyStorage(productId) {
+    return `thathwamasi_buy_now_idempo_${productId}`;
+}
+
+function getOrCreateBuyNowKey(productId) {
+    const storageKey = buyNowKeyStorage(productId);
+    let key = sessionStorage.getItem(storageKey);
+    if (!key) {
+        key = newIdempotencyKey();
+        sessionStorage.setItem(storageKey, key);
+    }
+    return key;
+}
+
+function clearBuyNowKey(productId) {
+    sessionStorage.removeItem(buyNowKeyStorage(productId));
+}
+
 async function buyNow(productId) {
     if (!state.profile.phone || !state.profile.name || !state.profile.whatsapp_no) {
         const ok = askProfile();
         if (!ok) return;
     }
 
-    const result = await apiPost("/api/orders/place-order/", {
-        customer_name: state.profile.name,
-        phone: state.profile.phone,
-        whatsapp_no: state.profile.whatsapp_no,
-        items: [{ product_id: productId, quantity: 1 }]
-    });
+    const lockKey = String(productId);
+    if (state.buyNowInFlight[lockKey]) return;
+    state.buyNowInFlight[lockKey] = true;
 
-    notify(`Order placed. ID ${result.order_id}`);
-    if (state.selectedCategoryId) {
-        await loadProductsByCategory(state.selectedCategoryId);
-    } else {
-        await loadProductsBySection(state.selectedSectionId);
+    try {
+        const idempotencyKey = getOrCreateBuyNowKey(productId);
+        const result = await apiPost("/api/orders/place-order/", {
+            customer_name: state.profile.name,
+            phone: state.profile.phone,
+            whatsapp_no: state.profile.whatsapp_no,
+            items: [{ product_id: productId, quantity: 1 }],
+            idempotency_key: idempotencyKey
+        });
+
+        clearBuyNowKey(productId);
+        notify(`Order placed. ID ${result.order_id}`);
+        if (state.selectedCategoryId) {
+            await loadProductsByCategory(state.selectedCategoryId);
+        } else {
+            await loadProductsBySection(state.selectedSectionId);
+        }
+    } finally {
+        delete state.buyNowInFlight[lockKey];
     }
 }
 

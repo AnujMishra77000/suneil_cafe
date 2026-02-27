@@ -10,6 +10,7 @@ class Order(models.Model):
     customer_name = models.CharField(max_length=200, blank=True, default="")
     phone = models.CharField(max_length=20, blank=True, default="", db_index=True)
     shipping_address = models.TextField(blank=True, default="")
+    idempotency_key = models.UUIDField(default=None, null=True, blank=True, unique=True, db_index=True)
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=50, default="Placed", db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

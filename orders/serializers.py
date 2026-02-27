@@ -1,6 +1,9 @@
 from rest_framework import serializers
-from .models import Order, OrderItem, OrderFeedback, Bill, BillItem
+
 from products.models import Product
+from users.phone_utils import PhoneNormalizationError, normalize_phone
+
+from .models import Bill, BillItem, Order, OrderFeedback, OrderItem
 from .pincode_service import ensure_serviceable_pincode
 
 
@@ -9,16 +12,16 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['product_id', 'quantity', 'price']
-        read_only_fields = ['price']
+        fields = ["product_id", "quantity", "price"]
+        read_only_fields = ["price"]
 
     def validate(self, data):
         try:
-            product = Product.objects.get(id=data['product_id'])
+            product = Product.objects.get(id=data["product_id"])
         except Product.DoesNotExist:
             raise serializers.ValidationError("Product not found")
 
-        if product.stock_qty < data['quantity']:
+        if product.stock_qty < data["quantity"]:
             raise serializers.ValidationError(f"{product.name} out of stock")
 
         return data
@@ -31,23 +34,36 @@ class OrderSerializer(serializers.ModelSerializer):
     whatsapp_no = serializers.CharField(write_only=True)
     address = serializers.CharField(write_only=True)
     pincode = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    idempotency_key = serializers.UUIDField(write_only=True)
 
     class Meta:
         model = Order
         fields = [
-            'id',
-            'customer_name',
-            'phone',
-            'whatsapp_no',
-            'address',
-            'pincode',
-            'items',
-            'total_price',
-            'status',
-            'created_at'
+            "id",
+            "customer_name",
+            "phone",
+            "whatsapp_no",
+            "address",
+            "pincode",
+            "idempotency_key",
+            "items",
+            "total_price",
+            "status",
+            "created_at",
         ]
-        read_only_fields = ['total_price', 'status', 'created_at']
+        read_only_fields = ["total_price", "status", "created_at"]
 
+    def validate_phone(self, value):
+        try:
+            return normalize_phone(value)
+        except PhoneNormalizationError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+
+    def validate_whatsapp_no(self, value):
+        try:
+            return normalize_phone(value)
+        except PhoneNormalizationError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
 
     def validate(self, attrs):
         pincode = attrs.get("pincode", "")
@@ -72,27 +88,30 @@ class OrderFeedbackWriteSerializer(serializers.Serializer):
         return text
 
     def validate_phone(self, value):
-        return (value or "").strip()
+        try:
+            return normalize_phone(value)
+        except PhoneNormalizationError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
 
 
 class OrderFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderFeedback
         fields = [
-            'id',
-            'order',
-            'phone',
-            'rating',
-            'message',
-            'created_at',
-            'updated_at',
+            "id",
+            "order",
+            "phone",
+            "rating",
+            "message",
+            "created_at",
+            "updated_at",
         ]
 
 
 class BillItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = BillItem
-        fields = ['product_name', 'quantity', 'unit_price']
+        fields = ["product_name", "quantity", "unit_price"]
 
 
 class BillSerializer(serializers.ModelSerializer):
@@ -101,14 +120,14 @@ class BillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bill
         fields = [
-            'id',
-            'order',
-            'recipient_type',
-            'bill_number',
-            'customer_name',
-            'phone',
-            'shipping_address',
-            'total_amount',
-            'items',
-            'created_at',
+            "id",
+            "order",
+            "recipient_type",
+            "bill_number",
+            "customer_name",
+            "phone",
+            "shipping_address",
+            "total_amount",
+            "items",
+            "created_at",
         ]

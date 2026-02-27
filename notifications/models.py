@@ -43,6 +43,12 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False, db_index=True)
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["order", "event_type", "recipient_type", "recipient_identifier"],
+                name="notifications_unique_event_recipient_per_order",
+            )
+        ]
         indexes = [
             models.Index(fields=["recipient_type", "recipient_identifier", "is_read", "created_at"]),
             models.Index(fields=["recipient_type", "recipient_identifier", "id"]),

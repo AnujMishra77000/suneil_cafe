@@ -1,8 +1,11 @@
-from rest_framework import serializers
 from decimal import Decimal
-from .models import Cart, CartItem
-from products.models import Product
+
+from rest_framework import serializers
+
 from orders.pincode_service import ensure_serviceable_pincode
+from users.phone_utils import PhoneNormalizationError, normalize_phone
+
+from .models import Cart, CartItem
 
 
 class AddToCartSerializer(serializers.Serializer):
@@ -12,20 +15,26 @@ class AddToCartSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
     quantity = serializers.IntegerField(min_value=1)
 
+    def validate_phone(self, value):
+        try:
+            return normalize_phone(value)
+        except PhoneNormalizationError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+
 
 class CartItemSerializer(serializers.ModelSerializer):
-    product_id = serializers.IntegerField(source='product.id')
-    product_name = serializers.CharField(source='product.name')
-    price = serializers.DecimalField(source='product.price', max_digits=10, decimal_places=2)
+    product_id = serializers.IntegerField(source="product.id")
+    product_name = serializers.CharField(source="product.name")
+    price = serializers.DecimalField(source="product.price", max_digits=10, decimal_places=2)
     image = serializers.SerializerMethodField()
     line_total = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
-        fields = ['product_id', 'product_name', 'price', 'quantity', 'image', 'line_total']
+        fields = ["product_id", "product_name", "price", "quantity", "image", "line_total"]
 
     def get_image(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         if obj.product.image and request:
             return request.build_absolute_uri(obj.product.image.url)
         return None
@@ -41,7 +50,7 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ['id', 'customer', 'items', 'total_items', 'total_amount']
+        fields = ["id", "customer", "items", "total_items", "total_amount"]
 
     def get_total_items(self, obj):
         if hasattr(obj, "total_items") and obj.total_items is not None:
@@ -53,9 +62,10 @@ class CartSerializer(serializers.ModelSerializer):
             return str(obj.total_amount)
 
         total = 0
-        for item in obj.items.select_related('product'):
+        for item in obj.items.select_related("product"):
             total += item.product.price * item.quantity
         return str(Decimal(total))
+
 
 class PlaceOrderSerializer(serializers.Serializer):
     phone = serializers.CharField()
@@ -64,6 +74,29 @@ class PlaceOrderSerializer(serializers.Serializer):
     address = serializers.CharField()
     pincode = serializers.CharField()
     cart_phone = serializers.CharField(required=False, allow_blank=True)
+    idempotency_key = serializers.UUIDField()
+
+    def validate_phone(self, value):
+        try:
+            return normalize_phone(value)
+        except PhoneNormalizationError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+
+    def validate_cart_phone(self, value):
+        if not value:
+            return ""
+        try:
+            return normalize_phone(value)
+        except PhoneNormalizationError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+
+    def validate_whatsapp_no(self, value):
+        if not value:
+            return ""
+        try:
+            return normalize_phone(value)
+        except PhoneNormalizationError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
 
     def validate(self, attrs):
         pincode = attrs.get("pincode", "")
@@ -72,6 +105,9 @@ class PlaceOrderSerializer(serializers.Serializer):
             attrs["pincode"] = ensure_serviceable_pincode(pincode=pincode, address=address)
         except ValueError as exc:
             raise serializers.ValidationError({"pincode": str(exc)})
+
+        if not attrs.get("whatsapp_no"):
+            attrs["whatsapp_no"] = attrs["phone"]
         return attrs
 
 
@@ -80,7 +116,19 @@ class UpdateCartItemSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
     quantity = serializers.IntegerField(min_value=0)
 
+    def validate_phone(self, value):
+        try:
+            return normalize_phone(value)
+        except PhoneNormalizationError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+
 
 class RemoveCartItemSerializer(serializers.Serializer):
     phone = serializers.CharField()
     product_id = serializers.IntegerField()
+
+    def validate_phone(self, value):
+        try:
+            return normalize_phone(value)
+        except PhoneNormalizationError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
