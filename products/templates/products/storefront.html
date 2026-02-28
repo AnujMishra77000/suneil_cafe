@@ -8,11 +8,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <script>
+        (function () {
+            const root = document.documentElement;
+            root.classList.add("fx-mounted");
+            window.setTimeout(function () {
+                if (!root.classList.contains("fx-ready")) {
+                    root.classList.remove("fx-mounted");
+                }
+            }, 700);
+        })();
+    </script>
+    <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
+    <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
     <link rel="stylesheet" href="{% static 'products/storefront.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
 </head>
 <body>
-    <header class="hero">
+    <header class="hero" data-fx="hero">
         <nav class="topbar container">
             <div class="site-lockup">
                 <img class="site-logo" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
@@ -35,12 +48,12 @@
     </header>
 
     <main class="container">
-        <section class="filter-section">
+        <section class="filter-section" data-fx>
             <div id="sectionTabs" class="tabs"></div>
             <div id="categoryTabs" class="chips"></div>
         </section>
 
-        <section class="products-section">
+        <section class="products-section" data-fx>
             <div class="section-head">
                 <h3 id="productTitle">All Products</h3>
                 <p id="productCount">0 items</p>
@@ -49,7 +62,7 @@
         </section>
     </main>
 
-    <div id="relatedPanel" class="related-panel hidden">
+    <div id="relatedPanel" class="related-panel hidden" data-fx>
         <div class="related-header">
             <h4>Related Products</h4>
             <button id="closeRelated" aria-label="Close">x</button>

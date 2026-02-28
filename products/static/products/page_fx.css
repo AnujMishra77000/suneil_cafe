@@ -1,0 +1,46 @@
+:root {
+    --fx-duration: 420ms;
+    --fx-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --fx-distance: 18px;
+}
+
+html.fx-mounted [data-fx],
+html.fx-mounted .fx-auto {
+    opacity: 0.001;
+    transform: translate3d(0, var(--fx-distance), 0) scale(0.985);
+    filter: saturate(0.94);
+    transition:
+        opacity var(--fx-duration) var(--fx-ease),
+        transform var(--fx-duration) var(--fx-ease),
+        filter 460ms var(--fx-ease);
+    transition-delay: var(--fx-delay, 0ms);
+    will-change: opacity, transform;
+}
+
+html.fx-mounted [data-fx].is-fx-visible,
+html.fx-mounted .fx-auto.is-fx-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: none;
+}
+
+html.fx-mounted .fx-auto[data-fx-kind="card"] {
+    transform: translate3d(0, calc(var(--fx-distance) + 4px), 0) scale(0.982);
+}
+
+@media (max-width: 720px) {
+    :root {
+        --fx-duration: 360ms;
+        --fx-distance: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.fx-mounted [data-fx],
+    html.fx-mounted .fx-auto {
+        opacity: 1;
+        transform: none;
+        filter: none;
+        transition: none;
+    }
+}

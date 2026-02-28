@@ -8,6 +8,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <script>
+        (function () {
+            const root = document.documentElement;
+            root.classList.add("fx-mounted");
+            window.setTimeout(function () {
+                if (!root.classList.contains("fx-ready")) {
+                    root.classList.remove("fx-mounted");
+                }
+            }, 700);
+        })();
+    </script>
+    <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
+    <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
     <link rel="stylesheet" href="{% static 'products/section.css' %}?v=20260228-category2" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
@@ -24,7 +37,7 @@
         </nav>
     </div>
 
-    <header class="top container">
+    <header class="top container" data-fx>
         <div class="top-leading">
             <a href="/" class="back-link">Home</a>
             <div class="site-lockup site-lockup--compact">
@@ -46,14 +59,14 @@
     </header>
 
     <main class="container">
-        <section class="toolbar">
+        <section class="toolbar" data-fx>
             <div class="search-wrap">
                 <input id="searchInput" type="text" placeholder="Search category by name..." />
                 <button id="searchBtn">Search</button>
             </div>
         </section>
 
-        <section class="categories">
+        <section class="categories" data-fx>
             <div class="head">
                 <h2>Categories</h2>
                 <p id="categoryCount">0 categories</p>
@@ -61,7 +74,7 @@
             <div id="categoryGrid" class="category-grid"></div>
         </section>
 
-        <section class="browse-note">
+        <section class="browse-note" data-fx>
             <h2>Dedicated Category Pages</h2>
             <p>Select any category above to open its own page with all matching products, cleaner browsing, and direct cart actions.</p>
         </section>

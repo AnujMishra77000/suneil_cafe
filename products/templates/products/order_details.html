@@ -8,6 +8,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <script>
+        (function () {
+            const root = document.documentElement;
+            root.classList.add("fx-mounted");
+            window.setTimeout(function () {
+                if (!root.classList.contains("fx-ready")) {
+                    root.classList.remove("fx-mounted");
+                }
+            }, 700);
+        })();
+    </script>
+    <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
+    <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
     <link rel="stylesheet" href="{% static 'products/order_details.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
@@ -25,7 +38,7 @@
     </div>
 
     <main class="page">
-        <header class="topbar">
+        <header class="topbar" data-fx>
             <a class="back-link" href="/">Back to Home</a>
             <div class="site-lockup site-lockup--compact">
                 <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
@@ -37,7 +50,7 @@
             </div>
         </header>
 
-        <section class="control-panel">
+        <section class="control-panel" data-fx>
             <div class="control-row">
                 <input id="orderPhoneInput" class="phone-input" placeholder="Enter mobile number" autocomplete="off" />
                 <button id="loadOrdersBtn" class="load-btn" type="button">Load Orders</button>
@@ -45,7 +58,7 @@
             <p id="pageStatus" class="page-status"></p>
         </section>
 
-        <section id="ordersList" class="orders-wrap">
+        <section id="ordersList" class="orders-wrap" data-fx>
             <div class="empty-block">Enter phone number to load your orders.</div>
         </section>
     </main>

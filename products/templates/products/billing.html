@@ -8,6 +8,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <script>
+        (function () {
+            const root = document.documentElement;
+            root.classList.add("fx-mounted");
+            window.setTimeout(function () {
+                if (!root.classList.contains("fx-ready")) {
+                    root.classList.remove("fx-mounted");
+                }
+            }, 700);
+        })();
+    </script>
+    <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
+    <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
     <link rel="stylesheet" href="{% static 'products/billing.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
@@ -25,7 +38,7 @@
     </div>
 
     <main class="container">
-        <header class="top">
+        <header class="top" data-fx>
             <div class="page-intro page-intro--tight">
                 <a href="/" class="back-link">Continue Shopping</a>
                 <div class="site-lockup site-lockup--compact">
@@ -41,7 +54,7 @@
         </header>
 
         <section class="layout">
-            <section class="bill-card">
+            <section class="bill-card" data-fx>
                 <div class="head">
                     <h2>Your Cart</h2>
                     <p id="itemCount">0 items</p>
@@ -49,7 +62,7 @@
                 <div id="cartList" class="cart-list"></div>
             </section>
 
-            <aside class="summary-card">
+            <aside class="summary-card" data-fx>
                 <h3>Order Summary</h3>
                 <div class="row"><span>Items</span><strong id="summaryItems">0</strong></div>
                 <div class="row"><span>Subtotal</span><strong id="summarySubtotal">Rs 0.00</strong></div>

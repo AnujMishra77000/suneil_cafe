@@ -8,6 +8,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <script>
+        (function () {
+            const root = document.documentElement;
+            root.classList.add("fx-mounted");
+            window.setTimeout(function () {
+                if (!root.classList.contains("fx-ready")) {
+                    root.classList.remove("fx-mounted");
+                }
+            }, 700);
+        })();
+    </script>
+    <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
+    <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
     <link rel="stylesheet" href="{% static 'products/section.css' %}?v=20260228-category2" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
@@ -24,7 +37,7 @@
         </nav>
     </div>
 
-    <header class="top container">
+    <header class="top container" data-fx>
         <div class="top-leading">
             <a href="/{{ section_name }}/" class="back-link">Back to {{ section_title }}</a>
             <div class="site-lockup site-lockup--compact">
@@ -46,14 +59,14 @@
     </header>
 
     <main class="container">
-        <section class="toolbar">
+        <section class="toolbar" data-fx>
             <div class="search-wrap">
                 <input id="searchInput" type="text" placeholder="Search within {{ category_name }}..." />
                 <button id="searchBtn">Search</button>
             </div>
         </section>
 
-        <section class="products">
+        <section class="products" data-fx>
             <div class="head">
                 <h2 id="pageTitle">{{ category_name }} Products</h2>
                 <p id="countLabel">0 items</p>

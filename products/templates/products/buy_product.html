@@ -8,6 +8,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <script>
+        (function () {
+            const root = document.documentElement;
+            root.classList.add("fx-mounted");
+            window.setTimeout(function () {
+                if (!root.classList.contains("fx-ready")) {
+                    root.classList.remove("fx-mounted");
+                }
+            }, 700);
+        })();
+    </script>
+    <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
+    <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
     <link rel="stylesheet" href="{% static 'products/buy_product.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
@@ -25,7 +38,7 @@
     </div>
 
     <main class="buy-wrap">
-        <header class="buy-header">
+        <header class="buy-header" data-fx>
             <a href="javascript:history.back()" class="back-link">Back</a>
             <div class="site-lockup site-lockup--compact">
                 <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
@@ -36,7 +49,7 @@
                 </div>
             </div>
         </header>
-        <section class="buy-card" id="buyCard">
+        <section class="buy-card" id="buyCard" data-fx>
             <div id="stateText" class="state">Loading product...</div>
         </section>
     </main>
