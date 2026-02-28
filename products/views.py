@@ -84,16 +84,48 @@ class StorefrontHomeView(TemplateView):
         return context
 
 
+def _normalize_public_section_name(section_name):
+    section = (section_name or "").strip().lower()
+    if section == "backery":
+        section = "bakery"
+    if section not in {"bakery", "snacks"}:
+        raise Http404("Section not found")
+    return section
+
+
 class StorefrontSectionView(TemplateView):
     template_name = "products/storefront_section.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        section = self.kwargs["section_name"].strip().lower()
-        if section not in {"bakery", "snacks"}:
-            raise Http404("Section not found")
+        section = _normalize_public_section_name(self.kwargs["section_name"])
         context["section_name"] = section
         context["section_title"] = section.title()
+        return context
+
+
+class StorefrontCategoryView(TemplateView):
+    template_name = "products/storefront_category.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        section = _normalize_public_section_name(self.kwargs["section_name"])
+        category = get_object_or_404(
+            Category.objects.select_related("section").only("id", "name", "section__name"),
+            id=self.kwargs["category_id"],
+        )
+        category_section = (category.section.name or "").strip().lower()
+        if section == "bakery":
+            allowed_sections = {"bakery", "backery"}
+        else:
+            allowed_sections = {"snacks", "snack"}
+        if category_section not in allowed_sections:
+            raise Http404("Category not found for this section")
+
+        context["section_name"] = section
+        context["section_title"] = section.title()
+        context["category_id"] = category.id
+        context["category_name"] = category.name
         return context
 
 

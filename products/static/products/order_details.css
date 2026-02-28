@@ -318,3 +318,41 @@ body {
         text-align: center;
     }
 }
+
+.has-customer-menu .topbar {
+    padding-left: 58px;
+}
+
+.order-actions {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 560px) {
+    .has-customer-menu .topbar {
+        padding-left: 46px;
+    }
+
+    .page {
+        width: min(1120px, 94vw);
+    }
+
+    .control-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .phone-input,
+    .load-btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .feedback-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .feedback-cancel-btn,
+    .feedback-submit-btn {
+        width: 100%;
+    }
+}

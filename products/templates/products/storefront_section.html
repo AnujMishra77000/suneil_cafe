@@ -4,15 +4,16 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Thathwamasi | {{ section_title }}</title>
+    <title>Thathwamasi Bakery Cafe | {{ section_title }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/section.css' %}?v=20260215-1" />
-    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260224-1" />
+    <link rel="stylesheet" href="{% static 'products/section.css' %}?v=20260228-category2" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
+    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
 </head>
-<body data-section="{{ section_name }}">
+<body class="has-customer-menu" data-section="{{ section_name }}">
     <div class="customer-menu" data-customer-menu>
         <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
         <nav class="customer-menu-panel" data-menu-panel>
@@ -24,8 +25,17 @@
     </div>
 
     <header class="top container">
-        <a href="/" class="back-link">Home</a>
-        <h1>Thathwamasi - {{ section_title }}</h1>
+        <div class="top-leading">
+            <a href="/" class="back-link">Home</a>
+            <div class="site-lockup site-lockup--compact">
+                <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
+                <div class="site-copy">
+                    <p class="site-kicker">Thathwamasi Bakery Cafe</p>
+                    <h1 class="site-title site-title--compact">{{ section_title }}</h1>
+                    <p class="page-label">Choose a category to open a dedicated page with all related {{ section_title|lower }} products.</p>
+                </div>
+            </div>
+        </div>
         <div class="top-actions">
             <button id="profileBtn" class="profile-btn">Save Profile (Optional)</button>
             <a href="/billing/" class="cart-link">
@@ -38,7 +48,7 @@
     <main class="container">
         <section class="toolbar">
             <div class="search-wrap">
-                <input id="searchInput" type="text" placeholder="Search product by name..." />
+                <input id="searchInput" type="text" placeholder="Search category by name..." />
                 <button id="searchBtn">Search</button>
             </div>
         </section>
@@ -51,17 +61,13 @@
             <div id="categoryGrid" class="category-grid"></div>
         </section>
 
-        <section class="products">
-            <div class="head">
-                <h2 id="pageTitle">Select a category</h2>
-                <p id="countLabel">0 items</p>
-            </div>
-            <div id="selectedCategoryBar" class="selected-category hidden"></div>
-            <div id="productGrid" class="grid"></div>
+        <section class="browse-note">
+            <h2>Dedicated Category Pages</h2>
+            <p>Select any category above to open its own page with all matching products, cleaner browsing, and direct cart actions.</p>
         </section>
     </main>
 
-    <script src="{% static 'products/section.js' %}?v=20260215-1"></script>
+    <script src="{% static 'products/section.js' %}?v=20260228-category2"></script>
     <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
     <script>

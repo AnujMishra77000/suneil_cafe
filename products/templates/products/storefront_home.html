@@ -4,15 +4,16 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Thathwamasi | Home</title>
+    <title>Thathwamasi Bakery Cafe | Home</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260215-hero2" />
-    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260224-1" />
+    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260228-brand1" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
+    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
 </head>
-<body>
+<body class="has-customer-menu">
     <div class="customer-menu" data-customer-menu>
         <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
         <nav class="customer-menu-panel" data-menu-panel>
@@ -25,8 +26,12 @@
 
     <header class="hero">
         <nav class="topbar container">
-            <h1>Thathwamasi</h1>
-            <p>Bakery and Snacks Marketplace</p>
+            <div class="site-lockup site-lockup--hero">
+                <img class="site-logo site-logo--hero" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
+                <div class="site-copy">
+                    <h1 class="site-title">Thathwamasi Bakery Cafe</h1>
+                </div>
+            </div>
         </nav>
 
         <section class="carousel-wrap container">
@@ -77,7 +82,7 @@
         <section class="ad-strip">
             <div class="ad-head">
                 <h2>Offers & Highlights</h2>
-                <p>Fresh picks from Thathwamasi</p>
+                <p>Fresh picks from Thathwamasi Bakery Cafe</p>
             </div>
             <div class="ad-grid">
                 {% for ad in ads %}

@@ -152,3 +152,30 @@ input, textarea {
 .status-msg.error {
     color: #b42318;
 }
+
+.has-customer-menu .top {
+    padding-left: 58px;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+@media (max-width: 840px) {
+    .top {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 560px) {
+    .has-customer-menu .top {
+        padding-left: 46px;
+    }
+
+    .container {
+        width: min(1140px, 94vw);
+    }
+
+    .form-card,
+    .summary-card {
+        padding: 12px;
+    }
+}

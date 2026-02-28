@@ -116,3 +116,40 @@ body {
     .product { grid-template-columns: 1fr; }
     .product img { width: 100%; height: 210px; }
 }
+
+.buy-header {
+    margin-bottom: 14px;
+    padding-left: 58px;
+}
+
+.buy-header .site-lockup {
+    align-items: flex-start;
+}
+
+@media (max-width: 720px) {
+    .buy-header {
+        padding-left: 46px;
+    }
+
+    .qty-row {
+        flex-wrap: wrap;
+    }
+
+    .proceed-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .buy-wrap {
+        padding: 20px 12px 36px;
+    }
+
+    .buy-header {
+        padding-left: 40px;
+    }
+
+    .buy-card {
+        padding: 14px;
+    }
+}

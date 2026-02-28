@@ -36,6 +36,7 @@ from orders.views import (
 from products.views import (
     StorefrontHomeView,
     StorefrontSectionView,
+    StorefrontCategoryView,
     BillingPageView,
     CustomerOrderDetailsPageView,
     CheckoutPageView,
@@ -111,6 +112,13 @@ urlpatterns = [
     path('api/orders/', include('orders.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/system/architecture/', ArchitectureStatusAPIView.as_view(), name='system-architecture-status'),
+    path(
+        'backery/category/<int:category_id>/',
+        StorefrontCategoryView.as_view(),
+        {'section_name': 'bakery'},
+        name='storefront-backery-category'
+    ),
+    path('<str:section_name>/category/<int:category_id>/', StorefrontCategoryView.as_view(), name='storefront-category'),
     path('backery/', StorefrontSectionView.as_view(), {'section_name': 'bakery'}, name='storefront-backery'),
     path('<str:section_name>/', StorefrontSectionView.as_view(), name='storefront-section'),
 ]

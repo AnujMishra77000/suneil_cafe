@@ -61,3 +61,13 @@
         left: 10px;
     }
 }
+
+.customer-menu-panel {
+    max-width: min(240px, calc(100vw - 24px));
+}
+
+@media (max-width: 520px) {
+    .customer-menu-panel {
+        min-width: 170px;
+    }
+}

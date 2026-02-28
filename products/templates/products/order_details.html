@@ -4,15 +4,16 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Thathwamasi | Order Details</title>
+    <title>Thathwamasi Bakery Cafe | Order Details</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/order_details.css' %}?v=20260224-1" />
-    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260224-1" />
+    <link rel="stylesheet" href="{% static 'products/order_details.css' %}?v=20260228-brand1" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
+    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
 </head>
-<body>
+<body class="has-customer-menu">
     <div class="customer-menu" data-customer-menu>
         <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
         <nav class="customer-menu-panel" data-menu-panel>
@@ -26,8 +27,14 @@
     <main class="page">
         <header class="topbar">
             <a class="back-link" href="/">Back to Home</a>
-            <h1>Order Details</h1>
-            <p>View all your previous orders and submit feedback per order.</p>
+            <div class="site-lockup site-lockup--compact">
+                <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
+                <div class="site-copy">
+                    <p class="site-kicker">Thathwamasi Bakery Cafe</p>
+                    <h1 class="site-title site-title--compact">Order Details</h1>
+                    <p class="page-label">View your previous orders and submit feedback for each order.</p>
+                </div>
+            </div>
         </header>
 
         <section class="control-panel">

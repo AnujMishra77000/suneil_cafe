@@ -1,0 +1,142 @@
+:root {
+    --logo-forest-900: #173f39;
+    --logo-forest-700: #1f5b54;
+    --logo-forest-500: #3d7c72;
+    --logo-cream: #f4efdf;
+}
+
+.site-lockup {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.site-lockup--compact {
+    gap: 12px;
+}
+
+.site-logo {
+    width: 72px;
+    height: 72px;
+    flex: 0 0 auto;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 24px rgba(23, 63, 57, 0.12));
+}
+
+.site-logo--hero {
+    width: 86px;
+    height: 86px;
+}
+
+.site-logo--compact {
+    width: 60px;
+    height: 60px;
+}
+
+.site-copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.site-kicker {
+    margin: 0;
+    color: var(--logo-forest-700);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.site-title {
+    margin: 0;
+    font-family: "Fraunces", serif;
+    font-size: clamp(1.6rem, 3vw, 2.45rem);
+    line-height: 1.02;
+    color: var(--logo-forest-900);
+}
+
+.site-title--compact {
+    font-size: clamp(1.3rem, 2.4vw, 1.85rem);
+}
+
+.site-subtitle {
+    margin: 0;
+    color: #6d584a;
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 48ch;
+}
+
+.page-label {
+    margin: 0;
+    color: #6d584a;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.page-intro,
+.top-leading,
+.buy-header {
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+}
+
+.page-intro--tight {
+    gap: 8px;
+}
+
+@media (max-width: 760px) {
+    .site-lockup {
+        align-items: flex-start;
+    }
+
+    .site-logo--hero {
+        width: 72px;
+        height: 72px;
+    }
+
+    .site-subtitle {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 520px) {
+    .site-lockup {
+        gap: 10px;
+    }
+
+    .site-logo {
+        width: 58px;
+        height: 58px;
+    }
+
+    .site-logo--hero {
+        width: 64px;
+        height: 64px;
+    }
+
+    .site-logo--compact {
+        width: 52px;
+        height: 52px;
+    }
+
+    .site-title {
+        font-size: 1.35rem;
+    }
+
+    .site-title--compact {
+        font-size: 1.2rem;
+    }
+
+    .site-kicker {
+        font-size: 11px;
+    }
+
+    .page-label {
+        font-size: 12px;
+    }
+}

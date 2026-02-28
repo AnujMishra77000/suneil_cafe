@@ -482,3 +482,47 @@ body {
         font-size: 22px;
     }
 }
+
+.has-customer-menu .topbar {
+    padding-left: 58px;
+}
+
+.topbar .site-subtitle {
+    max-width: 42rem;
+}
+
+@media (max-width: 760px) {
+    .has-customer-menu .topbar {
+        padding-left: 46px;
+    }
+
+    .ad-head,
+    .history-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .section-card {
+        flex-direction: column;
+        align-items: flex-start;
+        min-height: auto;
+    }
+
+    .section-card span {
+        margin-top: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .has-customer-menu .topbar {
+        padding-left: 40px;
+    }
+
+    .carousel {
+        height: clamp(320px, 86vw, 420px);
+    }
+
+    .overlay {
+        max-width: calc(100% - 24px);
+    }
+}

@@ -56,7 +56,7 @@ async function apiPost(url, payload) {
 
 function renderProduct(product) {
     const image = product.image ? `<img src="${product.image}" alt="${product.name}" loading="lazy" decoding="async" />` : "";
-    const description = (product.description || "").trim() || "Fresh and tasty product from Thathwamasi.";
+    const description = (product.description || "").trim() || "Fresh and tasty product from Thathwamasi Bakery Cafe.";
     const out = product.is_available ? "" : `<div class="out">Out of Stock</div>`;
 
     buyCardEl.innerHTML = `

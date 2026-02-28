@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 470" role="img" aria-labelledby="logoTitle logoDesc">
+  <title id="logoTitle">Thathwamasi Bakery Cafe logo</title>
+  <desc id="logoDesc">A vintage green bakery cafe badge with bakery illustrations and the Thathwamasi Bakery Cafe name.</desc>
+  <defs>
+    <linearGradient id="badgeFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d5c55"/>
+      <stop offset="100%" stop-color="#184742"/>
+    </linearGradient>
+    <linearGradient id="creamFill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f3eedf"/>
+      <stop offset="100%" stop-color="#ebe2cf"/>
+    </linearGradient>
+    <linearGradient id="breadFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f3c36c"/>
+      <stop offset="100%" stop-color="#b96e26"/>
+    </linearGradient>
+    <linearGradient id="cupFill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fffaf3"/>
+      <stop offset="100%" stop-color="#dacdbf"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#10322e" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <path filter="url(#shadow)" d="M210 18C270 47 331 60 382 66C387 119 400 159 400 229C400 313 347 381 210 452C73 381 20 313 20 229C20 159 33 119 38 66C89 60 150 47 210 18Z" fill="url(#badgeFill)"/>
+  <path d="M210 40C264 65 317 77 364 82C369 129 380 165 380 229C380 304 334 364 210 428C86 364 40 304 40 229C40 165 51 129 56 82C103 77 156 65 210 40Z" fill="none" stroke="#f4efdf" stroke-width="8"/>
+  <path d="M210 54C260 76 308 87 350 92C354 134 364 169 364 229C364 297 323 351 210 412C97 351 56 297 56 229C56 169 66 134 70 92C112 87 160 76 210 54Z" fill="none" stroke="#f4efdf" stroke-width="3"/>
+
+  <ellipse cx="210" cy="212" rx="128" ry="92" fill="url(#creamFill)" stroke="#f4efdf" stroke-width="7"/>
+  <ellipse cx="210" cy="212" rx="141" ry="106" fill="none" stroke="#f4efdf" stroke-width="7"/>
+
+  <text x="210" y="106" text-anchor="middle" font-size="30" font-family="Georgia, serif" font-weight="700" letter-spacing="2" fill="#f4efdf">THATHWAMASI</text>
+  <text x="210" y="362" text-anchor="middle" font-size="28" font-family="Georgia, serif" font-weight="700" letter-spacing="2" fill="#f4efdf">BAKERY CAFE</text>
+
+  <g opacity="0.95">
+    <path d="M108 184C114 164 123 148 136 137C129 151 126 164 126 180C126 197 130 210 138 222C123 213 113 201 108 184Z" fill="#d39f2f"/>
+    <path d="M128 179C132 160 140 145 151 134C146 148 145 161 147 176C149 192 155 205 165 216C151 209 140 197 128 179Z" fill="#e3bb4a"/>
+    <path d="M312 184C306 164 297 148 284 137C291 151 294 164 294 180C294 197 290 210 282 222C297 213 307 201 312 184Z" fill="#d39f2f"/>
+    <path d="M292 179C288 160 280 145 269 134C274 148 275 161 273 176C271 192 265 205 255 216C269 209 280 197 292 179Z" fill="#e3bb4a"/>
+  </g>
+
+  <g>
+    <path d="M123 226C123 204 141 186 163 186H182C203 186 221 204 221 226V231H123V226Z" fill="#d78728"/>
+    <path d="M127 230H216C216 248 204 261 184 261H159C139 261 127 248 127 230Z" fill="url(#breadFill)"/>
+    <path d="M146 204C145 196 151 189 159 189C167 189 173 196 172 204" fill="none" stroke="#f7d79d" stroke-width="5" stroke-linecap="round"/>
+    <path d="M176 202C175 195 181 189 188 189C196 189 201 195 200 202" fill="none" stroke="#f7d79d" stroke-width="5" stroke-linecap="round"/>
+
+    <path d="M182 268C205 255 232 254 260 264C253 280 238 295 219 303C201 296 188 284 182 268Z" fill="#d98b2b"/>
+    <path d="M195 275C214 265 232 266 249 275C243 286 232 295 220 300C210 296 201 287 195 275Z" fill="#f0b154"/>
+
+    <path d="M126 294C138 274 163 261 192 261C218 261 245 274 256 294C232 305 214 312 192 312C170 312 149 306 126 294Z" fill="#e0a33e"/>
+    <path d="M152 284C166 281 179 279 192 279C206 279 220 281 233 284" fill="none" stroke="#f6d39a" stroke-width="6" stroke-linecap="round"/>
+    <path d="M142 296C158 293 175 292 192 292C210 292 226 294 241 297" fill="none" stroke="#f6d39a" stroke-width="5" stroke-linecap="round"/>
+
+    <rect x="257" y="205" width="54" height="36" rx="10" fill="url(#cupFill)" stroke="#d8cabb" stroke-width="3"/>
+    <path d="M311 213C325 213 330 221 330 230C330 240 324 247 313 247" fill="none" stroke="#d8cabb" stroke-width="6" stroke-linecap="round"/>
+    <ellipse cx="284" cy="223" rx="19" ry="7" fill="#c98b4f"/>
+    <path d="M270 223C274 219 280 217 286 217C292 217 298 219 301 223C298 227 292 229 286 229C280 229 274 227 270 223Z" fill="none" stroke="#f7ead8" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <path d="M112 342C138 330 161 324 210 324C259 324 282 330 308 342" fill="none" stroke="#f4efdf" stroke-width="4" stroke-linecap="round"/>
+  <path d="M142 379C166 360 190 352 210 352C230 352 254 360 278 379" fill="none" stroke="#f4efdf" stroke-width="4" stroke-linecap="round"/>
+</svg>

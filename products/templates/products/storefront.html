@@ -4,26 +4,28 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Thathwamasi</title>
+    <title>Thathwamasi Bakery Cafe</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/storefront.css' %}" />
+    <link rel="stylesheet" href="{% static 'products/storefront.css' %}?v=20260228-brand1" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
 </head>
 <body>
     <header class="hero">
         <nav class="topbar container">
-            <div class="brand-wrap">
-                <div class="brand-dot"></div>
-                <div>
-                    <p class="brand-kicker">Freshly Curated</p>
-                    <h1 class="brand">Thathwamasi</h1>
+            <div class="site-lockup">
+                <img class="site-logo" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
+                <div class="site-copy">
+                    <p class="site-kicker">Freshly curated for every craving</p>
+                    <h1 class="site-title site-title--compact">Thathwamasi Bakery Cafe</h1>
+                    <p class="site-subtitle">Bakery, snacks, and cafe favorites delivered with flavor and speed.</p>
                 </div>
             </div>
             <button id="profileBtn" class="outline-btn">Set Delivery Profile</button>
         </nav>
         <section class="hero-content container">
-            <h2>Bakery and Snacks delivered with flavor and speed.</h2>
+            <h2>Bakery, snacks, and cafe favorites delivered fresh.</h2>
             <p>Find your favorites, search instantly, and order in a few taps.</p>
             <div class="search-wrap">
                 <input id="searchInput" type="text" placeholder="Search cake, khari, chips, namkeen..." />
@@ -55,6 +57,6 @@
         <div id="relatedList" class="related-list"></div>
     </div>
 
-    <script src="{% static 'products/storefront.js' %}"></script>
+    <script src="{% static 'products/storefront.js' %}?v=20260224-idempotency2"></script>
 </body>
 </html>
