@@ -126,6 +126,10 @@ body {
     align-items: flex-start;
 }
 
+.buy-header .site-copy {
+    gap: 5px;
+}
+
 @media (max-width: 720px) {
     .buy-header {
         padding-left: 46px;

@@ -21,8 +21,8 @@
     </script>
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
-    <link rel="stylesheet" href="{% static 'products/order_details.css' %}?v=20260228-brand1" />
-    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
+    <link rel="stylesheet" href="{% static 'products/order_details.css' %}?v=20260228-brand2" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand2" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
 </head>
@@ -39,14 +39,16 @@
 
     <main class="page">
         <header class="topbar" data-fx>
-            <a class="back-link" href="/">Back to Home</a>
             <div class="site-lockup site-lockup--compact">
                 <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
                 <div class="site-copy">
-                    <p class="site-kicker">Thathwamasi Bakery Cafe</p>
-                    <h1 class="site-title site-title--compact">Order Details</h1>
+                    <h1 class="site-title site-title--compact">Thathwamasi Bakery Cafe</h1>
+                    <p class="page-context">Order Details</p>
                     <p class="page-label">View your previous orders and submit feedback for each order.</p>
                 </div>
+            </div>
+            <div class="page-nav-chips">
+                <a href="/" class="page-nav-chip page-nav-chip--home">Home</a>
             </div>
         </header>
 

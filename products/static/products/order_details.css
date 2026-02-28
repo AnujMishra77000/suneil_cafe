@@ -27,8 +27,12 @@ body {
 
 .topbar {
     display: grid;
-    gap: 6px;
+    gap: 10px;
     margin-bottom: 14px;
+}
+
+.topbar .site-copy {
+    gap: 5px;
 }
 
 .back-link {

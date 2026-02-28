@@ -482,6 +482,10 @@ body {
     flex: 1;
 }
 
+.top-leading .site-copy {
+    gap: 5px;
+}
+
 .top-actions {
     flex-wrap: wrap;
     justify-content: flex-end;

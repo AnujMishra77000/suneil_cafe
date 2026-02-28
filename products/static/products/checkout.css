@@ -27,6 +27,10 @@ body {
     align-items: center;
 }
 
+.page-intro .site-copy {
+    gap: 5px;
+}
+
 .top h1 {
     margin: 0;
     font-family: "Fraunces", serif;
