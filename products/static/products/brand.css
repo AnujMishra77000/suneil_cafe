@@ -195,3 +195,30 @@
         font-size: 11px;
     }
 }
+
+
+.site-title--stacked {
+    display: inline-grid;
+    gap: 1px;
+    align-self: start;
+    line-height: 0.98;
+}
+
+.site-title-line {
+    display: block;
+    white-space: nowrap;
+}
+
+.site-title--compact.site-title--stacked {
+    font-size: clamp(1.24rem, 2.2vw, 1.7rem);
+}
+
+@media (max-width: 520px) {
+    .site-title--stacked {
+        gap: 0;
+    }
+
+    .site-title--compact.site-title--stacked {
+        font-size: 1.08rem;
+    }
+}
