@@ -702,3 +702,79 @@ body {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
+
+
+/* Final mobile-first offers override: real image node inside a stable media wrapper. */
+.ad-card {
+    background: #a46a43;
+}
+
+.ad-media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    background: linear-gradient(160deg, #a46a43, #d7a27b);
+}
+
+.ad-media-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center center;
+    opacity: 1;
+    transform: translateZ(0) scale(1.001);
+    -webkit-transform: translateZ(0) scale(1.001);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transition: transform 420ms ease, filter 320ms ease;
+}
+
+.ad-card::after {
+    z-index: 1;
+}
+
+.ad-overlay {
+    z-index: 2;
+}
+
+.ad-card:hover .ad-media-img,
+.ad-card:focus-within .ad-media-img {
+    transform: translateZ(0) scale(1.06);
+    -webkit-transform: translateZ(0) scale(1.06);
+    filter: saturate(1.08) contrast(1.03);
+}
+
+@media (max-width: 760px) {
+    .ad-card {
+        opacity: 1;
+        transform: none;
+        animation: none;
+        transition: box-shadow 220ms ease, transform 180ms ease;
+    }
+
+    .ad-media,
+    .ad-media-img {
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+    }
+
+    .ad-overlay {
+        animation: fade-up 420ms ease both;
+    }
+
+    .ad-card:active {
+        transform: scale(0.99);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ad-overlay,
+    .ad-media-img {
+        animation: none;
+        transition: none;
+    }
+}
