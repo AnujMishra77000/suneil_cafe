@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>document.documentElement.classList.add("reveal-ready");</script>
     <title>Thathwamasi Bakery Cafe | Home</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260228-offers4" />
+    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260228-homeflow1" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
@@ -25,7 +26,7 @@
     </div>
 
     <header class="hero">
-        <nav class="topbar container">
+        <nav class="topbar container scroll-reveal">
             <div class="site-lockup site-lockup--hero">
                 <img class="site-logo site-logo--hero" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
                 <div class="site-copy">
@@ -34,7 +35,7 @@
             </div>
         </nav>
 
-        <section class="carousel-wrap container">
+        <section class="carousel-wrap container scroll-reveal">
             <div class="carousel" id="heroCarousel">
                 <div class="slide active">
                     <img class="slide-bg" src="{% static 'products/images/hero/cr1.jpg' %}" alt="Fresh Bakery Every Morning" />
@@ -79,14 +80,31 @@
     </header>
 
     <main class="container">
-        <section class="ad-strip">
-            <div class="ad-head">
+        <section class="sections scroll-reveal">
+            <a href="/bakery/" class="section-card bakery scroll-reveal">
+                <div>
+                    <h3>Bakery</h3>
+                    <p>Cakes, biscuits, breads, cookies and more.</p>
+                </div>
+                <span>Explore</span>
+            </a>
+            <a href="/snacks/" class="section-card snacks scroll-reveal">
+                <div>
+                    <h3>Snacks</h3>
+                    <p>Namkeen, chips, mixtures and tasty quick bites.</p>
+                </div>
+                <span>Explore</span>
+            </a>
+        </section>
+
+        <section class="ad-strip scroll-reveal">
+            <div class="ad-head scroll-reveal">
                 <h2>Offers & Highlights</h2>
                 <p>Fresh picks from Thathwamasi Bakery Cafe</p>
             </div>
             <div class="ad-grid">
                 {% for ad in ads %}
-                <article class="ad-card">
+                <article class="ad-card scroll-reveal">
                     <div class="ad-media">
                         <img class="ad-media-img" src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="eager" decoding="async" fetchpriority="high" draggable="false" />
                     </div>
@@ -99,7 +117,7 @@
                     </div>
                 </article>
                 {% empty %}
-                <article class="ad-card ad-card--empty">
+                <article class="ad-card ad-card--empty scroll-reveal">
                     <div class="ad-overlay">
                         <h3>New Deals Coming Soon</h3>
                         <p>Add cards from Admin Dashboard -> Advertising.</p>
@@ -109,32 +127,15 @@
             </div>
         </section>
 
-        <section id="homeHistory" class="history-home hidden">
+        <section id="homeHistory" class="history-home hidden scroll-reveal">
             <div class="history-head">
                 <h2>Your Previous Orders</h2>
                 <p id="homeHistoryPhone"></p>
             </div>
             <div id="homeHistoryList" class="history-grid"></div>
         </section>
-
-        <section class="sections">
-        <a href="/bakery/" class="section-card bakery">
-            <div>
-                <h3>Bakery</h3>
-                <p>Cakes, biscuits, breads, cookies and more.</p>
-            </div>
-            <span>Explore</span>
-        </a>
-        <a href="/snacks/" class="section-card snacks">
-            <div>
-                <h3>Snacks</h3>
-                <p>Namkeen, chips, mixtures and tasty quick bites.</p>
-            </div>
-            <span>Explore</span>
-        </a>
-        </section>
     </main>
-    <script src="{% static 'products/home.js' %}?v=20260215-hero2"></script>
+    <script src="{% static 'products/home.js' %}?v=20260228-homeflow1"></script>
     <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
     <script>

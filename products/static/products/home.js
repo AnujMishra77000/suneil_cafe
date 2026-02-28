@@ -85,13 +85,15 @@ function renderHomeHistory(phone, orders) {
 
     homeHistoryPhoneEl.textContent = `Phone: ${phone}`;
     homeHistoryListEl.innerHTML = orders.slice(0, 6).map((order) => `
-        <article class="history-order">
+        <article class="history-order scroll-reveal">
             <h4>Order #${order.id}</h4>
             <p>Status: ${order.status}</p>
             <p>Total: Rs ${order.total_price}</p>
         </article>
     `).join("");
     homeHistoryEl.classList.remove("hidden");
+    registerScrollReveal(homeHistoryEl);
+    registerScrollReveal(homeHistoryListEl.querySelectorAll(".history-order"));
 }
 
 async function loadHomeHistory() {
@@ -113,18 +115,47 @@ async function loadHomeHistory() {
 
 loadHomeHistory();
 
-function revealOnScroll() {
-    const targets = document.querySelectorAll(".section-card, .history-order");
-    if (!("IntersectionObserver" in window) || !targets.length) return;
-    const io = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add("reveal");
-                io.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.18 });
-    targets.forEach((el) => io.observe(el));
+let revealObserver = null;
+let revealIndex = 0;
+
+function revealDelay(index) {
+    return `${Math.min(index, 10) * 70}ms`;
 }
 
-setTimeout(revealOnScroll, 50);
+function ensureRevealObserver() {
+    if (revealObserver || !("IntersectionObserver" in window)) return revealObserver;
+    revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("is-visible");
+            revealObserver.unobserve(entry.target);
+        });
+    }, { threshold: 0.14, rootMargin: "0px 0px -8% 0px" });
+    return revealObserver;
+}
+
+function registerScrollReveal(nodes) {
+    const elements = nodes instanceof Element ? [nodes] : Array.from(nodes || []);
+    if (!elements.length) return;
+
+    const observer = ensureRevealObserver();
+    elements.forEach((element) => {
+        if (!element || !element.classList || !element.classList.contains("scroll-reveal")) return;
+        if (element.dataset.revealBound === "1") return;
+        element.dataset.revealBound = "1";
+        element.style.setProperty("--reveal-delay", revealDelay(revealIndex));
+        revealIndex += 1;
+
+        if (!observer) {
+            element.classList.add("is-visible");
+            return;
+        }
+        observer.observe(element);
+    });
+}
+
+function initScrollReveal() {
+    registerScrollReveal(document.querySelectorAll(".scroll-reveal"));
+}
+
+setTimeout(initScrollReveal, 30);

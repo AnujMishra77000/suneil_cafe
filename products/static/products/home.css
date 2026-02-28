@@ -778,3 +778,82 @@ body {
         transition: none;
     }
 }
+
+
+/* Homepage flow tuning: move section cards before offers and reveal content smoothly on scroll. */
+.sections {
+    margin: 24px auto 26px;
+}
+
+.reveal-ready .scroll-reveal {
+    opacity: 0;
+    transform: translateY(28px) scale(0.985);
+    filter: blur(8px);
+    animation: none !important;
+    transition:
+        opacity 720ms ease,
+        transform 720ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 720ms ease;
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform, filter;
+}
+
+.reveal-ready .scroll-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+}
+
+.reveal-ready .scroll-reveal.ad-card {
+    transform: translateY(24px) scale(0.975);
+}
+
+.reveal-ready .scroll-reveal.ad-card.is-visible {
+    transform: translateY(0) scale(1);
+}
+
+.reveal-ready .scroll-reveal.section-card.is-visible:hover,
+.reveal-ready .scroll-reveal.ad-card.is-visible:hover {
+    filter: blur(0);
+}
+
+@media (max-width: 760px) {
+    .sections {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .section-card {
+        min-height: 150px;
+        padding: 18px;
+    }
+
+    .section-card h3 {
+        font-size: clamp(1.35rem, 5vw, 1.8rem);
+    }
+
+    .section-card p {
+        font-size: 13px;
+    }
+
+    .reveal-ready .scroll-reveal {
+        transform: translateY(22px) scale(0.99);
+        filter: blur(6px);
+    }
+}
+
+@media (max-width: 460px) {
+    .sections {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal-ready .scroll-reveal,
+    .reveal-ready .scroll-reveal.is-visible {
+        opacity: 1;
+        transform: none;
+        filter: none;
+        transition: none;
+    }
+}
