@@ -1,8 +1,19 @@
 const OWNER_PHONE = "7700010890";
 const MAX_QTY = 25;
 
+const state = {
+    profile: {
+        name: "",
+        phone: "",
+        whatsapp_no: ""
+    },
+    cart_phone: ""
+};
+
 const productId = Number(document.body.dataset.productId || 0);
 const buyCardEl = document.getElementById("buyCard");
+const profileBtnEl = document.getElementById("profileBtn");
+const cartCountEl = document.getElementById("cartCount");
 
 function normalizeQty(value) {
     const qty = Number(value || 1);
@@ -15,12 +26,45 @@ function generateCartPhone() {
     return `9${String(base).slice(0, 9)}`;
 }
 
+function readProfile() {
+    const raw = localStorage.getItem("thathwamasi_profile");
+    if (!raw) return;
+    try {
+        const profile = JSON.parse(raw);
+        if (profile.name && profile.phone && profile.whatsapp_no) {
+            state.profile = profile;
+            if (profileBtnEl) profileBtnEl.textContent = `Deliver to ${profile.name}`;
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function askProfile() {
+    const name = prompt("Enter your name");
+    if (!name) return false;
+    const phone = prompt("Enter phone number");
+    if (!phone) return false;
+    const whatsapp = prompt("Enter WhatsApp number");
+    if (!whatsapp) return false;
+
+    state.profile = {
+        name: name.trim(),
+        phone: phone.trim(),
+        whatsapp_no: whatsapp.trim()
+    };
+    localStorage.setItem("thathwamasi_profile", JSON.stringify(state.profile));
+    if (profileBtnEl) profileBtnEl.textContent = `Deliver to ${state.profile.name}`;
+    return true;
+}
+
 function getOrCreateCartPhone() {
     let cartPhone = localStorage.getItem("thathwamasi_cart_phone");
     if (!cartPhone) {
         cartPhone = generateCartPhone();
         localStorage.setItem("thathwamasi_cart_phone", cartPhone);
     }
+    state.cart_phone = cartPhone;
     return cartPhone;
 }
 
@@ -52,6 +96,21 @@ async function apiPost(url, payload) {
     }
     if (!res.ok) throw new Error(data.error || data.detail || `Request failed (${res.status})`);
     return data;
+}
+
+async function refreshCartCount() {
+    const cartPhone = getOrCreateCartPhone();
+    if (!cartPhone) {
+        if (cartCountEl) cartCountEl.textContent = "0";
+        return;
+    }
+    try {
+        const cart = await apiGet(`/api/cart/view/?phone=${encodeURIComponent(cartPhone)}`);
+        const count = Number(cart.total_items || 0);
+        if (cartCountEl) cartCountEl.textContent = Number.isFinite(count) ? String(count) : "0";
+    } catch {
+        if (cartCountEl) cartCountEl.textContent = "0";
+    }
 }
 
 function renderProduct(product) {
@@ -110,6 +169,7 @@ function renderProduct(product) {
                 product_id: product.id,
                 quantity: qty,
             });
+            await refreshCartCount();
             window.location.href = "/billing/";
         } catch (err) {
             alert(err.message || "Unable to proceed");
@@ -120,6 +180,10 @@ function renderProduct(product) {
 }
 
 async function bootstrap() {
+    readProfile();
+    getOrCreateCartPhone();
+    await refreshCartCount();
+
     if (!productId) {
         buyCardEl.innerHTML = '<div class="state">Invalid product.</div>';
         return;
@@ -132,5 +196,7 @@ async function bootstrap() {
         buyCardEl.innerHTML = `<div class="state">${err.message || "Unable to load product."}</div>`;
     }
 }
+
+if (profileBtnEl) profileBtnEl.addEventListener("click", askProfile);
 
 bootstrap();
