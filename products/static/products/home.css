@@ -526,3 +526,46 @@ body {
         max-width: calc(100% - 24px);
     }
 }
+
+
+.ad-grid {
+    align-items: stretch;
+}
+
+.ad-card {
+    min-height: clamp(220px, 28vw, 280px);
+    background: linear-gradient(160deg, #a46a43, #d7a27b);
+}
+
+.ad-card img {
+    position: absolute;
+    inset: 0;
+}
+
+.ad-card .ad-overlay {
+    z-index: 1;
+}
+
+@media (max-width: 760px) {
+    .ad-grid {
+        gap: 14px;
+    }
+
+    .ad-card {
+        min-height: clamp(230px, 72vw, 320px);
+    }
+
+    .ad-overlay {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ad-card {
+        min-height: 240px;
+    }
+
+    .ad-overlay h3 {
+        font-size: 1.05rem;
+    }
+}
