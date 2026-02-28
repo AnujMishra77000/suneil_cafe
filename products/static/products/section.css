@@ -598,3 +598,31 @@ body {
         font-size: 17px;
     }
 }
+
+
+.empty--coming-soon {
+    display: grid;
+    gap: 10px;
+    place-items: center;
+    text-align: center;
+    min-height: 220px;
+    padding: 28px 22px;
+    background:
+        radial-gradient(circle at top, rgba(255, 222, 188, 0.9), transparent 48%),
+        linear-gradient(160deg, #fff8ef 0%, #ffe8d3 100%);
+    border: 1px dashed #d2a47d;
+    box-shadow: 0 18px 34px rgba(90, 46, 22, 0.08);
+}
+
+.empty--coming-soon strong {
+    color: var(--brand-700);
+    font-size: 1.05rem;
+    line-height: 1.35;
+}
+
+.empty--coming-soon span {
+    max-width: 34ch;
+    color: var(--muted);
+    font-size: 0.96rem;
+    line-height: 1.55;
+}

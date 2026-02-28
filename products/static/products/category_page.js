@@ -185,7 +185,12 @@ function renderProducts(title, products) {
 
     if (!productGridEl) return;
     if (!products.length) {
-        productGridEl.innerHTML = `<div class="empty">No products found in this category.</div>`;
+        productGridEl.innerHTML = `
+            <div class="empty empty--coming-soon">
+                <strong>Fresh & handmade goodies are coming soon.</strong>
+                <span>Our ovens are doing a happy dance and this category will be loaded very soon.</span>
+            </div>
+        `;
         return;
     }
 
