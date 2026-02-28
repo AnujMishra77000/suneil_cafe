@@ -1,5 +1,6 @@
 const state = {
     sectionName: document.body.dataset.section,
+    imageRoot: document.body.dataset.imageRoot || "/static/products/images/",
     categories: [],
     filteredCategories: [],
     profile: {
@@ -19,7 +20,7 @@ const profileBtnEl = document.getElementById("profileBtn");
 const cartCountEl = document.getElementById("cartCount");
 
 function sectionCategoryCacheKey() {
-    return `thathwamasi_categories_v3_${state.sectionName.toLowerCase()}`;
+    return `thathwamasi_categories_v4_${state.sectionName.toLowerCase()}`;
 }
 
 function readJsonCache(key, ttlMs) {
@@ -48,6 +49,15 @@ function normalizeList(payload) {
     if (Array.isArray(payload)) return payload;
     if (payload && Array.isArray(payload.results)) return payload.results;
     return [];
+}
+
+function escapeHtml(value) {
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 }
 
 function readProfile() {
@@ -124,6 +134,34 @@ function buildCategoryUrl(category) {
     return `/${state.sectionName.toLowerCase()}/category/${category.id}/`;
 }
 
+function normalizeImageRoot() {
+    return state.imageRoot.endsWith("/") ? state.imageRoot : `${state.imageRoot}/`;
+}
+
+function fallbackCategoryImage(categoryName) {
+    const name = String(categoryName || "").toLowerCase();
+    const imageRoot = normalizeImageRoot();
+    const rules = [
+        { pattern: /(bread|bun|pav|toast|rusk)/, file: "cr1.jpg" },
+        { pattern: /(cake|pastry|dessert|muffin|brownie)/, file: "cr2.jpg" },
+        { pattern: /(cookie|biscuit)/, file: "cr3.jpg" },
+        { pattern: /(khari|puff|croissant|roll)/, file: "cr4.jpg" },
+        { pattern: /(pizza|sandwich|burger|wrap)/, file: "cr5.jpg" },
+        { pattern: /(chips|namkeen|mixture|snack|sev|samosa|kachori)/, file: "cr6.jpg" },
+    ];
+
+    const match = rules.find((rule) => rule.pattern.test(name));
+    if (match) {
+        return `${imageRoot}${match.file}`;
+    }
+    return `${imageRoot}${state.sectionName === "snacks" ? "cr6.jpg" : "cr1.jpg"}`;
+}
+
+function resolveCategoryImage(category) {
+    const direct = String(category.image || "").trim();
+    return direct || fallbackCategoryImage(category.name);
+}
+
 function renderCategoryCards() {
     if (!categoryGridEl || !categoryCountEl) return;
     const visibleCategories = state.filteredCategories.length || !searchInputEl?.value.trim()
@@ -136,13 +174,21 @@ function renderCategoryCards() {
         return;
     }
 
-    categoryGridEl.innerHTML = visibleCategories.map((category) => `
-        <a class="category-card" href="${buildCategoryUrl(category)}" data-category-id="${category.id}">
-            <h3>${category.name}</h3>
-            <p>Open this category to view all related products.</p>
-            <span class="category-card-cta">View products</span>
-        </a>
-    `).join("");
+    categoryGridEl.innerHTML = visibleCategories.map((category) => {
+        const categoryName = escapeHtml(category.name);
+        const categoryImage = escapeHtml(resolveCategoryImage(category));
+        return `
+            <a class="category-card" href="${buildCategoryUrl(category)}" data-category-id="${category.id}" aria-label="View ${categoryName} products">
+                <span class="category-card-media" aria-hidden="true">
+                    <img src="${categoryImage}" alt="" loading="lazy" decoding="async" />
+                </span>
+                <span class="category-card-content">
+                    <h3>${categoryName}</h3>
+                    <span class="category-card-cta">View Products</span>
+                </span>
+            </a>
+        `;
+    }).join("");
     animateCardReveal("#categoryGrid .category-card");
 }
 

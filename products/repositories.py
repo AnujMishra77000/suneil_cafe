@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from .models import Category, Product
 
@@ -29,8 +29,16 @@ class ProductRepository:
             category_filter = Q(section__name__icontains=section)
             product_section_filter = Q(category__section__name__icontains=section)
 
+        product_image_subquery = (
+            Product.objects.filter(category_id=OuterRef("pk"))
+            .exclude(image="")
+            .order_by("-created_at", "name")
+            .values("image")[:1]
+        )
+
         categories = (
             Category.objects.select_related("section")
+            .annotate(card_image=Subquery(product_image_subquery))
             .filter(category_filter)
             .order_by("name")
         )
@@ -39,6 +47,7 @@ class ProductRepository:
                 "id": category.id,
                 "name": category.name,
                 "section": category.section.name,
+                "image": str(category.card_image or ""),
             }
             for category in categories
         ]
@@ -51,18 +60,26 @@ class ProductRepository:
         rows = (
             Product.objects.select_related("category", "category__section")
             .filter(product_section_filter)
-            .values("category_id", "category__name", "category__section__name")
-            .distinct()
-            .order_by("category__name")
+            .exclude(image="")
+            .values("category_id", "category__name", "category__section__name", "image")
+            .order_by("category__name", "-created_at", "name")
         )
-        return [
-            {
-                "id": row["category_id"],
-                "name": row["category__name"],
-                "section": row["category__section__name"],
-            }
-            for row in rows
-        ]
+        deduped = []
+        seen_category_ids = set()
+        for row in rows:
+            category_id = row["category_id"]
+            if category_id in seen_category_ids:
+                continue
+            seen_category_ids.add(category_id)
+            deduped.append(
+                {
+                    "id": category_id,
+                    "name": row["category__name"],
+                    "section": row["category__section__name"],
+                    "image": row["image"] or "",
+                }
+            )
+        return deduped
 
     @staticmethod
     def by_category(category_id):

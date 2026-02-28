@@ -485,49 +485,14 @@ class CategoryBySectionAPIView(generics.ListAPIView):
 class CategoryCardAPIView(APIView):
     """
     Returns lightweight category cards by section name.
-    Uses case-insensitive section filtering.
+    Uses one service path so card visuals stay consistent.
     """
 
     def get(self, request):
         section = request.GET.get("section", "").strip()
         if not section:
             return Response({"detail": "section query param is required"}, status=400)
-
-        section_key = section.lower()
-        cache_key = catalog_cache_key("category_cards", section_key)
-        cached = cache.get(cache_key)
-        if cached is not None:
-            return Response(cached)
-
-        if settings.USE_LAYERED_ARCHITECTURE:
-            data = ProductService.category_cards(section)
-            cache.set(cache_key, data, 180)
-            return Response(data)
-
-        if section_key in {"snack", "snacks"}:
-            category_filter = Q(section__name__in=["Snacks", "Snack"])
-        elif section_key in {"bakery", "backery"}:
-            category_filter = Q(section__name__in=["Bakery", "Backery"])
-        else:
-            category_filter = Q(section__name__icontains=section)
-
-        categories = (
-            Category.objects.select_related("section")
-            .only("id", "name", "section__name")
-            .filter(category_filter)
-            .order_by("name")
-        )
-
-        data = [
-            {
-                "id": category.id,
-                "name": category.name,
-                "section": category.section.name,
-            }
-            for category in categories
-        ]
-        cache.set(cache_key, data, 120 if not data else 300)
-        return Response(data)
+        return Response(ProductService.category_cards(section))
 
 
 # 🍩 Products by Category

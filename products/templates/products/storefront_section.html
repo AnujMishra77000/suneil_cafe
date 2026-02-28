@@ -21,12 +21,12 @@
     </script>
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
-    <link rel="stylesheet" href="{% static 'products/section.css' %}?v=20260228-category2" />
+    <link rel="stylesheet" href="{% static 'products/section.css' %}?v=20260228-category3" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
 </head>
-<body class="has-customer-menu" data-section="{{ section_name }}">
+<body class="has-customer-menu" data-section="{{ section_name }}" data-image-root="{% static 'products/images/' %}">
     <div class="customer-menu" data-customer-menu>
         <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
         <nav class="customer-menu-panel" data-menu-panel>
@@ -45,7 +45,6 @@
                 <div class="site-copy">
                     <p class="site-kicker">Thathwamasi Bakery Cafe</p>
                     <h1 class="site-title site-title--compact">{{ section_title }}</h1>
-                    <p class="page-label">Choose a category to open a dedicated page with all related {{ section_title|lower }} products.</p>
                 </div>
             </div>
         </div>
@@ -74,13 +73,9 @@
             <div id="categoryGrid" class="category-grid"></div>
         </section>
 
-        <section class="browse-note" data-fx>
-            <h2>Dedicated Category Pages</h2>
-            <p>Select any category above to open its own page with all matching products, cleaner browsing, and direct cart actions.</p>
-        </section>
     </main>
 
-    <script src="{% static 'products/section.js' %}?v=20260228-category2"></script>
+    <script src="{% static 'products/section.js' %}?v=20260228-category3"></script>
     <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
     <script>
