@@ -569,3 +569,136 @@ body {
         font-size: 1.05rem;
     }
 }
+
+
+.ad-card {
+    transform: translateY(14px) scale(0.985);
+    opacity: 0;
+    animation: fade-up-card 560ms ease forwards;
+    transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
+    will-change: transform;
+}
+
+.ad-card:nth-child(1) { animation-delay: 40ms; }
+.ad-card:nth-child(2) { animation-delay: 110ms; }
+.ad-card:nth-child(3) { animation-delay: 180ms; }
+
+.ad-card img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    opacity: 1;
+    transform: scale(1.01);
+    transition: transform 420ms ease, filter 320ms ease, opacity 220ms ease;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.ad-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(16, 9, 6, 0.18));
+    z-index: 0;
+    pointer-events: none;
+}
+
+.ad-card .ad-overlay {
+    z-index: 1;
+    transition: background 320ms ease;
+}
+
+.ad-card:hover,
+.ad-card:focus-within {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 20px 36px rgba(54, 26, 12, 0.18);
+    border-color: rgba(255, 255, 255, 0.46);
+}
+
+.ad-card:hover img,
+.ad-card:focus-within img {
+    transform: scale(1.08);
+    filter: saturate(1.08) contrast(1.03);
+}
+
+.ad-card:hover .ad-overlay,
+.ad-card:focus-within .ad-overlay {
+    background: linear-gradient(180deg, rgba(26, 12, 7, 0.03), rgba(26, 12, 7, 0.82) 72%);
+}
+
+@keyframes fade-up-card {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 760px) {
+    .ad-card {
+        animation-duration: 480ms;
+    }
+
+    .ad-card img {
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ad-card,
+    .ad-card img,
+    .ad-card .ad-overlay {
+        animation: none;
+        transition: none;
+        transform: none;
+        opacity: 1;
+    }
+}
+
+
+/* Mobile-first offers cards: use a background media layer instead of relying on img rendering. */
+.ad-grid {
+    grid-template-columns: 1fr;
+}
+
+.ad-card {
+    display: block;
+}
+
+.ad-media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-color: #b27a54;
+    background-image: var(--ad-image);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    transform: scale(1.01);
+    transition: transform 420ms ease, filter 320ms ease, opacity 220ms ease;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.ad-card:hover .ad-media,
+.ad-card:focus-within .ad-media {
+    transform: scale(1.08);
+    filter: saturate(1.08) contrast(1.03);
+}
+
+.ad-card:active {
+    transform: translateY(-2px) scale(0.995);
+}
+
+@media (min-width: 761px) {
+    .ad-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}

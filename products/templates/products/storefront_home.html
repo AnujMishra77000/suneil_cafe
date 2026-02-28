@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260228-offers1" />
+    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260228-offers3" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
@@ -87,7 +87,7 @@
             <div class="ad-grid">
                 {% for ad in ads %}
                 <article class="ad-card">
-                    <img src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="lazy" decoding="async" />
+                    <div class="ad-media" style="--ad-image: url('{{ ad.image.url }}');" role="img" aria-label="{{ ad.title }}"></div>
                     <div class="ad-overlay">
                         <h3>{{ ad.title }}</h3>
                         {% if ad.subtitle %}<p>{{ ad.subtitle }}</p>{% endif %}
