@@ -17,3 +17,7 @@ db.sqlite3
 
 # Local tooling
 .DS_Store
+
+Venv
+docker-compose.hostinger.yml
+deploy/env/hostinger.env

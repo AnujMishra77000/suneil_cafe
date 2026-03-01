@@ -19,6 +19,82 @@ from .models import DashboardAccountProfile
 User = get_user_model()
 
 
+PORTAL_CARD_CONFIG = {
+    "admin-register": {
+        "title": "Admin Registration",
+        "eyebrow": "Create Admin",
+        "description": "Register a fresh Admin account with user name, mobile number, mail ID, password, and master password.",
+        "button_label": "Register Admin",
+        "url_name": "dashboard-auth-admin-register",
+    },
+    "admin-login": {
+        "title": "Login as Admin",
+        "eyebrow": "Admin Access",
+        "description": "Open the Admin login form and access the operations dashboard with mail ID and password.",
+        "button_label": "Admin Login",
+        "url_name": "dashboard-auth-admin-login",
+    },
+    "staff-register": {
+        "title": "Staff Registration",
+        "eyebrow": "Create Staff",
+        "description": "Register a Staff account with user name, mobile number, mail ID, password, and master password.",
+        "button_label": "Register Staff",
+        "url_name": "dashboard-auth-staff-register",
+    },
+    "staff-login": {
+        "title": "Login as Staff",
+        "eyebrow": "Staff Access",
+        "description": "Open the Staff login form and sign in with mail ID and password.",
+        "button_label": "Staff Login",
+        "url_name": "dashboard-auth-staff-login",
+    },
+}
+
+
+FORM_PAGE_CONFIG = {
+    "admin-register": {
+        "title": "Admin Registration",
+        "eyebrow": "Create Admin",
+        "description": "Fill every field carefully. Admin accounts require the master password and will get full dashboard access.",
+        "submit_label": "Register as Admin",
+        "form_class": AdminRegistrationForm,
+        "prefix": "admin_register",
+        "success_redirect": "/admin-dashboard/",
+        "mode": "register",
+    },
+    "admin-login": {
+        "title": "Login as Admin",
+        "eyebrow": "Admin Access",
+        "description": "Use your registered mail ID and password to open the Admin dashboard.",
+        "submit_label": "Login as Admin",
+        "form_class": AdminEmailLoginForm,
+        "prefix": "admin_login",
+        "success_redirect": "/admin-dashboard/",
+        "mode": "login",
+    },
+    "staff-register": {
+        "title": "Staff Registration",
+        "eyebrow": "Create Staff",
+        "description": "Create a Staff account with all required profile fields. Staff registration also requires the master password.",
+        "submit_label": "Register as Staff",
+        "form_class": StaffRegistrationForm,
+        "prefix": "staff_register",
+        "success_redirect": "/admin-dashboard/",
+        "mode": "register",
+    },
+    "staff-login": {
+        "title": "Login as Staff",
+        "eyebrow": "Staff Access",
+        "description": "Use your registered mail ID and password to enter the Staff dashboard access flow.",
+        "submit_label": "Login as Staff",
+        "form_class": StaffEmailLoginForm,
+        "prefix": "staff_login",
+        "success_redirect": "/admin-dashboard/",
+        "mode": "login",
+    },
+}
+
+
 def _safe_next_url(request, default):
     candidate = (request.POST.get("next") or request.GET.get("next") or "").strip()
     if candidate and url_has_allowed_host_and_scheme(
@@ -30,10 +106,12 @@ def _safe_next_url(request, default):
     return default
 
 
+
 def _dashboard_session_expiry_seconds():
     from django.conf import settings
 
     return int(getattr(settings, "DASHBOARD_SESSION_AGE_SECONDS", 12 * 60 * 60))
+
 
 
 def _login_dashboard_user(request, user):
@@ -42,83 +120,130 @@ def _login_dashboard_user(request, user):
     request.session.set_expiry(_dashboard_session_expiry_seconds())
 
 
+
 def _role_label(user):
     return "Admin" if user.is_superuser else "Staff"
 
 
-class DashboardLoginView(View):
-    template_name = "orders/admin_auth_login.html"
-
-    form_map = {
-        "admin_register": ("admin_registration_form", AdminRegistrationForm, "admin_register"),
-        "admin_login": ("admin_login_form", AdminEmailLoginForm, "admin_login"),
-        "staff_register": ("staff_registration_form", StaffRegistrationForm, "staff_register"),
-        "staff_login": ("staff_login_form", StaffEmailLoginForm, "staff_login"),
-    }
-
-    def _build_forms(self, data=None, action=None):
-        forms = {}
-        for action_name, (context_key, form_class, prefix) in self.form_map.items():
-            bound_data = data if action_name == action else None
-            forms[context_key] = form_class(data=bound_data, prefix=prefix)
-        return forms
-
-    def _context(self, request, **kwargs):
-        context = {
-            "next_url": request.POST.get("next") or request.GET.get("next", ""),
-            "active_action": kwargs.get("active_action", ""),
-        }
-        context.update(kwargs.get("forms") or self._build_forms())
-        return context
+class DashboardAccessPortalView(View):
+    template_name = "orders/admin_auth_portal.html"
 
     def get(self, request):
         if is_dashboard_staff(request.user):
             return redirect(_safe_next_url(request, "/admin-dashboard/"))
-        return render(request, self.template_name, self._context(request))
+
+        cards = []
+        for slug, item in PORTAL_CARD_CONFIG.items():
+            cards.append(
+                {
+                    "slug": slug,
+                    "title": item["title"],
+                    "eyebrow": item["eyebrow"],
+                    "description": item["description"],
+                    "button_label": item["button_label"],
+                    "url": reverse(item["url_name"]),
+                }
+            )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "cards": cards,
+                "next_url": request.GET.get("next", ""),
+            },
+        )
+
+
+class DashboardAuthFormView(View):
+    template_name = "orders/admin_auth_form.html"
+    page_key = ""
+
+    def _page_config(self):
+        return FORM_PAGE_CONFIG[self.page_key]
+
+    def _form_instance(self, data=None):
+        config = self._page_config()
+        return config["form_class"](data=data, prefix=config["prefix"])
+
+    def _context(self, request, form, status_code=200):
+        config = self._page_config()
+        return {
+            "page_title": config["title"],
+            "page_eyebrow": config["eyebrow"],
+            "page_description": config["description"],
+            "submit_label": config["submit_label"],
+            "form": form,
+            "mode": config["mode"],
+            "next_url": request.POST.get("next") or request.GET.get("next", ""),
+            "portal_url": reverse("dashboard-auth-portal"),
+            "status_code": status_code,
+        }
+
+    def get(self, request):
+        if is_dashboard_staff(request.user):
+            return redirect(_safe_next_url(request, "/admin-dashboard/"))
+        form = self._form_instance()
+        return render(request, self.template_name, self._context(request, form))
 
     def post(self, request):
         if is_dashboard_staff(request.user):
             return redirect(_safe_next_url(request, "/admin-dashboard/"))
 
-        action = (request.POST.get("action") or "").strip()
-        if action not in self.form_map:
-            return render(request, self.template_name, self._context(request), status=400)
-
-        forms = self._build_forms(data=request.POST, action=action)
-        context_key, _, _ = self.form_map[action]
-        form = forms[context_key]
+        form = self._form_instance(data=request.POST)
         if not form.is_valid():
-            return render(
-                request,
-                self.template_name,
-                self._context(request, forms=forms, active_action=action),
-                status=400,
-            )
+            context = self._context(request, form, status_code=400)
+            return render(request, self.template_name, context, status=400)
 
-        if action.endswith("register"):
+        config = self._page_config()
+        if config["mode"] == "register":
             user = form.save()
         else:
             user = form.get_user()
 
         _login_dashboard_user(request, user)
-        return redirect(_safe_next_url(request, "/admin-dashboard/"))
+        return redirect(_safe_next_url(request, config["success_redirect"]))
+
+
+class DashboardAdminRegisterView(DashboardAuthFormView):
+    page_key = "admin-register"
+
+
+class DashboardAdminLoginView(DashboardAuthFormView):
+    page_key = "admin-login"
+
+
+class DashboardStaffRegisterView(DashboardAuthFormView):
+    page_key = "staff-register"
+
+
+class DashboardStaffLoginView(DashboardAuthFormView):
+    page_key = "staff-login"
+
+
+class DashboardLoginView(View):
+    def get(self, request):
+        return redirect(reverse("dashboard-auth-portal"))
+
+    def post(self, request):
+        return redirect(reverse("dashboard-auth-portal"))
 
 
 class DashboardLogoutView(View):
     def post(self, request):
         logout(request)
-        return redirect(reverse("dashboard-auth-login"))
+        return redirect(reverse("dashboard-auth-portal"))
 
     def get(self, request):
-        return redirect(reverse("dashboard-auth-login"))
+        return redirect(reverse("dashboard-auth-portal"))
 
 
 class DashboardAdminBootstrapView(View):
     def get(self, request):
-        return redirect(f"{reverse('dashboard-auth-login')}#admin-register")
+        return redirect(reverse("dashboard-auth-admin-register"))
 
     def post(self, request):
-        return redirect(f"{reverse('dashboard-auth-login')}#admin-register")
+        return redirect(reverse("dashboard-auth-admin-register"))
 
 
 @method_decorator(dashboard_admin_required, name="dispatch")
@@ -146,7 +271,7 @@ class AdminStaffManageView(View):
             self.template_name,
             {
                 "rows": rows,
-                "login_url": reverse("dashboard-auth-login"),
+                "login_url": reverse("dashboard-auth-portal"),
                 "profile_count": DashboardAccountProfile.objects.count(),
             },
         )

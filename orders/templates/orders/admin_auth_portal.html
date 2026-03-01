@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Access | Thathwamasi</title>
+    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260301-auth4" />
+</head>
+<body>
+    <main class="auth-shell auth-shell--wide">
+        <section class="auth-card auth-card--portal">
+            <div class="auth-top auth-top--center">
+                <p class="auth-eyebrow">Dashboard Access</p>
+                <h1>Choose how you want to enter</h1>
+                <p>Start from a small role-based access card. Each card opens its own page where the user can register or login without crowding the portal.</p>
+            </div>
+
+            <section class="portal-grid portal-grid--cards">
+                {% for card in cards %}
+                <article class="portal-card portal-card--link">
+                    <div class="portal-card__head">
+                        <p class="portal-card__eyebrow">{{ card.eyebrow }}</p>
+                        <h2>{{ card.title }}</h2>
+                    </div>
+                    <p class="portal-card__copy">{{ card.description }}</p>
+                    <a class="btn btn-primary" href="{{ card.url }}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">{{ card.button_label }}</a>
+                </article>
+                {% endfor %}
+            </section>
+        </section>
+    </main>
+</body>
+</html>

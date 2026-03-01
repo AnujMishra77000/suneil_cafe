@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page_title }} | Thathwamasi</title>
+    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260301-auth4" />
+</head>
+<body>
+    <main class="auth-shell">
+        <section class="auth-card auth-card--form-page">
+            <div class="toolbar toolbar--simple">
+                <a class="btn" href="{{ portal_url }}">Back to Access Portal</a>
+            </div>
+
+            <div class="auth-top">
+                <p class="auth-eyebrow">{{ page_eyebrow }}</p>
+                <h1>{{ page_title }}</h1>
+                <p>{{ page_description }}</p>
+            </div>
+
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next_url }}" />
+
+                {% if form.non_field_errors %}
+                <div class="banner banner-warn">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                {% for field in form %}
+                <div class="field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<small>{{ field.help_text|safe }}</small>{% endif %}
+                    <div class="errors">{{ field.errors }}</div>
+                </div>
+                {% endfor %}
+
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+                    <a class="btn" href="{{ portal_url }}">Cancel</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

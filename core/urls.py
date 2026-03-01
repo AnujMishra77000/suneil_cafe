@@ -21,9 +21,14 @@ from django.conf.urls.static import static
 
 from core.system_views import ArchitectureStatusAPIView
 from orders.auth_views import (
+    DashboardAccessPortalView,
     DashboardLoginView,
     DashboardLogoutView,
     DashboardAdminBootstrapView,
+    DashboardAdminRegisterView,
+    DashboardAdminLoginView,
+    DashboardStaffRegisterView,
+    DashboardStaffLoginView,
     AdminStaffManageView,
 )
 from orders.views import (
@@ -60,10 +65,14 @@ from products.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('dashboard-auth/', DashboardLoginView.as_view(), name='dashboard-auth-portal'),
+    path('dashboard-auth/', DashboardAccessPortalView.as_view(), name='dashboard-auth-portal'),
     path('dashboard-auth/login/', DashboardLoginView.as_view(), name='dashboard-auth-login'),
     path('dashboard-auth/logout/', DashboardLogoutView.as_view(), name='dashboard-auth-logout'),
     path('dashboard-auth/register-admin/', DashboardAdminBootstrapView.as_view(), name='dashboard-auth-register-admin'),
+    path('dashboard-auth/admin/register/', DashboardAdminRegisterView.as_view(), name='dashboard-auth-admin-register'),
+    path('dashboard-auth/admin/login/', DashboardAdminLoginView.as_view(), name='dashboard-auth-admin-login'),
+    path('dashboard-auth/staff/register/', DashboardStaffRegisterView.as_view(), name='dashboard-auth-staff-register'),
+    path('dashboard-auth/staff/login/', DashboardStaffLoginView.as_view(), name='dashboard-auth-staff-login'),
     path('', StorefrontHomeView.as_view(), name='storefront-home'),
     path('billing/', BillingPageView.as_view(), name='billing-page'),
     path('order-details/', CustomerOrderDetailsPageView.as_view(), name='customer-order-details'),

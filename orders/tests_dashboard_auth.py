@@ -10,11 +10,19 @@ User = get_user_model()
 
 @override_settings(ADMIN_MASTER_PASSWORD="MasterPass123")
 class DashboardAuthTests(TestCase):
+    def test_dashboard_portal_shows_navigation_cards(self):
+        response = self.client.get(reverse("dashboard-auth-portal"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Admin Registration")
+        self.assertContains(response, reverse("dashboard-auth-admin-register"))
+        self.assertContains(response, reverse("dashboard-auth-admin-login"))
+        self.assertContains(response, reverse("dashboard-auth-staff-register"))
+        self.assertContains(response, reverse("dashboard-auth-staff-login"))
+
     def test_admin_registration_creates_admin_profile(self):
         response = self.client.post(
-            reverse("dashboard-auth-login"),
+            reverse("dashboard-auth-admin-register"),
             {
-                "action": "admin_register",
                 "admin_register-username": "mainadmin",
                 "admin_register-mobile_number": "9876543210",
                 "admin_register-email": "admin@example.com",
@@ -33,9 +41,8 @@ class DashboardAuthTests(TestCase):
 
     def test_staff_registration_creates_staff_profile(self):
         response = self.client.post(
-            reverse("dashboard-auth-login"),
+            reverse("dashboard-auth-staff-register"),
             {
-                "action": "staff_register",
                 "staff_register-username": "floorstaff",
                 "staff_register-mobile_number": "9123456780",
                 "staff_register-email": "staff@example.com",
@@ -61,9 +68,8 @@ class DashboardAuthTests(TestCase):
         )
         DashboardAccountProfile.objects.create(user=user, email="boss@example.com", mobile_number="9998887776")
         response = self.client.post(
-            reverse("dashboard-auth-login"),
+            reverse("dashboard-auth-admin-login"),
             {
-                "action": "admin_login",
                 "admin_login-email": "boss@example.com",
                 "admin_login-password": "BossPass12345",
             },
@@ -80,9 +86,8 @@ class DashboardAuthTests(TestCase):
         )
         DashboardAccountProfile.objects.create(user=user, email="boss@example.com", mobile_number="9998887776")
         response = self.client.post(
-            reverse("dashboard-auth-login"),
+            reverse("dashboard-auth-staff-login"),
             {
-                "action": "staff_login",
                 "staff_login-email": "boss@example.com",
                 "staff_login-password": "BossPass12345",
             },
