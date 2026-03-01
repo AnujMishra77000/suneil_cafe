@@ -81,7 +81,7 @@ services:
       - "6432:6432"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 6432 -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\" || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 6432 -U $${PGBOUNCER_DB_USER} -d app || exit 1"]
       interval: 20s
       timeout: 5s
       retries: 10

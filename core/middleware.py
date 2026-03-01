@@ -16,6 +16,7 @@ class LoginRateLimitMiddleware:
         self.window_seconds = int(getattr(settings, "RATE_LIMIT_ADMIN_LOGIN_WINDOW_SECONDS", 60))
         self.protected_paths = {
             "/admin/login": "admin_login",
+            "/dashboard-auth": "dashboard_access",
             "/dashboard-auth/login": "dashboard_login",
             "/dashboard-auth/register-admin": "dashboard_admin_register",
         }

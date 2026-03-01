@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -183,3 +184,28 @@ class DeliveryContactSetting(models.Model):
 
     def __str__(self):
         return self.delivery_contact_number or "No delivery contact"
+
+
+class DashboardAccountProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="dashboard_profile")
+    email = models.EmailField(unique=True)
+    mobile_number = models.CharField(max_length=15, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["user__username"]
+
+    def clean(self):
+        self.email = (self.email or "").strip().lower()
+        digits = "".join(ch for ch in str(self.mobile_number or "") if ch.isdigit())
+        if len(digits) != 10:
+            raise ValidationError({"mobile_number": "Mobile number must be exactly 10 digits"})
+        self.mobile_number = digits
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.username} ({self.email})"

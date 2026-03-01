@@ -16,7 +16,7 @@
                 <p class="top-meta">Signed in as <strong>{{ request.user.username }}</strong> · {% if request.user.is_superuser %}Admin{% else %}Staff{% endif %}</p>
             </div>
             <div class="top-actions">
-                <a href="/admin-dashboard/team/" class="btn btn-light">Team Access</a>
+                <a href="/admin-dashboard/team/" class="btn btn-light">Accounts</a>
                 <form method="post" action="{% url 'dashboard-auth-logout' %}" class="inline-form">
                     {% csrf_token %}
                     <button type="submit" class="btn">Logout</button>

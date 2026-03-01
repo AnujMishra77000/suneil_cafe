@@ -4,20 +4,21 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Team Access | Thathwamasi Admin</title>
-    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260301-auth2" />
+    <title>Dashboard Accounts | Thathwamasi Admin</title>
+    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260301-auth3" />
 </head>
 <body>
-    <main class="auth-shell" style="padding-top:18px;padding-bottom:18px;">
+    <main class="auth-shell auth-shell--wide" style="padding-top:18px;padding-bottom:18px;">
         <section class="auth-card auth-card--wide">
             <div class="toolbar">
                 <div class="auth-top" style="margin-bottom:0;">
-                    <p class="auth-eyebrow">Access Control</p>
-                    <h1>Dashboard account management</h1>
-                    <p>Admins can create Staff accounts directly and can create additional Admin accounts only after re-entering the master password.</p>
+                    <p class="auth-eyebrow">Account Directory</p>
+                    <h1>Dashboard accounts</h1>
+                    <p>Registrations and role-specific logins now happen on the dashboard access portal. This page is a read-only directory of current dashboard accounts.</p>
                 </div>
                 <div class="toolbar-actions">
                     <a class="btn" href="/admin-dashboard/">Back to Dashboard</a>
+                    <a class="btn" href="{{ login_url }}">Open Access Portal</a>
                     <form method="post" action="{% url 'dashboard-auth-logout' %}" class="inline-form">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-primary">Logout</button>
@@ -25,113 +26,51 @@
                 </div>
             </div>
 
-            {% if not admin_master_password_configured %}
-            <div class="banner banner-warn" style="margin-bottom:16px;">ADMIN_MASTER_PASSWORD is not configured on the server. Staff account creation still works, but Admin account creation is blocked until that secret is set.</div>
-            {% endif %}
+            <div class="banner banner-info" style="margin-bottom:16px;">Total dashboard profiles with email/mobile records: <strong>{{ profile_count }}</strong></div>
 
-            <section class="layout">
-                <div class="card">
-                    <h2>Create Dashboard Account</h2>
-                    <form method="post" class="auth-form">
-                        {% csrf_token %}
-
-                        {% if form.non_field_errors %}
-                        <div class="banner banner-warn">{{ form.non_field_errors }}</div>
-                        {% endif %}
-
-                        <div class="form-grid">
-                            <div class="field">
-                                <label for="id_full_name">Team Member Name</label>
-                                {{ form.full_name }}
-                                <div class="errors">{{ form.full_name.errors }}</div>
-                            </div>
-                            <div class="field">
-                                <label for="id_email">Email</label>
-                                {{ form.email }}
-                                <div class="errors">{{ form.email.errors }}</div>
-                            </div>
-                            <div class="field">
-                                <label for="id_role">Role</label>
-                                {{ form.role }}
-                                <small>Choose Staff for operations access or Admin for full dashboard control.</small>
-                                <div class="errors">{{ form.role.errors }}</div>
-                            </div>
-                            <div class="field">
-                                <label for="id_master_password">Master Password</label>
-                                {{ form.master_password }}
-                                <small>Enter this only when generating an Admin account.</small>
-                                <div class="errors">{{ form.master_password.errors }}</div>
-                            </div>
-                        </div>
-
-                        <div class="actions">
-                            <button type="submit" class="btn btn-primary">Generate Credentials</button>
-                        </div>
-                    </form>
-
-                    <p class="meta-note">Generated credentials are shown once on this page. Share them securely with the assigned team member and rotate them later through your controlled operations process.</p>
-
-                    {% if generated_user_id and generated_password %}
-                    <div class="generated-box">
-                        <div class="banner banner-ok">{{ generated_role }} credentials generated for <strong>{{ generated_name }}</strong>.</div>
-                        <div class="cred-row">
-                            <span class="cred-label">Role</span>
-                            <span class="cred-value">{{ generated_role }}</span>
-                        </div>
-                        <div class="cred-row">
-                            <span class="cred-label">User ID</span>
-                            <span class="cred-value">{{ generated_user_id }}</span>
-                        </div>
-                        <div class="cred-row">
-                            <span class="cred-label">Password</span>
-                            <span class="cred-value">{{ generated_password }}</span>
-                        </div>
-                    </div>
-                    {% endif %}
+            <div class="card">
+                <h2>Current Dashboard Accounts</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User Name</th>
+                                <th>Mail ID</th>
+                                <th>Mobile No.</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Last Login</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in rows %}
+                            <tr>
+                                <td>{{ row.username }}</td>
+                                <td>{{ row.email }}</td>
+                                <td>{{ row.mobile_number }}</td>
+                                <td>
+                                    {% if row.role == 'Admin' %}
+                                    <span class="role-pill role-admin">Admin</span>
+                                    {% else %}
+                                    <span class="role-pill role-staff">Staff</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if row.is_active %}
+                                    <span class="state-pill state-active">Active</span>
+                                    {% else %}
+                                    <span class="state-pill state-inactive">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{% if row.last_login %}{{ row.last_login|date:"Y-m-d H:i" }}{% else %}-{% endif %}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6">No dashboard users found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-
-                <div class="card">
-                    <h2>Current Dashboard Accounts</h2>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>User ID</th>
-                                    <th>Name</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Last Login</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for row in rows %}
-                                <tr>
-                                    <td>{{ row.username }}</td>
-                                    <td>{{ row.display_name }}</td>
-                                    <td>
-                                        {% if row.role == 'Admin' %}
-                                        <span class="role-pill role-admin">Admin</span>
-                                        {% else %}
-                                        <span class="role-pill role-staff">Staff</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if row.is_active %}
-                                        <span class="state-pill state-active">Active</span>
-                                        {% else %}
-                                        <span class="state-pill state-inactive">Inactive</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{% if row.last_login %}{{ row.last_login|date:"Y-m-d H:i" }}{% else %}-{% endif %}</td>
-                                </tr>
-                                {% empty %}
-                                <tr><td colspan="5">No dashboard users found.</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+            </div>
         </section>
     </main>
 </body>

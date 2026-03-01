@@ -60,6 +60,7 @@ from products.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('dashboard-auth/', DashboardLoginView.as_view(), name='dashboard-auth-portal'),
     path('dashboard-auth/login/', DashboardLoginView.as_view(), name='dashboard-auth-login'),
     path('dashboard-auth/logout/', DashboardLogoutView.as_view(), name='dashboard-auth-logout'),
     path('dashboard-auth/register-admin/', DashboardAdminBootstrapView.as_view(), name='dashboard-auth-register-admin'),

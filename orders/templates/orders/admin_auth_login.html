@@ -4,48 +4,179 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard Login | Thathwamasi</title>
-    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260301-auth2" />
+    <title>Dashboard Access | Thathwamasi</title>
+    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260301-auth3" />
 </head>
 <body>
-    <main class="auth-shell">
-        <section class="auth-card">
-            <div class="auth-top">
-                <p class="auth-eyebrow">Secure Dashboard Access</p>
-                <h1>Admin and staff login</h1>
-                <p>Use your dashboard user ID and password. This login protects the live operations area without exposing the framework login as the main entry point.</p>
+    <main class="auth-shell auth-shell--wide">
+        <section class="auth-card auth-card--portal">
+            <div class="auth-top auth-top--center">
+                <p class="auth-eyebrow">Dashboard Access</p>
+                <h1>Admin and staff access portal</h1>
+                <p>Use the role-specific forms below. Both Admin and Staff registration require the master password. Login uses mail ID and password.</p>
             </div>
 
-            <form method="post" class="auth-form">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ next_url }}" />
+            <section class="portal-grid">
+                <article class="portal-card{% if active_action == 'admin_register' %} portal-card--active{% endif %}" id="admin-register">
+                    <div class="portal-card__head">
+                        <p class="portal-card__eyebrow">Section 1</p>
+                        <h2>Admin Registration</h2>
+                    </div>
+                    <form method="post" class="auth-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="admin_register" />
+                        <input type="hidden" name="next" value="{{ next_url }}" />
 
-                {% if form.non_field_errors %}
-                <div class="banner banner-warn">{{ form.non_field_errors }}</div>
-                {% endif %}
+                        {% if active_action == 'admin_register' and admin_registration_form.non_field_errors %}
+                        <div class="banner banner-warn">{{ admin_registration_form.non_field_errors }}</div>
+                        {% endif %}
 
-                <div class="field">
-                    <label for="id_username">User ID</label>
-                    {{ form.username }}
-                    <div class="errors">{{ form.username.errors }}</div>
-                </div>
+                        <div class="field">
+                            <label for="{{ admin_registration_form.username.id_for_label }}">User Name</label>
+                            {{ admin_registration_form.username }}
+                            <div class="errors">{{ admin_registration_form.username.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ admin_registration_form.mobile_number.id_for_label }}">Mobile No.</label>
+                            {{ admin_registration_form.mobile_number }}
+                            <div class="errors">{{ admin_registration_form.mobile_number.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ admin_registration_form.email.id_for_label }}">Mail ID</label>
+                            {{ admin_registration_form.email }}
+                            <div class="errors">{{ admin_registration_form.email.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ admin_registration_form.password1.id_for_label }}">Password</label>
+                            {{ admin_registration_form.password1 }}
+                            <div class="errors">{{ admin_registration_form.password1.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ admin_registration_form.password2.id_for_label }}">Confirm Password</label>
+                            {{ admin_registration_form.password2 }}
+                            <div class="errors">{{ admin_registration_form.password2.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ admin_registration_form.master_password.id_for_label }}">Master Password</label>
+                            {{ admin_registration_form.master_password }}
+                            <div class="errors">{{ admin_registration_form.master_password.errors }}</div>
+                        </div>
+                        <div class="actions">
+                            <button type="submit" class="btn btn-primary">Register as Admin</button>
+                        </div>
+                    </form>
+                </article>
 
-                <div class="field">
-                    <label for="id_password">Password</label>
-                    {{ form.password }}
-                    <div class="errors">{{ form.password.errors }}</div>
-                </div>
+                <article class="portal-card{% if active_action == 'admin_login' %} portal-card--active{% endif %}">
+                    <div class="portal-card__head">
+                        <p class="portal-card__eyebrow">Section 2</p>
+                        <h2>Login as Admin</h2>
+                    </div>
+                    <form method="post" class="auth-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="admin_login" />
+                        <input type="hidden" name="next" value="{{ next_url }}" />
 
-                <div class="actions">
-                    <button type="submit" class="btn btn-primary">Login to Dashboard</button>
-                </div>
-            </form>
+                        {% if active_action == 'admin_login' and admin_login_form.non_field_errors %}
+                        <div class="banner banner-warn">{{ admin_login_form.non_field_errors }}</div>
+                        {% endif %}
 
-            {% if bootstrap_open %}
-            <div class="help-links">
-                <a href="{% url 'dashboard-auth-register-admin' %}">Register First Admin</a>
-            </div>
-            {% endif %}
+                        <div class="field">
+                            <label for="{{ admin_login_form.email.id_for_label }}">Mail ID</label>
+                            {{ admin_login_form.email }}
+                            <div class="errors">{{ admin_login_form.email.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ admin_login_form.password.id_for_label }}">Password</label>
+                            {{ admin_login_form.password }}
+                            <div class="errors">{{ admin_login_form.password.errors }}</div>
+                        </div>
+                        <div class="actions">
+                            <button type="submit" class="btn btn-primary">Login as Admin</button>
+                        </div>
+                    </form>
+                </article>
+
+                <article class="portal-card{% if active_action == 'staff_register' %} portal-card--active{% endif %}">
+                    <div class="portal-card__head">
+                        <p class="portal-card__eyebrow">Section 3</p>
+                        <h2>Staff Registration</h2>
+                    </div>
+                    <form method="post" class="auth-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="staff_register" />
+                        <input type="hidden" name="next" value="{{ next_url }}" />
+
+                        {% if active_action == 'staff_register' and staff_registration_form.non_field_errors %}
+                        <div class="banner banner-warn">{{ staff_registration_form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <div class="field">
+                            <label for="{{ staff_registration_form.username.id_for_label }}">User Name</label>
+                            {{ staff_registration_form.username }}
+                            <div class="errors">{{ staff_registration_form.username.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ staff_registration_form.mobile_number.id_for_label }}">Mobile No.</label>
+                            {{ staff_registration_form.mobile_number }}
+                            <div class="errors">{{ staff_registration_form.mobile_number.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ staff_registration_form.email.id_for_label }}">Mail ID</label>
+                            {{ staff_registration_form.email }}
+                            <div class="errors">{{ staff_registration_form.email.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ staff_registration_form.password1.id_for_label }}">Password</label>
+                            {{ staff_registration_form.password1 }}
+                            <div class="errors">{{ staff_registration_form.password1.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ staff_registration_form.password2.id_for_label }}">Confirm Password</label>
+                            {{ staff_registration_form.password2 }}
+                            <div class="errors">{{ staff_registration_form.password2.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ staff_registration_form.master_password.id_for_label }}">Master Password</label>
+                            {{ staff_registration_form.master_password }}
+                            <div class="errors">{{ staff_registration_form.master_password.errors }}</div>
+                        </div>
+                        <div class="actions">
+                            <button type="submit" class="btn btn-primary">Register as Staff</button>
+                        </div>
+                    </form>
+                </article>
+
+                <article class="portal-card{% if active_action == 'staff_login' %} portal-card--active{% endif %}">
+                    <div class="portal-card__head">
+                        <p class="portal-card__eyebrow">Section 4</p>
+                        <h2>Login as Staff</h2>
+                    </div>
+                    <form method="post" class="auth-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="staff_login" />
+                        <input type="hidden" name="next" value="{{ next_url }}" />
+
+                        {% if active_action == 'staff_login' and staff_login_form.non_field_errors %}
+                        <div class="banner banner-warn">{{ staff_login_form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <div class="field">
+                            <label for="{{ staff_login_form.email.id_for_label }}">Mail ID</label>
+                            {{ staff_login_form.email }}
+                            <div class="errors">{{ staff_login_form.email.errors }}</div>
+                        </div>
+                        <div class="field">
+                            <label for="{{ staff_login_form.password.id_for_label }}">Password</label>
+                            {{ staff_login_form.password }}
+                            <div class="errors">{{ staff_login_form.password.errors }}</div>
+                        </div>
+                        <div class="actions">
+                            <button type="submit" class="btn btn-primary">Login as Staff</button>
+                        </div>
+                    </form>
+                </article>
+            </section>
         </section>
     </main>
 </body>
