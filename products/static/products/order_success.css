@@ -1,0 +1,211 @@
+:root {
+    --bg: #eef7f0;
+    --surface: #ffffff;
+    --brand-900: #1f5d36;
+    --brand-700: #2d8a4a;
+    --brand-500: #45b76a;
+    --text: #153222;
+    --muted: #5c7365;
+    --shadow: 0 24px 54px rgba(31, 93, 54, 0.16);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Sora", sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(circle at top, rgba(127, 224, 154, 0.36), transparent 34%),
+        linear-gradient(180deg, #f5fbf6 0%, var(--bg) 100%);
+}
+
+.success-shell {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px 16px;
+}
+
+.success-card {
+    width: min(680px, 100%);
+    display: grid;
+    gap: 20px;
+    place-items: center;
+    text-align: center;
+    padding: 30px 24px 28px;
+    border-radius: 28px;
+    border: 1px solid rgba(69, 183, 106, 0.18);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+}
+
+.success-brand {
+    justify-self: start;
+}
+
+.success-checkmark {
+    position: relative;
+    width: 138px;
+    height: 138px;
+    border-radius: 999px;
+    background: linear-gradient(160deg, #50c878 0%, #239b49 100%);
+    box-shadow: 0 20px 42px rgba(35, 155, 73, 0.28);
+    animation: success-pop 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.success-checkmark::before {
+    content: "";
+    position: absolute;
+    inset: -12px;
+    border-radius: inherit;
+    border: 2px solid rgba(80, 200, 120, 0.26);
+    animation: success-pulse 1.8s ease-out infinite;
+}
+
+.success-checkmark::after {
+    content: "";
+    position: absolute;
+    left: 44px;
+    top: 30px;
+    width: 30px;
+    height: 56px;
+    border-right: 8px solid #fff;
+    border-bottom: 8px solid #fff;
+    transform: rotate(45deg) scale(0);
+    transform-origin: center;
+    animation: success-draw 420ms 240ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.success-copy {
+    display: grid;
+    gap: 10px;
+}
+
+.success-kicker {
+    margin: 0;
+    color: var(--brand-700);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.success-copy h2 {
+    margin: 0;
+    font-family: "Fraunces", serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    color: var(--brand-900);
+}
+
+.success-text {
+    margin: 0;
+    max-width: 40ch;
+    color: var(--muted);
+    line-height: 1.65;
+}
+
+.order-id-text {
+    margin: 0;
+    color: var(--brand-900);
+    font-weight: 700;
+}
+
+.hidden {
+    display: none;
+}
+
+.success-actions {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.success-btn {
+    min-width: 188px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 18px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.success-btn:hover {
+    transform: translateY(-1px);
+}
+
+.success-btn--primary {
+    background: linear-gradient(120deg, #239b49, #46bd6b);
+    color: #fff;
+    box-shadow: 0 14px 28px rgba(35, 155, 73, 0.22);
+}
+
+.success-btn--secondary {
+    border: 1px solid rgba(35, 155, 73, 0.18);
+    background: #f8fff9;
+    color: var(--brand-900);
+}
+
+@keyframes success-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.82);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes success-draw {
+    from {
+        transform: rotate(45deg) scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: rotate(45deg) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes success-pulse {
+    from {
+        transform: scale(0.92);
+        opacity: 0.7;
+    }
+    to {
+        transform: scale(1.18);
+        opacity: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .success-card {
+        padding: 26px 18px 22px;
+        gap: 18px;
+    }
+
+    .success-checkmark {
+        width: 118px;
+        height: 118px;
+    }
+
+    .success-checkmark::after {
+        left: 37px;
+        top: 24px;
+        width: 26px;
+        height: 48px;
+    }
+
+    .success-btn {
+        width: 100%;
+        min-width: 0;
+    }
+}

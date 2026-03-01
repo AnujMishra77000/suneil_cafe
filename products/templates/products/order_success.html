@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thathwamasi Bakery Cafe | Order Confirmed</title>
+    <script>
+        (function () {
+            const root = document.documentElement;
+            root.classList.add("fx-mounted");
+            window.setTimeout(function () {
+                if (!root.classList.contains("fx-ready")) {
+                    root.classList.remove("fx-mounted");
+                }
+            }, 700);
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
+    <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand3" />
+    <link rel="stylesheet" href="{% static 'products/order_success.css' %}?v=20260301-success1" />
+</head>
+<body data-order-id="{{ order_id }}">
+    <main class="success-shell">
+        <section class="success-card" data-fx>
+            <div class="site-lockup site-lockup--compact success-brand">
+                <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
+                <div class="site-copy">
+                    <h1 class="site-title site-title--compact site-title--stacked"><span class="site-title-line">Thathwamasi Bakery</span><span class="site-title-line">Cafe</span></h1>
+                    <p class="page-context">Order Confirmed</p>
+                </div>
+            </div>
+
+            <div class="success-checkmark" aria-hidden="true"></div>
+
+            <div class="success-copy" data-fx>
+                <p class="success-kicker">Fresh out of the oven</p>
+                <h2>Your order is confirmed.</h2>
+                <p class="success-text">We have packed your order into the queue and the kitchen is already getting to work.</p>
+                <p id="orderIdText" class="order-id-text {% if not order_id %}hidden{% endif %}">Order ID: #{{ order_id }}</p>
+            </div>
+
+            <div class="success-actions" data-fx>
+                <a id="continueShoppingBtn" class="success-btn success-btn--primary" href="/bakery/">Continue Shopping</a>
+                <a class="success-btn success-btn--secondary" href="/">Go To Home</a>
+            </div>
+        </section>
+    </main>
+    <script src="{% static 'products/order_success.js' %}?v=20260301-success1"></script>
+</body>
+</html>

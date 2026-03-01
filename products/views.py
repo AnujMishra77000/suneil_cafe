@@ -141,6 +141,15 @@ class CheckoutPageView(TemplateView):
     template_name = "products/checkout.html"
 
 
+class OrderSuccessPageView(TemplateView):
+    template_name = "products/order_success.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["order_id"] = (self.request.GET.get("order_id") or "").strip()
+        return context
+
+
 class BuyProductPageView(TemplateView):
     template_name = "products/buy_product.html"
 

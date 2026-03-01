@@ -21,6 +21,31 @@ const historyPanelEl = document.getElementById("historyPanel");
 const qtyTimers = {};
 let historyLoaded = false;
 
+function rememberContinueShoppingUrl() {
+    const fallback = "/bakery/";
+    const raw = document.referrer || "";
+    if (!raw) {
+        if (!localStorage.getItem("thathwamasi_continue_shopping_url")) {
+            localStorage.setItem("thathwamasi_continue_shopping_url", fallback);
+        }
+        return;
+    }
+
+    try {
+        const ref = new URL(raw, window.location.origin);
+        if (ref.origin !== window.location.origin) {
+            return;
+        }
+        const path = `${ref.pathname}${ref.search}`;
+        if (/^\/(billing|checkout|order-success)\/?$/i.test(ref.pathname)) {
+            return;
+        }
+        localStorage.setItem("thathwamasi_continue_shopping_url", path || fallback);
+    } catch {
+        // Ignore invalid referrers.
+    }
+}
+
 function readProfile() {
     const checkoutPhone = localStorage.getItem("thathwamasi_checkout_phone");
     if (checkoutPhone) {
@@ -410,6 +435,7 @@ async function onHistorySubmit(event) {
 
 async function bootstrap() {
     readProfile();
+    rememberContinueShoppingUrl();
     await loadCart();
     await setupHistoryAccess();
 }

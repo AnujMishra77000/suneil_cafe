@@ -201,15 +201,37 @@ function extractPincodeFromAddress(address) {
     return match ? match[1] : "";
 }
 
+function escapeHtml(value) {
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function lineTotal(item) {
+    const numeric = Number(item.line_total);
+    if (Number.isFinite(numeric)) {
+        return numeric.toFixed(2);
+    }
+    const qty = Number(item.quantity || 0);
+    const price = Number(item.price || 0);
+    return (qty * price).toFixed(2);
+}
+
 function renderPreview() {
     if (!state.cart.items.length) {
-        previewItemsEl.innerHTML = `<div class="preview-item">Cart is empty</div>`;
+        previewItemsEl.innerHTML = `<div class="preview-empty">Cart is empty right now.</div>`;
     } else {
         previewItemsEl.innerHTML = state.cart.items.map((item) => `
-            <div class="preview-item">
-                <span>${item.product_name} x ${item.quantity}</span>
-                <strong>Rs ${item.line_total}</strong>
-            </div>
+            <article class="preview-item">
+                <div class="preview-copy">
+                    <strong class="preview-name">${escapeHtml(item.product_name)}</strong>
+                    <span class="preview-meta">Quantity: ${escapeHtml(item.quantity)} item${Number(item.quantity) === 1 ? "" : "s"}</span>
+                </div>
+                <strong class="preview-price">Rs ${lineTotal(item)}</strong>
+            </article>
         `).join("");
     }
     totalItemsEl.textContent = String(state.cart.total_items || 0);
@@ -290,9 +312,11 @@ async function submitOrder(event) {
             localStorage.setItem("thathwamasi_cart_phone", state.profile.phone);
         }
         rotateIdempotencyKey();
+        localStorage.setItem("thathwamasi_last_order_id", String(result.order_id || ""));
         setTimeout(() => {
-            window.location.href = "/";
-        }, 1200);
+            const orderId = encodeURIComponent(result.order_id || "");
+            window.location.href = `/order-success/?order_id=${orderId}`;
+        }, 320);
     } catch (err) {
         const message = err.message || "Order failed";
         if (/pincode|deliver|serviceable/i.test(message)) {
