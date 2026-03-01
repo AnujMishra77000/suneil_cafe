@@ -43,7 +43,20 @@ body {
 }
 
 .success-brand {
-    justify-self: start;
+    width: 100%;
+    justify-self: center;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.success-brand .site-copy {
+    justify-items: center;
+}
+
+.success-brand .page-context {
+    max-width: 32ch;
+    line-height: 1.55;
 }
 
 .success-checkmark {
@@ -226,6 +239,11 @@ body {
 }
 
 @media (max-width: 640px) {
+    .success-brand {
+        flex-direction: column;
+        gap: 10px;
+    }
+
     .success-card {
         padding: 26px 18px 22px;
         gap: 18px;
