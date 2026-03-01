@@ -161,3 +161,25 @@ class ServiceablePincode(models.Model):
 
     def __str__(self):
         return f"{self.code} {self.area_name}".strip()
+
+
+class DeliveryContactSetting(models.Model):
+    delivery_contact_number = models.CharField(max_length=15, blank=True, default="")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Delivery contact setting"
+        verbose_name_plural = "Delivery contact setting"
+
+    def clean(self):
+        normalized = "".join(ch for ch in str(self.delivery_contact_number or "") if ch.isdigit())
+        if normalized and len(normalized) != 10:
+            raise ValidationError({"delivery_contact_number": "Delivery contact number must be exactly 10 digits"})
+        self.delivery_contact_number = normalized
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.delivery_contact_number or "No delivery contact"

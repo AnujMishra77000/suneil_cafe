@@ -207,7 +207,7 @@
             const payload = item && item.payload && typeof item.payload === "object" ? item.payload : {};
             const customerName = payload.customer_name || "N/A";
             const totalPrice = payload.total_price || "-";
-            const phoneLabel = this.mode === "ADMIN" ? "Customer Phone" : "Owner Phone";
+            const phoneLabel = this.mode === "ADMIN" ? "Customer Phone" : "Delivery Contact";
             const phoneValue =
                 this.mode === "ADMIN"
                     ? payload.customer_phone || "-"

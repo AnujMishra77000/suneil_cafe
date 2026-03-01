@@ -1,3 +1,4 @@
+import re
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -14,12 +15,13 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.files.storage import default_storage
 from django.utils.text import get_valid_filename
 from django.core.cache import cache
-from django.conf import settings
 from .models import Advertisement, Product, Section, Category, ProductViewLog
 from .cache_utils import catalog_cache_key, invalidate_catalog_cache
 from .services import ProductService
 from .forms import AdminAdvertisementForm, AdminProductCreateForm
 from .tasks import process_product_image_upload_task
+from orders.delivery_contact import get_delivery_contact_number
+
 from .serializers import (
     ProductSerializer,
     ProductCardSerializer,
@@ -146,7 +148,10 @@ class OrderSuccessPageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["order_id"] = (self.request.GET.get("order_id") or "").strip()
+        delivery_contact = get_delivery_contact_number()
+        tel_contact = re.sub(r"[^0-9+]", "", delivery_contact)
+        context["delivery_contact"] = delivery_contact
+        context["delivery_contact_href"] = f"tel:{tel_contact}" if tel_contact else ""
         return context
 
 

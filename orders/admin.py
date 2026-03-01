@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem, OrderFeedback, Bill, SalesRecord, ServiceablePincode
+from .models import Order, OrderItem, OrderFeedback, Bill, SalesRecord, ServiceablePincode, DeliveryContactSetting
 
 
 class OrderItemInline(admin.TabularInline):
@@ -52,3 +52,9 @@ class ServiceablePincodeAdmin(admin.ModelAdmin):
     search_fields = ("code", "area_name")
     list_filter = ("is_active",)
     ordering = ("code",)
+
+
+@admin.register(DeliveryContactSetting)
+class DeliveryContactSettingAdmin(admin.ModelAdmin):
+    list_display = ("id", "delivery_contact_number", "updated_at")
+    readonly_fields = ("updated_at",)

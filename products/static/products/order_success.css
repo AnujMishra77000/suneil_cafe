@@ -107,6 +107,45 @@ body {
     line-height: 1.65;
 }
 
+.delivery-contact-card {
+    display: grid;
+    gap: 6px;
+    min-width: min(100%, 280px);
+    padding: 14px 16px;
+    border: 1px solid rgba(45, 138, 74, 0.18);
+    border-radius: 16px;
+    background: linear-gradient(180deg, #f9fff9 0%, #f1fbf2 100%);
+    box-shadow: 0 10px 24px rgba(31, 93, 54, 0.08);
+}
+
+.delivery-contact-label {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.delivery-contact-link {
+    color: var(--brand-900);
+    font-size: 1rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.delivery-contact-link--plain {
+    text-decoration: none;
+}
+
+.success-bell-note {
+    margin: 0;
+    max-width: 34ch;
+    color: var(--brand-900);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.6;
+}
+
 .order-id-text {
     margin: 0;
     color: var(--brand-900);

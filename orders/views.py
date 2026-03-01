@@ -31,6 +31,7 @@ from .admin_services import AdminAnalyticsService
 from .analytics import sales_summary, category_sales, top_products, unavailable_product_demand
 from .models import Bill
 from .models import Order, OrderItem, OrderFeedback, BillItem, SalesRecord, ServiceablePincode
+from .delivery_contact import get_delivery_contact_number, get_or_create_delivery_contact_setting
 from .serializers import OrderSerializer, OrderFeedbackWriteSerializer, BillSerializer
 from .services import create_order, create_order_from_cart
 from products.cache_utils import invalidate_catalog_cache
@@ -300,6 +301,37 @@ class AdminPincodeManageView(TemplateView):
             },
         )
         return redirect("/admin-dashboard/pincodes/?saved=1")
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class AdminDeliveryContactManageView(TemplateView):
+    template_name = "orders/admin_delivery_contact_manage.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        row = get_or_create_delivery_contact_setting()
+        context["row"] = row
+        context["saved"] = self.request.GET.get("saved", "")
+        context["error"] = kwargs.get("error") or self.request.GET.get("error") or ""
+        return context
+
+    def post(self, request, *args, **kwargs):
+        row = get_or_create_delivery_contact_setting()
+        action = (request.POST.get("action") or "save").strip().lower()
+
+        if action == "clear":
+            row.delivery_contact_number = ""
+            row.save(update_fields=["delivery_contact_number", "updated_at"])
+            return redirect("/admin-dashboard/delivery-contact/?saved=cleared")
+
+        value = "".join(ch for ch in str(request.POST.get("delivery_contact_number") or "") if ch.isdigit())
+        if value and len(value) != 10:
+            context = self.get_context_data(error="Enter a valid 10-digit delivery contact number.")
+            return self.render_to_response(context, status=400)
+
+        row.delivery_contact_number = value
+        row.save()
+        return redirect("/admin-dashboard/delivery-contact/?saved=1")
 
 
 @method_decorator(staff_member_required, name="dispatch")
@@ -1392,7 +1424,7 @@ def _wrap_pdf_text(text, width=84):
     return lines
 
 
-def _build_user_receipt_pdf(bill, owner_phone):
+def _build_user_receipt_pdf(bill, delivery_contact):
     page_width = 595
     left_margin = 22
     right_margin = 22
@@ -1400,7 +1432,7 @@ def _build_user_receipt_pdf(bill, owner_phone):
     bottom_margin = 16
     content_width = page_width - left_margin - right_margin
 
-    owner_phone_value = owner_phone or "-"
+    delivery_contact_value = delivery_contact or "-"
     address_lines = _wrap_pdf_text(f"Address: {bill.shipping_address}", width=90)
 
     item_rows = []
@@ -1477,7 +1509,7 @@ def _build_user_receipt_pdf(bill, owner_phone):
     y -= 11
 
     text(x, y, f"Customer Phone: {bill.phone}", size=9)
-    text(left_margin + content_width - 205, y, f"Owner Phone: {owner_phone_value}", size=9)
+    text(left_margin + content_width - 205, y, f"Delivery Contact: {delivery_contact_value}", size=9)
     y -= 11
 
     for line in address_lines:
@@ -1550,13 +1582,9 @@ class UserBillPDFDownloadView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        owner_phone = (
-            getattr(settings, "ADMIN_PHONE", "")
-            or getattr(settings, "TWILIO_PHONE_NUMBER", "")
-            or ""
-        ).strip()
+        delivery_contact = get_delivery_contact_number()
 
-        pdf_data = _build_user_receipt_pdf(bill, owner_phone)
+        pdf_data = _build_user_receipt_pdf(bill, delivery_contact)
         filename = f"receipt_{bill.bill_number or bill.id}.pdf"
         response = HttpResponse(pdf_data, content_type="application/pdf")
         response["Content-Disposition"] = f'attachment; filename="{filename}"'

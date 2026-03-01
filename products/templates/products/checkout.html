@@ -21,7 +21,7 @@
     </script>
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
-    <link rel="stylesheet" href="{% static 'products/checkout.css' %}?v=20260301-checkout1" />
+    <link rel="stylesheet" href="{% static 'products/checkout.css' %}?v=20260301-checkout3" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand3" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
@@ -45,7 +45,7 @@
                     <div class="site-copy">
                         <h1 class="site-title site-title--compact site-title--stacked"><span class="site-title-line">Thathwamasi Bakery</span><span class="site-title-line">Cafe</span></h1>
                         <p class="page-context">Delivery Details</p>
-                        <p class="page-label">Confirm your address and mobile number before placing the order.</p>
+                        <p class="page-label">We Accept Cash On Delivery only.</p>
                     </div>
                 </div>
                 <div class="page-nav-chips">
@@ -58,6 +58,10 @@
         <section class="layout">
             <form id="checkoutForm" class="form-card" data-fx>
                 <h2>Customer Information</h2>
+                <div class="checkout-note">
+                    <strong class="checkout-note-title">Payment Method</strong>
+                    <p class="checkout-note-copy">We Accept Cash On Delivery only.</p>
+                </div>
                 <label>
                     Full Name
                     <input id="nameInput" name="name" required />
@@ -93,7 +97,7 @@
             </aside>
         </section>
     </main>
-    <script src="{% static 'products/checkout.js' %}?v=20260301-checkout1"></script>
+    <script src="{% static 'products/checkout.js' %}?v=20260301-checkout2"></script>
     <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
     <script>

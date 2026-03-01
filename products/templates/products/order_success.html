@@ -22,9 +22,9 @@
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand3" />
-    <link rel="stylesheet" href="{% static 'products/order_success.css' %}?v=20260301-success1" />
+    <link rel="stylesheet" href="{% static 'products/order_success.css' %}?v=20260301-success3" />
 </head>
-<body data-order-id="{{ order_id }}">
+<body>
     <main class="success-shell">
         <section class="success-card" data-fx>
             <div class="site-lockup site-lockup--compact success-brand">
@@ -40,8 +40,18 @@
             <div class="success-copy" data-fx>
                 <p class="success-kicker">Fresh out of the oven</p>
                 <h2>Your order is confirmed.</h2>
-                <p class="success-text">We have packed your order into the queue and the kitchen is already getting to work.</p>
-                <p id="orderIdText" class="order-id-text {% if not order_id %}hidden{% endif %}">Order ID: #{{ order_id }}</p>
+                <p class="success-text">Your order will deliver within 30 minutes.</p>
+                {% if delivery_contact %}
+                <div class="delivery-contact-card">
+                    <span class="delivery-contact-label">Delivery Boy Contact Number</span>
+                    {% if delivery_contact_href %}
+                    <a class="delivery-contact-link" href="{{ delivery_contact_href }}">{{ delivery_contact }}</a>
+                    {% else %}
+                    <span class="delivery-contact-link delivery-contact-link--plain">{{ delivery_contact }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <p class="success-bell-note">Please Check your Notification Bell to get order details.</p>
             </div>
 
             <div class="success-actions" data-fx>
@@ -50,6 +60,6 @@
             </div>
         </section>
     </main>
-    <script src="{% static 'products/order_success.js' %}?v=20260301-success1"></script>
+    <script src="{% static 'products/order_success.js' %}?v=20260301-success2"></script>
 </body>
 </html>

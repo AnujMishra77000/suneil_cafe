@@ -23,6 +23,7 @@ from core.system_views import ArchitectureStatusAPIView
 from orders.views import (
     AdminDashboardView,
     AdminPincodeManageView,
+    AdminDeliveryContactManageView,
     AdminOrderDetailsView,
     AdminBillingListView,
     AdminBillDetailView,
@@ -63,6 +64,7 @@ urlpatterns = [
     path('admin-dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
     path('admin-dashboard/order-details/', AdminOrderDetailsView.as_view(), name='admin-order-details'),
     path('admin-dashboard/pincodes/', AdminPincodeManageView.as_view(), name='admin-pincode-manage'),
+    path('admin-dashboard/delivery-contact/', AdminDeliveryContactManageView.as_view(), name='admin-delivery-contact-manage'),
     path('admin-dashboard/billing/', AdminBillingListView.as_view(), name='admin-billing-list'),
     path('admin-dashboard/billing/<int:bill_id>/', AdminBillDetailView.as_view(), name='admin-bill-detail'),
     path('admin-dashboard/billing/<int:bill_id>/edit/', AdminBillEditView.as_view(), name='admin-bill-edit'),

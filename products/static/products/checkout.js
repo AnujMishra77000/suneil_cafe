@@ -224,15 +224,25 @@ function renderPreview() {
     if (!state.cart.items.length) {
         previewItemsEl.innerHTML = `<div class="preview-empty">Cart is empty right now.</div>`;
     } else {
-        previewItemsEl.innerHTML = state.cart.items.map((item) => `
-            <article class="preview-item">
-                <div class="preview-copy">
-                    <strong class="preview-name">${escapeHtml(item.product_name)}</strong>
-                    <span class="preview-meta">Quantity: ${escapeHtml(item.quantity)} item${Number(item.quantity) === 1 ? "" : "s"}</span>
-                </div>
-                <strong class="preview-price">Rs ${lineTotal(item)}</strong>
-            </article>
-        `).join("");
+        previewItemsEl.innerHTML = state.cart.items.map((item) => {
+            const quantity = Number(item.quantity) || 0;
+            const price = Number(item.price || 0).toFixed(2);
+            return `
+                <article class="preview-item">
+                    <div class="preview-copy">
+                        <strong class="preview-name">${escapeHtml(item.product_name)}</strong>
+                        <span class="preview-meta">Unit Price: Rs ${escapeHtml(price)}</span>
+                    </div>
+                    <div class="preview-qty-wrap">
+                        <span class="preview-qty">Qty ${escapeHtml(quantity)}</span>
+                    </div>
+                    <div class="preview-amounts">
+                        <span class="preview-amount-label">Line Total</span>
+                        <strong class="preview-price">Rs ${lineTotal(item)}</strong>
+                    </div>
+                </article>
+            `;
+        }).join("");
     }
     totalItemsEl.textContent = String(state.cart.total_items || 0);
     totalAmountEl.textContent = `Rs ${state.cart.total_amount || "0.00"}`;

@@ -3,6 +3,8 @@ from urllib.parse import quote
 
 from django.conf import settings
 
+from orders.delivery_contact import get_delivery_contact_number
+
 from .models import Notification
 
 
@@ -89,7 +91,8 @@ def _bill_context(order, customer_phone):
 def create_order_notifications(order, event_type=Notification.EventType.ORDER_PLACED):
     customer_phone = _customer_phone(order)
     customer_name = _customer_name(order)
-    owner_phone = get_admin_identifier()
+    admin_identifier = get_admin_identifier()
+    owner_phone = get_delivery_contact_number() or "-"
     items = _items_payload(order)
     total_price = str(_to_amount(order.total_price))
     event_label = _event_label(event_type)
@@ -100,7 +103,7 @@ def create_order_notifications(order, event_type=Notification.EventType.ORDER_PL
         f"Customer: {customer_name}\n"
         f"{_lines_for_message(items)}\n"
         f"Total: Rs {total_price}\n"
-        f"Owner Phone: {owner_phone}"
+        f"Delivery Contact: {owner_phone}"
     )
     admin_message = (
         f"{event_label} | Order #{order.id}\n"
@@ -136,7 +139,7 @@ def create_order_notifications(order, event_type=Notification.EventType.ORDER_PL
         },
         {
             "recipient_type": Notification.RecipientType.ADMIN,
-            "recipient_identifier": owner_phone,
+            "recipient_identifier": admin_identifier,
             "title": f"{event_label} - #{order.id}",
             "message": admin_message,
             "payload": {
