@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register Admin | Thathwamasi</title>
+    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260301-auth1" />
+</head>
+<body>
+    <main class="auth-shell">
+        <section class="auth-card">
+            <div class="auth-top">
+                <p class="auth-eyebrow">Admin Bootstrap</p>
+                <h1>Create the first admin</h1>
+                <p>This screen is intended for initial live setup only. Master password validation is required before an admin account can be created.</p>
+            </div>
+
+            {% if not bootstrap_open %}
+            <div class="banner banner-info">Admin bootstrap is closed because an active admin account already exists. Use the dashboard login page instead.</div>
+            <div class="actions" style="margin-top:16px;">
+                <a class="btn btn-primary" href="{% url 'dashboard-auth-login' %}">Go to Login</a>
+            </div>
+            {% else %}
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="banner banner-warn">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="field">
+                    <label for="id_username">Admin User ID</label>
+                    {{ form.username }}
+                    <div class="errors">{{ form.username.errors }}</div>
+                </div>
+
+                <div class="field">
+                    <label for="id_password1">Password</label>
+                    {{ form.password1 }}
+                    <small>{{ form.password1.help_text|safe }}</small>
+                    <div class="errors">{{ form.password1.errors }}</div>
+                </div>
+
+                <div class="field">
+                    <label for="id_password2">Confirm Password</label>
+                    {{ form.password2 }}
+                    <div class="errors">{{ form.password2.errors }}</div>
+                </div>
+
+                <div class="field">
+                    <label for="id_master_password">Master Password</label>
+                    {{ form.master_password }}
+                    <div class="errors">{{ form.master_password.errors }}</div>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">Create Admin Account</button>
+                    <a class="btn" href="{% url 'dashboard-auth-login' %}">Back to Login</a>
+                </div>
+            </form>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

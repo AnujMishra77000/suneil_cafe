@@ -11,10 +11,11 @@ from django.db import transaction
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
-from django.contrib.admin.views.decorators import staff_member_required
+from core.dashboard_auth import dashboard_staff_required as staff_member_required
 from django.core.files.storage import default_storage
 from django.utils.text import get_valid_filename
 from django.core.cache import cache
+from django.conf import settings
 from .models import Advertisement, Product, Section, Category, ProductViewLog
 from .cache_utils import catalog_cache_key, invalidate_catalog_cache
 from .services import ProductService

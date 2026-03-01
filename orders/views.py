@@ -16,7 +16,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.generic import TemplateView
 from django.views import View
-from django.contrib.admin.views.decorators import staff_member_required
+from core.dashboard_auth import dashboard_staff_required as staff_member_required
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAdminUser

@@ -8,12 +8,17 @@ from django.http import HttpResponse
 
 
 class LoginRateLimitMiddleware:
-    """Simple IP-based limiter for Django admin login POST attempts."""
+    """Simple IP-based limiter for dashboard auth POST attempts."""
 
     def __init__(self, get_response):
         self.get_response = get_response
         self.max_attempts = int(getattr(settings, "RATE_LIMIT_ADMIN_LOGIN_MAX_ATTEMPTS", 10))
         self.window_seconds = int(getattr(settings, "RATE_LIMIT_ADMIN_LOGIN_WINDOW_SECONDS", 60))
+        self.protected_paths = {
+            "/admin/login": "admin_login",
+            "/dashboard-auth/login": "dashboard_login",
+            "/dashboard-auth/register-admin": "dashboard_admin_register",
+        }
 
     @staticmethod
     def _client_ip(request):
@@ -31,9 +36,10 @@ class LoginRateLimitMiddleware:
             return current
 
     def __call__(self, request):
-        if request.method == "POST" and request.path.rstrip("/") == "/admin/login":
+        scope = self.protected_paths.get(request.path.rstrip("/")) if request.method == "POST" else None
+        if scope:
             ip = self._client_ip(request)
-            cache_key = f"ratelimit:admin_login:{ip}"
+            cache_key = f"ratelimit:{scope}:{ip}"
             current = int(cache.get(cache_key, 0))
             if current >= self.max_attempts:
                 return HttpResponse("Too many login attempts. Please try again shortly.", status=429)

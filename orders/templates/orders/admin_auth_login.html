@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Login | Thathwamasi</title>
+    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260301-auth2" />
+</head>
+<body>
+    <main class="auth-shell">
+        <section class="auth-card">
+            <div class="auth-top">
+                <p class="auth-eyebrow">Secure Dashboard Access</p>
+                <h1>Admin and staff login</h1>
+                <p>Use your dashboard user ID and password. This login protects the live operations area without exposing the framework login as the main entry point.</p>
+            </div>
+
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next_url }}" />
+
+                {% if form.non_field_errors %}
+                <div class="banner banner-warn">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="field">
+                    <label for="id_username">User ID</label>
+                    {{ form.username }}
+                    <div class="errors">{{ form.username.errors }}</div>
+                </div>
+
+                <div class="field">
+                    <label for="id_password">Password</label>
+                    {{ form.password }}
+                    <div class="errors">{{ form.password.errors }}</div>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">Login to Dashboard</button>
+                </div>
+            </form>
+
+            {% if bootstrap_open %}
+            <div class="help-links">
+                <a href="{% url 'dashboard-auth-register-admin' %}">Register First Admin</a>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

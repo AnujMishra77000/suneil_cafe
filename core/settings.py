@@ -101,6 +101,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
+LOGIN_URL = "/dashboard-auth/login/"
+LOGOUT_REDIRECT_URL = "/dashboard-auth/login/"
+DASHBOARD_SESSION_AGE_SECONDS = int(os.getenv("DASHBOARD_SESSION_AGE_SECONDS", "43200"))
+
 
 # Database
 # Keep CONN_MAX_AGE modest with PgBouncer transaction pooling.
@@ -263,6 +267,7 @@ CELERY_TASK_ALWAYS_EAGER = os.getenv("CELERY_TASK_ALWAYS_EAGER", "false").lower(
 # App flags / integrations
 ADMIN_PHONE = os.getenv("ADMIN_PHONE", "")
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "")
+ADMIN_MASTER_PASSWORD = (os.getenv("ADMIN_MASTER_PASSWORD") or "").strip()
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER", "")

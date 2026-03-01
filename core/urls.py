@@ -20,6 +20,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from core.system_views import ArchitectureStatusAPIView
+from orders.auth_views import (
+    DashboardLoginView,
+    DashboardLogoutView,
+    DashboardAdminBootstrapView,
+    AdminStaffManageView,
+)
 from orders.views import (
     AdminDashboardView,
     AdminPincodeManageView,
@@ -54,6 +60,9 @@ from products.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('dashboard-auth/login/', DashboardLoginView.as_view(), name='dashboard-auth-login'),
+    path('dashboard-auth/logout/', DashboardLogoutView.as_view(), name='dashboard-auth-logout'),
+    path('dashboard-auth/register-admin/', DashboardAdminBootstrapView.as_view(), name='dashboard-auth-register-admin'),
     path('', StorefrontHomeView.as_view(), name='storefront-home'),
     path('billing/', BillingPageView.as_view(), name='billing-page'),
     path('order-details/', CustomerOrderDetailsPageView.as_view(), name='customer-order-details'),
@@ -63,6 +72,7 @@ urlpatterns = [
     path('latency-dashboard/', LatencyDashboardView.as_view(), name='latency-dashboard'),
     path('admin-dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
     path('admin-dashboard/order-details/', AdminOrderDetailsView.as_view(), name='admin-order-details'),
+    path('admin-dashboard/team/', AdminStaffManageView.as_view(), name='admin-staff-manage'),
     path('admin-dashboard/pincodes/', AdminPincodeManageView.as_view(), name='admin-pincode-manage'),
     path('admin-dashboard/delivery-contact/', AdminDeliveryContactManageView.as_view(), name='admin-delivery-contact-manage'),
     path('admin-dashboard/billing/', AdminBillingListView.as_view(), name='admin-billing-list'),
