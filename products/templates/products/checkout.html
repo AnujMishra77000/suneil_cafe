@@ -21,8 +21,8 @@
     </script>
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
-    <link rel="stylesheet" href="{% static 'products/checkout.css' %}?v=20260302-coupon1" />
-    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand3" />
+    <link rel="stylesheet" href="{% static 'products/checkout.css' %}?v=20260302-checkout5" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand5" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
 </head>
@@ -45,22 +45,24 @@
                     <div class="site-copy">
                         <h1 class="site-title site-title--compact site-title--stacked"><span class="site-title-line">Thathwamasi Bakery</span><span class="site-title-line">Cafe</span></h1>
                         <p class="page-context">Delivery Details</p>
-                        <p class="page-label">We Accept Cash On Delivery only.</p>
                     </div>
                 </div>
-                <div class="page-nav-chips">
-                    <a href="/" class="page-nav-chip page-nav-chip--home">Home</a>
-                    <a href="/billing/" class="page-nav-chip">Back to Billing</a>
-                </div>
+            </div>
+            <div class="top-actions">
+                <a href="/" class="page-nav-chip page-nav-chip--home">Home</a>
+                <a href="/billing/" class="page-nav-chip">Back to Billing</a>
             </div>
         </header>
 
         <section class="layout">
             <form id="checkoutForm" class="form-card" data-fx>
-                <h2>Customer Information</h2>
+                <div class="form-card-head">
+                    <h2>Customer Information</h2>
+                    <p>Confirm your delivery details and review the final bill before placing the order.</p>
+                </div>
                 <div class="checkout-note">
                     <strong class="checkout-note-title">Payment Method</strong>
-                    <p class="checkout-note-copy">We Accept Cash On Delivery only.</p>
+                    <p class="checkout-note-copy">Cash on delivery is available for this order.</p>
                 </div>
                 <label>
                     Full Name
@@ -103,7 +105,10 @@
             </form>
 
             <aside class="summary-card" data-fx>
-                <h3>Order Preview</h3>
+                <div class="summary-head">
+                    <h3>Order Preview</h3>
+                    <p>Every product, quantity, and final amount is arranged clearly before checkout.</p>
+                </div>
                 <div id="previewItems" class="preview-items"></div>
                 <div class="row"><span>Total Items</span><strong id="totalItems">0</strong></div>
                 <div class="row"><span>Subtotal</span><strong id="summarySubtotal">Rs 0.00</strong></div>

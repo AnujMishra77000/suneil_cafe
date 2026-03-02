@@ -29,13 +29,13 @@ body {
 }
 
 .success-card {
-    width: min(680px, 100%);
+    width: min(720px, 100%);
     display: grid;
-    gap: 20px;
+    gap: 18px;
     place-items: center;
     text-align: center;
-    padding: 30px 24px 28px;
-    border-radius: 28px;
+    padding: 34px 28px 30px;
+    border-radius: 30px;
     border: 1px solid rgba(69, 183, 106, 0.18);
     background: rgba(255, 255, 255, 0.92);
     box-shadow: var(--shadow);
@@ -44,7 +44,6 @@ body {
 
 .success-brand {
     width: 100%;
-    justify-self: center;
     justify-content: center;
     align-items: center;
     text-align: center;
@@ -54,15 +53,34 @@ body {
     justify-items: center;
 }
 
-.success-brand .page-context {
-    max-width: 32ch;
-    line-height: 1.55;
+.success-brand .site-title--stacked {
+    align-self: center;
+}
+
+.success-copy {
+    width: min(100%, 420px);
+    display: grid;
+    gap: 10px;
+    justify-items: center;
+}
+
+.success-copy--intro {
+    gap: 0;
+}
+
+.success-thanks {
+    margin: 0;
+    color: var(--brand-700);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
 .success-checkmark {
     position: relative;
-    width: 138px;
-    height: 138px;
+    width: 142px;
+    height: 142px;
     border-radius: 999px;
     background: linear-gradient(160deg, #50c878 0%, #239b49 100%);
     box-shadow: 0 20px 42px rgba(35, 155, 73, 0.28);
@@ -81,10 +99,10 @@ body {
 .success-checkmark::after {
     content: "";
     position: absolute;
-    left: 44px;
-    top: 30px;
-    width: 30px;
-    height: 56px;
+    left: 46px;
+    top: 31px;
+    width: 31px;
+    height: 58px;
     border-right: 8px solid #fff;
     border-bottom: 8px solid #fff;
     transform: rotate(45deg) scale(0);
@@ -92,41 +110,26 @@ body {
     animation: success-draw 420ms 240ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-.success-copy {
-    display: grid;
-    gap: 10px;
-}
-
-.success-kicker {
-    margin: 0;
-    color: var(--brand-700);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-
 .success-copy h2 {
     margin: 0;
     font-family: "Fraunces", serif;
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-size: clamp(1.9rem, 4vw, 2.9rem);
     color: var(--brand-900);
 }
 
 .success-text {
     margin: 0;
-    max-width: 40ch;
     color: var(--muted);
     line-height: 1.65;
 }
 
 .delivery-contact-card {
+    width: min(100%, 320px);
     display: grid;
     gap: 6px;
-    min-width: min(100%, 280px);
-    padding: 14px 16px;
+    padding: 15px 16px;
     border: 1px solid rgba(45, 138, 74, 0.18);
-    border-radius: 16px;
+    border-radius: 18px;
     background: linear-gradient(180deg, #f9fff9 0%, #f1fbf2 100%);
     box-shadow: 0 10px 24px rgba(31, 93, 54, 0.08);
 }
@@ -150,25 +153,6 @@ body {
     text-decoration: none;
 }
 
-.success-bell-note {
-    margin: 0;
-    max-width: 34ch;
-    color: var(--brand-900);
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.6;
-}
-
-.order-id-text {
-    margin: 0;
-    color: var(--brand-900);
-    font-weight: 700;
-}
-
-.hidden {
-    display: none;
-}
-
 .success-actions {
     width: 100%;
     display: flex;
@@ -178,7 +162,7 @@ body {
 }
 
 .success-btn {
-    min-width: 188px;
+    min-width: 200px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -239,23 +223,18 @@ body {
 }
 
 @media (max-width: 640px) {
-    .success-brand {
-        flex-direction: column;
-        gap: 10px;
-    }
-
     .success-card {
-        padding: 26px 18px 22px;
-        gap: 18px;
+        padding: 28px 18px 24px;
+        gap: 16px;
     }
 
     .success-checkmark {
-        width: 118px;
-        height: 118px;
+        width: 120px;
+        height: 120px;
     }
 
     .success-checkmark::after {
-        left: 37px;
+        left: 38px;
         top: 24px;
         width: 26px;
         height: 48px;

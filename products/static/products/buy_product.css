@@ -18,76 +18,47 @@ body {
 }
 
 .buy-wrap {
-    max-width: 760px;
+    width: min(1140px, 92vw);
     margin: 0 auto;
-    padding: 24px 16px 40px;
+    padding: 22px 0 42px;
 }
 
+.buy-header {
+    margin-bottom: 18px;
+    padding: 18px 0 0 58px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.buy-header .site-lockup {
+    align-items: center;
+}
+
+.buy-header .site-copy {
+    gap: 5px;
+}
+
+.buy-header .top-leading {
+    flex: 1 1 auto;
+    max-width: min(100%, 560px);
+}
+
+.buy-header .page-nav-chips {
+    justify-content: flex-start;
+}
 
 .top-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.profile-btn,
-.cart-link {
-    text-decoration: none;
-    border: 1px solid #d7b59c;
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: rgba(255, 244, 234, 0.95);
-    color: var(--brand);
-    font-weight: 700;
-    transition: transform 180ms ease, box-shadow 180ms ease;
-}
-
-.profile-btn {
-    cursor: pointer;
-    font: inherit;
-}
-
-.profile-btn:hover,
-.cart-link:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 14px rgba(84, 42, 20, 0.12);
-}
-
-.cart-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.cart-count {
-    min-width: 20px;
-    height: 20px;
-    display: inline-grid;
-    place-items: center;
-    padding: 0 6px;
-    border-radius: 999px;
-    background: var(--brand);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.back-link {
-    display: inline-block;
-    margin-bottom: 14px;
-    color: var(--brand);
-    text-decoration: none;
-    font-weight: 600;
+    min-width: min(100%, 420px);
 }
 
 .buy-card {
-    background: var(--card);
+    background: linear-gradient(180deg, #fffdfa 0%, #fff7ef 100%);
     border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 18px;
-    box-shadow: 0 14px 32px rgba(74, 41, 20, 0.1);
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 18px 36px rgba(74, 41, 20, 0.12);
 }
 
 .state {
@@ -96,112 +67,130 @@ body {
 
 .product {
     display: grid;
-    grid-template-columns: 150px 1fr;
-    gap: 16px;
+    grid-template-columns: minmax(190px, 240px) 1fr;
+    gap: 26px;
     align-items: start;
 }
 
 .product img {
-    width: 150px;
-    height: 150px;
+    width: 100%;
+    height: 220px;
     object-fit: cover;
-    border-radius: 12px;
+    border-radius: 18px;
     border: 1px solid var(--line);
+    box-shadow: 0 12px 28px rgba(84, 42, 20, 0.12);
 }
 
 .product h1 {
     margin: 0 0 6px;
-    font-size: 1.4rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-family: "Fraunces", serif;
+    color: #4d2916;
 }
 
-.meta { color: var(--muted); margin-bottom: 8px; }
-.price { font-size: 1.2rem; font-weight: 700; margin-bottom: 12px; }
+.meta {
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.price {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 14px;
+    color: var(--brand-dark);
+}
+
+.product p {
+    margin: 0;
+    color: #6b5547;
+    line-height: 1.65;
+}
 
 .qty-row {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    margin: 14px 0;
+    gap: 10px;
+    margin: 18px 0 16px;
+    padding: 8px;
+    border: 1px solid #e6cfbc;
+    border-radius: 999px;
+    background: #fff4e8;
 }
 
 .qty-row button {
-    width: 34px;
-    height: 34px;
-    border: 1px solid var(--line);
-    border-radius: 9px;
+    width: 38px;
+    height: 38px;
+    border: 1px solid #dec3ad;
+    border-radius: 999px;
     background: #fff;
     font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--brand-dark);
     cursor: pointer;
 }
 
 .qty-input {
-    width: 64px;
-    height: 34px;
+    width: 68px;
+    height: 38px;
     text-align: center;
-    border: 1px solid var(--line);
-    border-radius: 9px;
-    font-weight: 600;
+    border: 1px solid #ddc2ae;
+    border-radius: 999px;
+    font-weight: 700;
+    background: #fffdf8;
 }
 
 .proceed-btn {
     border: 0;
-    border-radius: 10px;
-    background: var(--brand);
+    border-radius: 14px;
+    background: linear-gradient(120deg, var(--brand), var(--brand-dark));
     color: #fff;
-    padding: 11px 14px;
-    font-weight: 700;
+    padding: 13px 18px;
+    font-weight: 800;
     cursor: pointer;
+    box-shadow: 0 16px 28px rgba(110, 53, 15, 0.18);
 }
 
-.proceed-btn:hover { background: var(--brand-dark); }
+.proceed-btn:hover { background: linear-gradient(120deg, #9a521a, var(--brand-dark)); }
 .proceed-btn:disabled { opacity: 0.65; cursor: wait; }
 
 .out {
     display: inline-block;
-    margin-top: 8px;
+    margin-top: 10px;
     color: #8f1d1d;
     font-weight: 700;
 }
 
-@media (max-width: 720px) {
-    .product { grid-template-columns: 1fr; }
-    .product img { width: 100%; height: 210px; }
-}
-
-.buy-header {
-    margin-bottom: 14px;
-    padding-left: 58px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.buy-header .site-lockup {
-    align-items: flex-start;
-}
-
-.buy-header .site-copy {
-    gap: 5px;
-}
-
-.buy-header .top-leading {
-    flex: 1;
-}
-
-@media (max-width: 720px) {
+@media (max-width: 900px) {
     .buy-header {
-        padding-left: 46px;
         flex-direction: column;
+        padding-left: 50px;
     }
 
     .top-actions {
         width: 100%;
-        justify-content: flex-start;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 720px) {
+    .product {
+        grid-template-columns: 1fr;
+    }
+
+    .product img {
+        height: 240px;
+    }
+
+    .buy-card {
+        padding: 18px;
     }
 
     .qty-row {
         flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
     }
 
     .proceed-btn {
@@ -211,19 +200,20 @@ body {
 
 @media (max-width: 480px) {
     .buy-wrap {
-        padding: 20px 12px 36px;
+        width: min(100%, calc(100vw - 24px));
+        padding: 18px 0 34px;
     }
 
     .buy-header {
         padding-left: 40px;
     }
 
-    .top-actions > * {
-        width: 100%;
-        justify-content: center;
+    .buy-card {
+        padding: 15px;
+        border-radius: 18px;
     }
 
-    .buy-card {
-        padding: 14px;
+    .product img {
+        height: 210px;
     }
 }

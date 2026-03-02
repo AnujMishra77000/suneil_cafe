@@ -21,8 +21,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
-    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand3" />
-    <link rel="stylesheet" href="{% static 'products/order_success.css' %}?v=20260301-success4" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand5" />
+    <link rel="stylesheet" href="{% static 'products/order_success.css' %}?v=20260302-success5" />
 </head>
 <body>
     <main class="success-shell">
@@ -31,16 +31,18 @@
                 <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
                 <div class="site-copy">
                     <h1 class="site-title site-title--compact site-title--stacked"><span class="site-title-line">Thathwamasi Bakery</span><span class="site-title-line">Cafe</span></h1>
-                    <p class="page-context">Please Check your Notification Bell to get order details.</p>
                 </div>
+            </div>
+
+            <div class="success-copy success-copy--intro" data-fx>
+                <p class="success-thanks">Thanks for choosing Us</p>
             </div>
 
             <div class="success-checkmark" aria-hidden="true"></div>
 
             <div class="success-copy" data-fx>
-                <p class="success-kicker">Fresh out of the oven</p>
-                <h2>Your order is confirmed.</h2>
-                <p class="success-text">Your order will deliver within 30 minutes.</p>
+                <h2>Your order is confirmed</h2>
+                <p class="success-text">Your order will be delivered within 30 minutes.</p>
                 {% if delivery_contact %}
                 <div class="delivery-contact-card">
                     <span class="delivery-contact-label">Delivery Boy Contact Number</span>

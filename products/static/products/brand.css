@@ -89,59 +89,6 @@
     gap: 8px;
 }
 
-@media (max-width: 760px) {
-    .site-lockup {
-        align-items: flex-start;
-    }
-
-    .site-logo--hero {
-        width: 72px;
-        height: 72px;
-    }
-
-    .site-subtitle {
-        font-size: 13px;
-    }
-}
-
-@media (max-width: 520px) {
-    .site-lockup {
-        gap: 10px;
-    }
-
-    .site-logo {
-        width: 58px;
-        height: 58px;
-    }
-
-    .site-logo--hero {
-        width: 64px;
-        height: 64px;
-    }
-
-    .site-logo--compact {
-        width: 52px;
-        height: 52px;
-    }
-
-    .site-title {
-        font-size: 1.35rem;
-    }
-
-    .site-title--compact {
-        font-size: 1.2rem;
-    }
-
-    .site-kicker {
-        font-size: 11px;
-    }
-
-    .page-label {
-        font-size: 12px;
-    }
-}
-
-
 .page-context {
     margin: 0;
     color: #6a5142;
@@ -184,18 +131,72 @@
     background: linear-gradient(120deg, #fff3e5, #ffe8d4);
 }
 
-@media (max-width: 520px) {
-    .page-context {
-        font-size: 12px;
-    }
-
-    .page-nav-chip {
-        min-height: 32px;
-        padding: 6px 11px;
-        font-size: 11px;
-    }
+.top-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    align-self: flex-start;
+    gap: 12px;
 }
 
+.top-actions > * {
+    flex: 0 0 auto;
+}
+
+.top-actions .page-nav-chip,
+.profile-btn,
+.cart-link {
+    min-height: 42px;
+    padding: 10px 15px;
+    border-radius: 999px;
+    border: 1px solid #d7b59c;
+    background: rgba(255, 244, 234, 0.96);
+    color: #5a2e16;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 10px 20px rgba(84, 42, 20, 0.08);
+}
+
+.profile-btn,
+.cart-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    appearance: none;
+}
+
+.profile-btn {
+    cursor: pointer;
+    font: inherit;
+}
+
+.top-actions .page-nav-chip:hover,
+.profile-btn:hover,
+.cart-link:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 24px rgba(84, 42, 20, 0.14);
+    background: #fff9f3;
+}
+
+.cart-link {
+    gap: 10px;
+}
+
+.cart-count {
+    min-width: 22px;
+    height: 22px;
+    display: inline-grid;
+    place-items: center;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: #5a2e16;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+}
 
 .site-title--stacked {
     display: inline-grid;
@@ -213,12 +214,103 @@
     font-size: clamp(1.24rem, 2.2vw, 1.7rem);
 }
 
+@media (max-width: 760px) {
+    .site-lockup {
+        align-items: flex-start;
+    }
+
+    .site-logo--hero {
+        width: 72px;
+        height: 72px;
+    }
+
+    .site-subtitle {
+        font-size: 13px;
+    }
+
+    .top-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
 @media (max-width: 520px) {
+    .site-lockup {
+        gap: 10px;
+    }
+
+    .site-logo {
+        width: 58px;
+        height: 58px;
+    }
+
+    .site-logo--hero {
+        width: 64px;
+        height: 64px;
+    }
+
+    .site-logo--compact {
+        width: 52px;
+        height: 52px;
+    }
+
+    .site-title {
+        font-size: 1.35rem;
+    }
+
+    .site-title--compact {
+        font-size: 1.2rem;
+    }
+
+    .site-kicker {
+        font-size: 11px;
+    }
+
+    .page-label {
+        font-size: 12px;
+    }
+
+    .page-context {
+        font-size: 12px;
+    }
+
+    .page-nav-chip {
+        min-height: 32px;
+        padding: 6px 11px;
+        font-size: 11px;
+    }
+
     .site-title--stacked {
         gap: 0;
     }
 
     .site-title--compact.site-title--stacked {
         font-size: 1.08rem;
+    }
+
+    .top-actions {
+        gap: 10px;
+    }
+
+    .top-actions > * {
+        flex: 1 1 calc(50% - 5px);
+        min-width: 0;
+    }
+
+    .top-actions .page-nav-chip--home {
+        flex-basis: 100%;
+    }
+
+    .top-actions .page-nav-chip,
+    .profile-btn,
+    .cart-link {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 400px) {
+    .top-actions > * {
+        flex-basis: 100%;
     }
 }
