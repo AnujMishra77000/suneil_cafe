@@ -22,18 +22,14 @@
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
     <link rel="stylesheet" href="{% static 'products/section.css' %}?v=20260228-category5" />
-    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand7" />
-    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand8" />
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260302-bell4" />
 </head>
 <body class="has-page-actions" data-section="{{ section_name }}" data-category-id="{{ category_id }}" data-category-name="{{ category_name }}">
-
     <header class="top container" data-fx>
         <div class="top-leading">
             <div class="site-lockup site-lockup--compact site-lockup--logo-only">
                 <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
-            </div>
-            <div class="page-nav-chips">
-                <a href="/{{ section_name }}/" class="page-nav-chip">Back to {{ section_title }}</a>
             </div>
         </div>
         <div class="top-actions top-actions--icon">
@@ -65,7 +61,7 @@
     </main>
 
     <script src="{% static 'products/category_page.js' %}?v=20260302-icons1"></script>
-    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260302-bell4"></script>
     <script>
         if (window.ThathwamasiNotifications) {
             window.ThathwamasiNotifications.mount({

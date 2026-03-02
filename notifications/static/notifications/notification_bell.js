@@ -127,13 +127,16 @@
             root.className = "thn-root";
             root.innerHTML = `
                 <button type="button" class="thn-btn" title="Notifications" aria-label="Notifications">
-                    🔔
+                    <span class="thn-btn-icon" aria-hidden="true"></span>
                     <span class="thn-count">0</span>
                 </button>
                 <section class="thn-panel" aria-live="polite">
                     <header class="thn-head">
                         <h3>Notifications</h3>
-                        <button type="button" class="thn-mark-all">Mark all read</button>
+                        <div class="thn-head-actions">
+                            <button type="button" class="thn-mark-all">Mark all read</button>
+                            <button type="button" class="thn-close" aria-label="Close notifications" title="Close">Close</button>
+                        </div>
                     </header>
                     <div class="thn-list"></div>
                 </section>
@@ -148,6 +151,7 @@
 
             root.querySelector(".thn-btn").addEventListener("click", () => this.togglePanel());
             root.querySelector(".thn-mark-all").addEventListener("click", () => this.markAllRead());
+            root.querySelector(".thn-close").addEventListener("click", () => this.closePanel());
 
             document.addEventListener("click", (event) => {
                 if (!this.root || !this.isOpen) return;

@@ -22,17 +22,18 @@
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
     <link rel="stylesheet" href="{% static 'products/billing.css' %}?v=20260302-billing5" />
-    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand7" />
-    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand8" />
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260302-bell4" />
 </head>
 <body class="has-page-actions">
-
     <main class="container">
         <header class="top" data-fx>
             <div class="page-intro page-intro--tight">
-                <div class="site-lockup site-lockup--compact site-lockup--logo-only">
-                    <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
-            </div>
+                <div class="top-leading">
+                    <div class="site-lockup site-lockup--compact site-lockup--logo-only">
+                        <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
+                    </div>
+                </div>
             </div>
             <div class="top-actions top-actions--icon">
                 <a href="/" class="action-icon action-icon--home" aria-label="Home" title="Home"></a>
@@ -67,7 +68,7 @@
         </section>
     </main>
     <script src="{% static 'products/billing.js' %}?v=20260302-icons1"></script>
-    <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260302-bell4"></script>
     <script>
         if (window.ThathwamasiNotifications) {
             window.ThathwamasiNotifications.mount({

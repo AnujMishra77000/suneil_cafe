@@ -195,16 +195,39 @@
 }
 
 .top-actions--icon {
-    gap: 10px;
+    gap: 8px;
     flex-wrap: nowrap;
+}
+
+.has-page-actions .top.container,
+.has-page-actions .topbar,
+.has-page-actions .buy-header {
+    min-height: 88px;
+}
+
+.has-page-actions .top-leading,
+.has-page-actions .topbar .top-leading,
+.has-page-actions .buy-header .top-leading {
+    position: fixed;
+    top: 14px;
+    left: 16px;
+    z-index: 11950;
+    display: grid;
+    gap: 0;
+}
+
+.has-page-actions .top-leading .site-lockup,
+.has-page-actions .topbar .top-leading .site-lockup,
+.has-page-actions .buy-header .top-leading .site-lockup {
+    gap: 0;
 }
 
 .has-page-actions .top-actions--icon,
 .has-page-actions .topbar .top-actions--icon,
 .has-page-actions .buy-header .top-actions--icon {
     position: fixed;
-    top: 16px;
-    right: 78px;
+    top: 14px;
+    right: 72px;
     z-index: 11950;
 }
 
@@ -231,10 +254,12 @@ button.action-icon {
     font: inherit;
 }
 
-.action-icon:hover {
+.action-icon:hover,
+.action-icon:focus-visible {
     transform: translateY(-1px);
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
     background: #4a2512;
+    outline: none;
 }
 
 .action-icon::before {
@@ -403,11 +428,25 @@ button.action-icon {
         height: 20px;
     }
 
+    .has-page-actions .top.container,
+    .has-page-actions .topbar,
+    .has-page-actions .buy-header {
+        min-height: 76px;
+    }
+
+    .has-page-actions .top-leading,
+    .has-page-actions .topbar .top-leading,
+    .has-page-actions .buy-header .top-leading {
+        top: 10px;
+        left: 10px;
+    }
+
     .has-page-actions .top-actions--icon,
     .has-page-actions .topbar .top-actions--icon,
     .has-page-actions .buy-header .top-actions--icon {
         top: 10px;
-        right: 60px;
+        right: 58px;
+        gap: 6px;
     }
 }
 
@@ -415,12 +454,7 @@ button.action-icon {
     .has-page-actions .top-actions--icon,
     .has-page-actions .topbar .top-actions--icon,
     .has-page-actions .buy-header .top-actions--icon {
-        gap: 8px;
-        right: 56px;
-    }
-
-    .action-icon {
-        width: 42px;
-        height: 42px;
+        right: 54px;
+        gap: 5px;
     }
 }

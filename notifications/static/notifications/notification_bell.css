@@ -9,18 +9,35 @@
 .thn-btn {
     width: 48px;
     height: 48px;
+    display: inline-grid;
+    place-items: center;
     border: 0;
     border-radius: 999px;
     background: #5a2e16;
     color: #fff;
-    font-size: 22px;
+    font-size: 0;
     cursor: pointer;
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
     position: relative;
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
-.thn-btn:hover {
+.thn-btn:hover,
+.thn-btn:focus-visible {
     transform: translateY(-1px);
+    background: #4a2512;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
+    outline: none;
+}
+
+.thn-btn-icon {
+    width: 22px;
+    height: 22px;
+    display: block;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6.3 9.7a5.7 5.7 0 1 1 11.4 0c0 6.4 2.6 7.7 2.6 7.7H3.7s2.6-1.3 2.6-7.7'/%3E%3Cpath d='M10 20a2.3 2.3 0 0 0 4 0'/%3E%3C/svg%3E");
 }
 
 .thn-count {
@@ -71,7 +88,14 @@
     color: #1f2937;
 }
 
-.thn-mark-all {
+.thn-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.thn-mark-all,
+.thn-close {
     border: 1px solid #d0d5dd;
     border-radius: 7px;
     background: #fff;
@@ -82,7 +106,8 @@
     cursor: pointer;
 }
 
-.thn-mark-all:hover {
+.thn-mark-all:hover,
+.thn-close:hover {
     background: #f8fafc;
 }
 
@@ -230,7 +255,22 @@
         height: 44px;
     }
 
+    .thn-btn-icon {
+        width: 20px;
+        height: 20px;
+    }
+
     .thn-panel {
         width: min(96vw, 390px);
+    }
+
+    .thn-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .thn-head-actions {
+        width: 100%;
+        justify-content: flex-end;
     }
 }

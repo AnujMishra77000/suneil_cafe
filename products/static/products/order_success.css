@@ -25,7 +25,7 @@ body {
     min-height: 100vh;
     display: grid;
     place-items: center;
-    padding: 24px 16px;
+    padding: 96px 16px 24px;
 }
 
 .success-card {
@@ -43,18 +43,14 @@ body {
 }
 
 .success-brand {
-    width: 100%;
-    justify-content: center;
+    position: fixed;
+    top: 14px;
+    left: 16px;
+    z-index: 11950;
+    width: auto;
+    justify-content: flex-start;
     align-items: center;
-    text-align: center;
-}
-
-.success-brand .site-copy {
-    justify-items: center;
-}
-
-.success-brand .site-title--stacked {
-    align-self: center;
+    text-align: left;
 }
 
 .success-copy {
@@ -223,21 +219,30 @@ body {
 }
 
 @media (max-width: 640px) {
+    .success-shell {
+        padding: 82px 12px 18px;
+    }
+
     .success-card {
-        padding: 28px 18px 24px;
-        gap: 16px;
+        padding: 26px 18px 22px;
+        border-radius: 24px;
+    }
+
+    .success-brand {
+        top: 10px;
+        left: 10px;
     }
 
     .success-checkmark {
-        width: 120px;
-        height: 120px;
+        width: 122px;
+        height: 122px;
     }
 
     .success-checkmark::after {
-        left: 38px;
-        top: 24px;
-        width: 26px;
-        height: 48px;
+        left: 39px;
+        top: 27px;
+        width: 27px;
+        height: 49px;
     }
 
     .success-btn {
