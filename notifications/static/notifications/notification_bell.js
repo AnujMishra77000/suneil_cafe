@@ -77,6 +77,7 @@
             this.countEl = null;
             this.panelEl = null;
             this.listEl = null;
+            this.panelHostEl = null;
         }
 
         getIdentifier(promptIfMissing = false) {
@@ -130,6 +131,22 @@
                     <span class="thn-btn-icon" aria-hidden="true"></span>
                     <span class="thn-count">0</span>
                 </button>
+            `;
+
+            const actionRail = document.body.classList.contains("has-page-actions")
+                ? document.querySelector(".top-actions--icon")
+                : null;
+
+            if (actionRail) {
+                root.classList.add("thn-root--inline");
+                actionRail.appendChild(root);
+            } else {
+                document.body.appendChild(root);
+            }
+
+            const panelHost = document.createElement("div");
+            panelHost.className = "thn-panel-host";
+            panelHost.innerHTML = `
                 <section class="thn-panel" aria-live="polite">
                     <header class="thn-head">
                         <h3>Notifications</h3>
@@ -141,21 +158,32 @@
                     <div class="thn-list"></div>
                 </section>
             `;
-
-            document.body.appendChild(root);
+            document.body.appendChild(panelHost);
 
             this.root = root;
+            this.panelHostEl = panelHost;
             this.countEl = root.querySelector(".thn-count");
-            this.panelEl = root.querySelector(".thn-panel");
-            this.listEl = root.querySelector(".thn-list");
+            this.panelEl = panelHost.querySelector(".thn-panel");
+            this.listEl = panelHost.querySelector(".thn-list");
 
-            root.querySelector(".thn-btn").addEventListener("click", () => this.togglePanel());
-            root.querySelector(".thn-mark-all").addEventListener("click", () => this.markAllRead());
-            root.querySelector(".thn-close").addEventListener("click", () => this.closePanel());
+            root.querySelector(".thn-btn").addEventListener("click", (event) => {
+                event.stopPropagation();
+                this.togglePanel();
+            });
+            panelHost.querySelector(".thn-mark-all").addEventListener("click", () => this.markAllRead());
+            panelHost.querySelector(".thn-close").addEventListener("click", () => this.closePanel());
 
             document.addEventListener("click", (event) => {
-                if (!this.root || !this.isOpen) return;
-                if (!this.root.contains(event.target)) {
+                if (!this.isOpen) return;
+                const insideButton = this.root?.contains(event.target);
+                const insidePanel = this.panelEl?.contains(event.target);
+                if (!insideButton && !insidePanel) {
+                    this.closePanel();
+                }
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape" && this.isOpen) {
                     this.closePanel();
                 }
             });
@@ -361,9 +389,10 @@
         }
 
         async togglePanel() {
-            if (!this.panelEl) return;
+            if (!this.panelEl || !this.panelHostEl) return;
             this.isOpen = !this.isOpen;
             if (this.isOpen) {
+                this.panelHostEl.classList.add("open");
                 this.panelEl.classList.add("open");
                 await this.loadFeed();
                 if (this.unreadCount > 0) {
@@ -376,6 +405,7 @@
 
         closePanel() {
             this.isOpen = false;
+            this.panelHostEl?.classList.remove("open");
             this.panelEl?.classList.remove("open");
         }
     }

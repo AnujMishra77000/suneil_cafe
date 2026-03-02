@@ -9,6 +9,25 @@
     font-family: "Sora", Arial, sans-serif;
 }
 
+.thn-root--inline {
+    position: relative;
+    top: auto;
+    right: auto;
+    z-index: auto;
+    flex: 0 0 auto;
+}
+
+.thn-panel-host {
+    position: fixed;
+    inset: 0;
+    z-index: 19980;
+    pointer-events: none;
+}
+
+.thn-panel-host.open {
+    pointer-events: auto;
+}
+
 .thn-btn {
     width: var(--action-icon-size, 48px);
     height: var(--action-icon-size, 48px);
@@ -61,9 +80,9 @@
 }
 
 .thn-panel {
-    position: absolute;
-    top: calc(100% + 10px);
-    right: 0;
+    position: fixed;
+    top: calc(var(--action-rail-top, 16px) + var(--action-icon-size, 48px) + 12px);
+    right: var(--action-rail-right, 16px);
     display: none;
     width: min(95vw, 420px);
     max-height: min(72vh, 620px);
@@ -76,7 +95,7 @@
 
 .thn-panel.open {
     display: block;
-    z-index: 20010;
+    z-index: 19990;
 }
 
 .thn-head {
