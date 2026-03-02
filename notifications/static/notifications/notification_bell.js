@@ -142,16 +142,7 @@
                 </section>
             `;
 
-            const actionRail = document.body.classList.contains("has-page-actions")
-                ? document.querySelector(".top-actions--icon")
-                : null;
-
-            if (actionRail) {
-                root.classList.add("thn-root--inline");
-                actionRail.appendChild(root);
-            } else {
-                document.body.appendChild(root);
-            }
+            document.body.appendChild(root);
 
             this.root = root;
             this.countEl = root.querySelector(".thn-count");
