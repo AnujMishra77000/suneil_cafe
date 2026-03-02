@@ -232,7 +232,7 @@
 .has-page-actions .buy-header .top-actions--icon {
     position: fixed;
     top: var(--action-rail-top);
-    right: calc(var(--action-rail-right) + var(--action-icon-size) + var(--action-icon-gap));
+    right: var(--action-rail-right);
     z-index: 11950;
     display: flex;
     align-items: center;
