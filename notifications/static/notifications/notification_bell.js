@@ -77,6 +77,7 @@
             this.countEl = null;
             this.panelEl = null;
             this.listEl = null;
+            this.overlayEl = null;
         }
 
         getIdentifier(promptIfMissing = false) {
@@ -130,7 +131,13 @@
                     <span class="thn-btn-icon" aria-hidden="true"></span>
                     <span class="thn-count">0</span>
                 </button>
-                <section class="thn-panel" aria-live="polite">
+            `;
+
+            const overlay = document.createElement("div");
+            overlay.className = "thn-overlay";
+            overlay.innerHTML = `
+                <div class="thn-backdrop" data-thn-close="true"></div>
+                <section class="thn-panel" aria-live="polite" role="dialog" aria-modal="true" aria-label="Notifications">
                     <header class="thn-head">
                         <h3>Notifications</h3>
                         <div class="thn-head-actions">
@@ -143,19 +150,24 @@
             `;
 
             document.body.appendChild(root);
+            document.body.appendChild(overlay);
 
             this.root = root;
+            this.overlayEl = overlay;
             this.countEl = root.querySelector(".thn-count");
-            this.panelEl = root.querySelector(".thn-panel");
-            this.listEl = root.querySelector(".thn-list");
+            this.panelEl = overlay.querySelector(".thn-panel");
+            this.listEl = overlay.querySelector(".thn-list");
 
             root.querySelector(".thn-btn").addEventListener("click", () => this.togglePanel());
-            root.querySelector(".thn-mark-all").addEventListener("click", () => this.markAllRead());
-            root.querySelector(".thn-close").addEventListener("click", () => this.closePanel());
-
-            document.addEventListener("click", (event) => {
-                if (!this.root || !this.isOpen) return;
-                if (!this.root.contains(event.target)) {
+            overlay.querySelector(".thn-mark-all").addEventListener("click", () => this.markAllRead());
+            overlay.querySelector(".thn-close").addEventListener("click", () => this.closePanel());
+            overlay.addEventListener("click", (event) => {
+                if (event.target.closest("[data-thn-close='true']")) {
+                    this.closePanel();
+                }
+            });
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape" && this.isOpen) {
                     this.closePanel();
                 }
             });
@@ -361,10 +373,12 @@
         }
 
         async togglePanel() {
-            if (!this.panelEl) return;
+            if (!this.panelEl || !this.overlayEl) return;
             this.isOpen = !this.isOpen;
             if (this.isOpen) {
+                this.overlayEl.classList.add("open");
                 this.panelEl.classList.add("open");
+                document.body.classList.add("thn-open");
                 await this.loadFeed();
                 if (this.unreadCount > 0) {
                     await this.markAllRead();
@@ -376,7 +390,9 @@
 
         closePanel() {
             this.isOpen = false;
+            this.overlayEl?.classList.remove("open");
             this.panelEl?.classList.remove("open");
+            document.body.classList.remove("thn-open");
         }
     }
 
