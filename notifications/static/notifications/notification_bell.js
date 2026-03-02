@@ -127,9 +127,9 @@
             const root = document.createElement("div");
             root.className = "thn-root";
             root.innerHTML = `
-                <button type="button" class="thn-btn" title="Notifications" aria-label="Notifications">
+                <button type="button" class="thn-btn action-icon action-icon--bell" title="Notifications" aria-label="Notifications">
                     <span class="thn-btn-icon" aria-hidden="true"></span>
-                    <span class="thn-count">0</span>
+                    <span class="thn-count action-icon-count">0</span>
                 </button>
             `;
 

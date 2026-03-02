@@ -14,10 +14,7 @@
     top: auto;
     right: auto;
     z-index: auto;
-    flex: 0 0 auto;
-}
-
-.thn-root--inline {
+    flex: 0 0 var(--action-icon-size, 48px);
     width: var(--action-icon-size, 48px);
     height: var(--action-icon-size, 48px);
 }
@@ -62,6 +59,14 @@
     outline: none;
 }
 
+.thn-btn.action-icon {
+    font-size: inherit;
+}
+
+.thn-btn.action-icon .thn-btn-icon {
+    display: none;
+}
+
 .thn-btn-icon {
     width: 22px;
     height: 22px;
@@ -74,19 +79,19 @@
 
 .thn-count {
     position: absolute;
-    top: -5px;
-    right: -5px;
-    min-width: 20px;
-    height: 20px;
+    top: 2px;
+    right: 2px;
+    min-width: 18px;
+    height: 18px;
     border-radius: 999px;
-    padding: 0 5px;
+    padding: 0 4px;
     background: #dc2626;
     color: #fff;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 800;
-    line-height: 20px;
+    line-height: 18px;
     text-align: center;
-    border: 2px solid #fff;
+    border: 1.5px solid #fff;
 }
 
 .thn-panel {
