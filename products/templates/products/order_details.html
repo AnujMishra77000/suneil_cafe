@@ -21,9 +21,9 @@
     </script>
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
-    <link rel="stylesheet" href="{% static 'products/order_details.css' %}?v=20260228-brand2" />
-    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand5" />
-    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
+    <link rel="stylesheet" href="{% static 'products/order_details.css' %}?v=20260302-orderdetails3" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand6" />
+    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260302-menu2" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
 </head>
 <body class="has-customer-menu">
@@ -39,16 +39,21 @@
 
     <main class="page">
         <header class="topbar" data-fx>
-            <div class="site-lockup site-lockup--compact">
-                <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
-                <div class="site-copy">
-                    <h1 class="site-title site-title--compact site-title--stacked"><span class="site-title-line">Thathwamasi Bakery</span><span class="site-title-line">Cafe</span></h1>
-                    <p class="page-context">Order Details</p>
-                    <p class="page-label">View your previous orders and submit feedback for each order.</p>
+            <div class="top-leading">
+                <div class="site-lockup site-lockup--compact site-lockup--logo-only">
+                    <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
+                    <div class="site-copy site-copy--minimal">
+                        <p class="page-context">Order Details</p>
+                        <p class="page-label">View your previous orders and submit feedback for each order.</p>
+                    </div>
                 </div>
             </div>
-            <div class="page-nav-chips">
-                <a href="/" class="page-nav-chip page-nav-chip--home">Home</a>
+            <div class="top-actions top-actions--icon">
+                <a href="/" class="action-icon action-icon--home" aria-label="Home" title="Home"></a>
+                <button id="profileBtn" class="action-icon action-icon--profile" type="button" aria-label="Save Profile (Optional)" title="Save Profile (Optional)" data-profile-ready="false"></button>
+                <a href="/billing/" class="action-icon action-icon--cart" aria-label="Cart" title="Cart">
+                    <span id="cartCount" class="action-icon-count">0</span>
+                </a>
             </div>
         </header>
 
@@ -93,7 +98,7 @@
         </div>
     </div>
 
-    <script src="{% static 'products/order_details.js' %}?v=20260224-1"></script>
+    <script src="{% static 'products/order_details.js' %}?v=20260302-icons1"></script>
     <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
     <script>

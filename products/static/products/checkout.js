@@ -41,6 +41,15 @@ const couponSummaryLabelEl = document.getElementById("couponSummaryLabel");
 const couponDiscountAmountEl = document.getElementById("couponDiscountAmount");
 const totalAmountEl = document.getElementById("totalAmount");
 const pincodeListEl = document.getElementById("pincodeList");
+const profileBtnEl = document.getElementById("profileBtn");
+const cartCountEl = document.getElementById("cartCount");
+
+function setProfileButtonState(label = "Save Profile (Optional)", ready = false) {
+    if (!profileBtnEl) return;
+    profileBtnEl.setAttribute("title", label);
+    profileBtnEl.setAttribute("aria-label", label);
+    profileBtnEl.dataset.profileReady = ready ? "true" : "false";
+}
 
 function setStatus(message, type = "info") {
     statusMsgEl.textContent = message || "";
@@ -113,6 +122,10 @@ function readProfile() {
     if (checkoutPhone && !state.profile.phone) {
         state.profile.phone = checkoutPhone;
     }
+
+    if (state.profile.name && state.profile.phone) {
+        setProfileButtonState(`Saved profile for ${state.profile.name}`, true);
+    }
 }
 
 function readStoredCoupon() {
@@ -151,6 +164,9 @@ function writeProfile() {
     if (state.profile.phone) {
         localStorage.setItem("thathwamasi_checkout_phone", state.profile.phone);
     }
+    if (state.profile.name && state.profile.phone) {
+        setProfileButtonState(`Saved profile for ${state.profile.name}`, true);
+    }
 }
 
 function newIdempotencyKey() {
@@ -184,6 +200,38 @@ function fillForm() {
     phoneInputEl.value = state.profile.phone;
     addressInputEl.value = state.profile.address;
     pincodeInputEl.value = state.profile.pincode;
+}
+
+async function refreshCartCount() {
+    if (!cartCountEl) return;
+    const cartPhone = localStorage.getItem("thathwamasi_cart_phone") || state.cart_phone || "";
+    if (!cartPhone) {
+        cartCountEl.textContent = "0";
+        return;
+    }
+    try {
+        const cart = await apiGet(`/api/cart/view/?phone=${encodeURIComponent(cartPhone)}`);
+        const count = Number(cart.total_items || 0);
+        cartCountEl.textContent = Number.isFinite(count) ? String(count) : "0";
+    } catch {
+        cartCountEl.textContent = "0";
+    }
+}
+
+function saveProfileFromForm() {
+    state.profile.name = nameInputEl.value.trim();
+    state.profile.phone = phoneInputEl.value.trim();
+    state.profile.address = addressInputEl.value.trim();
+    state.profile.pincode = pincodeInputEl.value.trim();
+
+    if (!state.profile.name || !state.profile.phone) {
+        setStatus("Add at least name and phone before saving profile.", "info");
+        return false;
+    }
+
+    writeProfile();
+    setStatus("Profile saved for faster checkout.", "ok");
+    return true;
 }
 
 async function apiGet(url) {
@@ -476,15 +524,19 @@ async function submitOrder(event) {
 }
 
 async function bootstrap() {
+    setProfileButtonState();
     readProfile();
     loadIdempotencyKey();
     fillForm();
-    await Promise.all([loadServiceablePincodes(), loadCart()]);
+    await Promise.all([loadServiceablePincodes(), loadCart(), refreshCartCount()]);
     renderPreview();
     await restoreCoupon();
 }
 
 formEl.addEventListener("submit", submitOrder);
+if (profileBtnEl) {
+    profileBtnEl.addEventListener("click", saveProfileFromForm);
+}
 phoneInputEl.addEventListener("blur", lookupByPhone);
 applyCouponBtnEl.addEventListener("click", applyCoupon);
 clearCouponBtnEl.addEventListener("click", clearCoupon);

@@ -8,6 +8,8 @@ let isLoadingOrders = false;
 
 const phoneInputEl = document.getElementById("orderPhoneInput");
 const loadBtnEl = document.getElementById("loadOrdersBtn");
+const profileBtnEl = document.getElementById("profileBtn");
+const cartCountEl = document.getElementById("cartCount");
 const pageStatusEl = document.getElementById("pageStatus");
 const ordersListEl = document.getElementById("ordersList");
 const feedbackModalEl = document.getElementById("feedbackModal");
@@ -17,6 +19,29 @@ const feedbackRatingEl = document.getElementById("feedbackRating");
 const feedbackMessageEl = document.getElementById("feedbackMessage");
 const feedbackStatusEl = document.getElementById("feedbackStatus");
 const feedbackCancelBtnEl = document.getElementById("feedbackCancelBtn");
+
+function setProfileButtonState(label = "Save Profile (Optional)", ready = false) {
+    if (!profileBtnEl) return;
+    profileBtnEl.setAttribute("title", label);
+    profileBtnEl.setAttribute("aria-label", label);
+    profileBtnEl.dataset.profileReady = ready ? "true" : "false";
+}
+
+async function refreshCartCount() {
+    if (!cartCountEl) return;
+    const cartPhone = (localStorage.getItem("thathwamasi_cart_phone") || "").trim();
+    if (!cartPhone) {
+        cartCountEl.textContent = "0";
+        return;
+    }
+    try {
+        const cart = await apiGet(`/api/cart/view/?phone=${encodeURIComponent(cartPhone)}`);
+        const count = Number(cart.total_items || 0);
+        cartCountEl.textContent = Number.isFinite(count) ? String(count) : "0";
+    } catch {
+        cartCountEl.textContent = "0";
+    }
+}
 
 function readSavedPhone() {
     return (
@@ -351,16 +376,34 @@ function onOrdersListClick(event) {
     openFeedbackModal(orderId, true);
 }
 
+function askPhoneForHistory() {
+    const phone = prompt("Enter phone number");
+    if (!phone) return false;
+    const clean = phone.trim();
+    phoneInputEl.value = clean;
+    savePhone(clean);
+    setProfileButtonState(`Using phone ${clean}`, true);
+    loadOrders().catch(() => {});
+    return true;
+}
+
 function bootstrap() {
+    setProfileButtonState();
     const savedPhone = readSavedPhone();
     if (savedPhone) {
         savePhone(savedPhone);
         phoneInputEl.value = savedPhone;
+        setProfileButtonState(`Using phone ${savedPhone}`, true);
         loadOrders().catch(() => {});
     } else {
         renderOrders();
         setPageStatus("Enter phone number to load your order history.");
     }
+    refreshCartCount().catch(() => {});
+}
+
+if (profileBtnEl) {
+    profileBtnEl.addEventListener("click", askPhoneForHistory);
 }
 
 loadBtnEl.addEventListener("click", function () {

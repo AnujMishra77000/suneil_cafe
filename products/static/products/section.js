@@ -19,6 +19,13 @@ const searchBtnEl = document.getElementById("searchBtn");
 const profileBtnEl = document.getElementById("profileBtn");
 const cartCountEl = document.getElementById("cartCount");
 
+function setProfileButtonState(label = "Save Profile (Optional)", ready = false) {
+    if (!profileBtnEl) return;
+    profileBtnEl.setAttribute("title", label);
+    profileBtnEl.setAttribute("aria-label", label);
+    profileBtnEl.dataset.profileReady = ready ? "true" : "false";
+}
+
 function sectionCategoryCacheKey() {
     return `thathwamasi_categories_v4_${state.sectionName.toLowerCase()}`;
 }
@@ -67,7 +74,7 @@ function readProfile() {
         const profile = JSON.parse(raw);
         if (profile.name && profile.phone && profile.whatsapp_no) {
             state.profile = profile;
-            if (profileBtnEl) profileBtnEl.textContent = `Deliver to ${profile.name}`;
+            setProfileButtonState(`Saved profile for ${profile.name}`, true);
         }
     } catch (e) {
         console.error(e);
@@ -103,7 +110,7 @@ function askProfile() {
         whatsapp_no: whatsapp.trim()
     };
     localStorage.setItem("thathwamasi_profile", JSON.stringify(state.profile));
-    if (profileBtnEl) profileBtnEl.textContent = `Deliver to ${state.profile.name}`;
+    setProfileButtonState(`Saved profile for ${state.profile.name}`, true);
     return true;
 }
 
@@ -260,6 +267,9 @@ if (searchInputEl) {
         if (event.key === "Enter") runSearch();
     });
 }
-if (profileBtnEl) profileBtnEl.addEventListener("click", askProfile);
+if (profileBtnEl) {
+    setProfileButtonState();
+    profileBtnEl.addEventListener("click", askProfile);
+}
 
 bootstrap();

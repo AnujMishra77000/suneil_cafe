@@ -9,6 +9,7 @@ const state = {
 };
 
 const profileBtnEl = document.getElementById("profileBtn");
+const cartCountEl = document.getElementById("cartCount");
 const cartListEl = document.getElementById("cartList");
 const itemCountEl = document.getElementById("itemCount");
 const summaryItemsEl = document.getElementById("summaryItems");
@@ -20,6 +21,19 @@ const historyBtnEl = document.getElementById("historyBtn");
 const historyPanelEl = document.getElementById("historyPanel");
 const qtyTimers = {};
 let historyLoaded = false;
+
+function setProfileButtonState(label = "Save Profile (Optional)", ready = false) {
+    if (!profileBtnEl) return;
+    profileBtnEl.setAttribute("title", label);
+    profileBtnEl.setAttribute("aria-label", label);
+    profileBtnEl.dataset.profileReady = ready ? "true" : "false";
+}
+
+function updateCartIconCount(count) {
+    if (!cartCountEl) return;
+    const safe = Number.isFinite(Number(count)) ? String(Math.max(0, Number(count))) : "0";
+    cartCountEl.textContent = safe;
+}
 
 function rememberContinueShoppingUrl() {
     const fallback = "/bakery/";
@@ -49,7 +63,7 @@ function rememberContinueShoppingUrl() {
 function readProfile() {
     const checkoutPhone = localStorage.getItem("thathwamasi_checkout_phone");
     if (checkoutPhone) {
-        profileBtnEl.textContent = `Using phone ${checkoutPhone}`;
+        setProfileButtonState(`Using phone ${checkoutPhone}`, true);
     }
 }
 
@@ -57,7 +71,7 @@ function askPhoneForHistory() {
     const phone = prompt("Enter phone number");
     if (!phone) return false;
     localStorage.setItem("thathwamasi_checkout_phone", phone.trim());
-    profileBtnEl.textContent = `Using phone ${phone.trim()}`;
+    setProfileButtonState(`Using phone ${phone.trim()}`, true);
     historyLoaded = false;
     setupHistoryAccess(true).catch(() => {});
     return true;
@@ -187,6 +201,7 @@ function renderSummary() {
     summaryItemsEl.textContent = String(state.cart.total_items || 0);
     summarySubtotalEl.textContent = `Rs ${state.cart.total_amount || "0.00"}`;
     summaryTotalEl.textContent = `Rs ${state.cart.total_amount || "0.00"}`;
+    updateCartIconCount(state.cart.total_items || 0);
 }
 
 function rowTemplate(item) {
@@ -434,6 +449,7 @@ async function onHistorySubmit(event) {
 }
 
 async function bootstrap() {
+    setProfileButtonState();
     readProfile();
     rememberContinueShoppingUrl();
     await loadCart();
