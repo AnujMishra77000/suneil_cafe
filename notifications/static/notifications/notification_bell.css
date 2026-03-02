@@ -1,14 +1,14 @@
 .thn-root {
     position: fixed;
-    top: 16px;
-    right: 16px;
+    top: var(--action-rail-top, 16px);
+    right: var(--action-rail-right, 16px);
     z-index: 12000;
     font-family: "Sora", Arial, sans-serif;
 }
 
 .thn-btn {
-    width: 48px;
-    height: 48px;
+    width: var(--action-icon-size, 48px);
+    height: var(--action-icon-size, 48px);
     display: inline-grid;
     place-items: center;
     border: 0;
@@ -245,16 +245,6 @@
 }
 
 @media (max-width: 700px) {
-    .thn-root {
-        right: 10px;
-        top: 10px;
-    }
-
-    .thn-btn {
-        width: 44px;
-        height: 44px;
-    }
-
     .thn-btn-icon {
         width: 20px;
         height: 20px;
