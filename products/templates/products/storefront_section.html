@@ -22,28 +22,15 @@
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
     <link rel="stylesheet" href="{% static 'products/section.css' %}?v=20260228-category4" />
-    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand6" />
-    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260302-menu2" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand7" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
 </head>
-<body class="has-customer-menu" data-section="{{ section_name }}" data-image-root="{% static 'products/images/' %}">
-    <div class="customer-menu" data-customer-menu>
-        <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
-        <nav class="customer-menu-panel" data-menu-panel>
-            <a href="/">Home</a>
-            <a href="/bakery/">Bakery</a>
-            <a href="/snacks/">Snacks</a>
-            <a href="/order-details/">Order Details</a>
-        </nav>
-    </div>
+<body class="has-page-actions" data-section="{{ section_name }}" data-image-root="{% static 'products/images/' %}">
 
     <header class="top container" data-fx>
         <div class="top-leading">
             <div class="site-lockup site-lockup--compact site-lockup--logo-only">
                 <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
-                <div class="site-copy site-copy--minimal">
-                    <p class="page-context">{{ section_title }}</p>
-                </div>
             </div>
         </div>
         <div class="top-actions top-actions--icon">
@@ -74,7 +61,6 @@
     </main>
 
     <script src="{% static 'products/section.js' %}?v=20260302-icons1"></script>
-    <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
     <script>
         if (window.ThathwamasiNotifications) {

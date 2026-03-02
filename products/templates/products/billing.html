@@ -22,31 +22,17 @@
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
     <link rel="stylesheet" href="{% static 'products/billing.css' %}?v=20260302-billing5" />
-    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand6" />
-    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260302-menu2" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand7" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
 </head>
-<body class="has-customer-menu">
-    <div class="customer-menu" data-customer-menu>
-        <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
-        <nav class="customer-menu-panel" data-menu-panel>
-            <a href="/">Home</a>
-            <a href="/bakery/">Bakery</a>
-            <a href="/snacks/">Snacks</a>
-            <a href="/order-details/">Order Details</a>
-        </nav>
-    </div>
+<body class="has-page-actions">
 
     <main class="container">
         <header class="top" data-fx>
             <div class="page-intro page-intro--tight">
                 <div class="site-lockup site-lockup--compact site-lockup--logo-only">
                     <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
-                    <div class="site-copy site-copy--minimal">
-                        <p class="page-context">Billing & Checkout</p>
-                        <p class="page-label">Review your cart and proceed to checkout safely.</p>
-                    </div>
-                </div>
+            </div>
             </div>
             <div class="top-actions top-actions--icon">
                 <a href="/" class="action-icon action-icon--home" aria-label="Home" title="Home"></a>
@@ -81,7 +67,6 @@
         </section>
     </main>
     <script src="{% static 'products/billing.js' %}?v=20260302-icons1"></script>
-    <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
     <script>
         if (window.ThathwamasiNotifications) {
