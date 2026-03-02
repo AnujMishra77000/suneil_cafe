@@ -525,7 +525,28 @@ body {
 }
 
 @media (max-width: 520px) {
-    .grid,
+    .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .card .thumb {
+        height: 118px;
+    }
+
+    .card .body {
+        padding: 10px;
+    }
+
+    .title-row h3 {
+        font-size: 13px;
+    }
+
+    .price,
+    .meta {
+        font-size: 11px;
+    }
+
     .action-row {
         grid-template-columns: 1fr;
     }

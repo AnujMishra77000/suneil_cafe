@@ -15,6 +15,12 @@ const buyCardEl = document.getElementById("buyCard");
 const profileBtnEl = document.getElementById("profileBtn");
 const cartCountEl = document.getElementById("cartCount");
 
+function resetProceedButton(button) {
+    if (!button) return;
+    button.disabled = false;
+    button.textContent = "Proceed to Billing";
+}
+
 function setProfileButtonState(label = "Save Profile (Optional)", ready = false) {
     if (!profileBtnEl) return;
     profileBtnEl.setAttribute("title", label);
@@ -161,6 +167,8 @@ function renderProduct(product) {
         qtyInput.value = String(normalizeQty(qtyInput.value));
     });
 
+    resetProceedButton(proceedBtn);
+
     proceedBtn.addEventListener("click", async () => {
         if (product.is_available !== true) {
             alert(`${product.name} is out of stock. Please contact owner: ${OWNER_PHONE}`);
@@ -208,5 +216,9 @@ if (profileBtnEl) {
     setProfileButtonState();
     profileBtnEl.addEventListener("click", askProfile);
 }
+
+window.addEventListener("pageshow", () => {
+    resetProceedButton(document.getElementById("proceedBtn"));
+});
 
 bootstrap();

@@ -152,29 +152,33 @@ body {
 .qty-row {
     display: inline-flex;
     align-items: center;
+    gap: 2px;
+    padding: 2px;
     border: 1px solid #ddc2ad;
-    border-radius: 999px;
-    overflow: hidden;
+    border-radius: 12px;
     background: #fff3e6;
 }
 
 .qty-row button {
     border: none;
-    background: transparent;
-    width: 34px;
-    height: 34px;
+    background: rgba(255, 255, 255, 0.58);
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
     cursor: pointer;
+    font-size: 13px;
     font-weight: 800;
     color: var(--brand-700);
 }
 
 .qty-row input {
-    width: 42px;
-    height: 34px;
+    width: 34px;
+    height: 28px;
     text-align: center;
     border: none;
     background: transparent;
     color: var(--brand-700);
+    font-size: 12px;
     font-weight: 700;
 }
 

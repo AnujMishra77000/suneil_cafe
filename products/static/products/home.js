@@ -8,6 +8,7 @@ const homeHistoryPhoneEl = document.getElementById("homeHistoryPhone");
 let current = 0;
 let autoplayId = null;
 const AUTOPLAY_MS = 4200;
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function renderDots() {
     if (!dotsWrap) return;
@@ -119,15 +120,25 @@ let revealObserver = null;
 let revealIndex = 0;
 
 function revealDelay(index) {
-    return `${Math.min(index, 10) * 70}ms`;
+    return `${Math.min(index, 10) * 52}ms`;
+}
+
+function revealElement(element) {
+    element.classList.add("is-visible");
+    window.setTimeout(() => {
+        if (element.classList.contains("is-visible")) {
+            element.style.willChange = "auto";
+        }
+    }, 560);
 }
 
 function ensureRevealObserver() {
+    if (prefersReducedMotion) return null;
     if (revealObserver || !("IntersectionObserver" in window)) return revealObserver;
     revealObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
             if (!entry.isIntersecting) return;
-            entry.target.classList.add("is-visible");
+            revealElement(entry.target);
             revealObserver.unobserve(entry.target);
         });
     }, { threshold: 0.14, rootMargin: "0px 0px -8% 0px" });
@@ -147,9 +158,10 @@ function registerScrollReveal(nodes) {
         revealIndex += 1;
 
         if (!observer) {
-            element.classList.add("is-visible");
+            revealElement(element);
             return;
         }
+        element.style.willChange = "opacity, transform";
         observer.observe(element);
     });
 }

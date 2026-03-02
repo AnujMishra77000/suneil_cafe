@@ -1,37 +1,58 @@
 :root {
-    --fx-duration: 420ms;
+    --fx-duration: 440ms;
     --fx-ease: cubic-bezier(0.22, 1, 0.36, 1);
-    --fx-distance: 18px;
+    --fx-distance: 20px;
+    --fx-scale: 0.988;
 }
 
 html.fx-mounted [data-fx],
 html.fx-mounted .fx-auto {
     opacity: 0.001;
-    transform: translate3d(0, var(--fx-distance), 0) scale(0.985);
-    filter: saturate(0.94);
+    transform: translate3d(0, var(--fx-translate, var(--fx-distance)), 0) scale(var(--fx-scale, 0.988));
     transition:
         opacity var(--fx-duration) var(--fx-ease),
-        transform var(--fx-duration) var(--fx-ease),
-        filter 460ms var(--fx-ease);
+        transform var(--fx-duration) var(--fx-ease);
     transition-delay: var(--fx-delay, 0ms);
     will-change: opacity, transform;
+    backface-visibility: hidden;
+    transform-origin: center bottom;
 }
 
 html.fx-mounted [data-fx].is-fx-visible,
 html.fx-mounted .fx-auto.is-fx-visible {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
-    filter: none;
 }
 
+html.fx-mounted [data-fx-kind="hero"],
+html.fx-mounted .fx-auto[data-fx-kind="hero"] {
+    --fx-translate: calc(var(--fx-distance) + 10px);
+    --fx-scale: 0.982;
+}
+
+html.fx-mounted [data-fx-kind="panel"],
+html.fx-mounted .fx-auto[data-fx-kind="panel"] {
+    --fx-translate: calc(var(--fx-distance) - 4px);
+    --fx-scale: 0.992;
+}
+
+html.fx-mounted [data-fx-kind="card"],
 html.fx-mounted .fx-auto[data-fx-kind="card"] {
-    transform: translate3d(0, calc(var(--fx-distance) + 4px), 0) scale(0.982);
+    --fx-translate: calc(var(--fx-distance) + 6px);
+    --fx-scale: 0.982;
+}
+
+html.fx-mounted [data-fx-kind="inline"],
+html.fx-mounted .fx-auto[data-fx-kind="inline"] {
+    --fx-translate: 10px;
+    --fx-scale: 0.996;
 }
 
 @media (max-width: 720px) {
     :root {
         --fx-duration: 360ms;
         --fx-distance: 14px;
+        --fx-scale: 0.992;
     }
 }
 
@@ -40,7 +61,7 @@ html.fx-mounted .fx-auto[data-fx-kind="card"] {
     html.fx-mounted .fx-auto {
         opacity: 1;
         transform: none;
-        filter: none;
         transition: none;
+        will-change: auto;
     }
 }

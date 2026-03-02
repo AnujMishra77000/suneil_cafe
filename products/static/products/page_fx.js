@@ -6,21 +6,21 @@
     const observed = new WeakSet();
     const prepared = new WeakSet();
     const autoSelectors = [
-        { selector: "#productGrid > .card", kind: "card", stagger: 34 },
-        { selector: ".product-grid > .card", kind: "card", stagger: 34 },
-        { selector: "#categoryGrid > .category-card", kind: "card", stagger: 34 },
-        { selector: ".category-grid > .category-card", kind: "card", stagger: 34 },
-        { selector: "#cartList > .item-row", kind: "card", stagger: 26 },
-        { selector: ".history-panel > .history-card", kind: "card", stagger: 26 },
-        { selector: "#previewItems > .preview-item", kind: "card", stagger: 20 },
-        { selector: "#ordersList > .order-card", kind: "card", stagger: 26 },
-        { selector: "#relatedList > .related-item", kind: "card", stagger: 26 },
-        { selector: "#buyCard > .product", kind: "card", stagger: 0 },
-        { selector: "#productGrid > .empty", kind: "card", stagger: 0 },
-        { selector: "#categoryGrid > .empty", kind: "card", stagger: 0 },
-        { selector: "#cartList > .empty", kind: "card", stagger: 0 },
-        { selector: "#ordersList > .empty-block", kind: "card", stagger: 0 },
-        { selector: "#buyCard > .state", kind: "card", stagger: 0 }
+        { selector: "#productGrid > .card", kind: "card", stagger: 32 },
+        { selector: ".product-grid > .card", kind: "card", stagger: 32 },
+        { selector: "#categoryGrid > .category-card", kind: "card", stagger: 30 },
+        { selector: ".category-grid > .category-card", kind: "card", stagger: 30 },
+        { selector: "#cartList > .item-row", kind: "card", stagger: 24 },
+        { selector: ".history-panel > .history-card", kind: "card", stagger: 24 },
+        { selector: "#previewItems > .preview-item", kind: "card", stagger: 18 },
+        { selector: "#ordersList > .order-card", kind: "card", stagger: 24 },
+        { selector: "#relatedList > .related-item", kind: "card", stagger: 22 },
+        { selector: "#buyCard > .product", kind: "panel", stagger: 0 },
+        { selector: "#productGrid > .empty", kind: "panel", stagger: 0 },
+        { selector: "#categoryGrid > .empty", kind: "panel", stagger: 0 },
+        { selector: "#cartList > .empty", kind: "panel", stagger: 0 },
+        { selector: "#ordersList > .empty-block", kind: "panel", stagger: 0 },
+        { selector: "#buyCard > .state", kind: "panel", stagger: 0 }
     ];
 
     const observer = !prefersReducedMotion && "IntersectionObserver" in window
@@ -33,12 +33,29 @@
             });
         }, {
             threshold: 0.08,
-            rootMargin: "0px 0px -10% 0px"
+            rootMargin: "0px 0px -8% 0px"
         })
         : null;
 
+    function resolveKind(node, fallbackKind) {
+        const explicit = (node.getAttribute("data-fx") || "").trim();
+        if (explicit && explicit !== "true") {
+            return explicit;
+        }
+        return fallbackKind || node.dataset.fxKind || "block";
+    }
+
+    function releaseWillChange(node) {
+        window.setTimeout(() => {
+            if (node && node.classList && node.classList.contains("is-fx-visible")) {
+                node.style.willChange = "auto";
+            }
+        }, 520);
+    }
+
     function reveal(node) {
         node.classList.add("is-fx-visible");
+        releaseWillChange(node);
     }
 
     function getCollection(rootNode, selector) {
@@ -58,7 +75,8 @@
         }
         prepared.add(node);
         node.classList.add("fx-auto");
-        node.dataset.fxKind = kind || "block";
+        node.dataset.fxKind = resolveKind(node, kind);
+        node.style.willChange = "opacity, transform";
         const delay = Math.min(index * stagger, 180);
         node.style.setProperty("--fx-delay", `${delay}ms`);
 
@@ -69,7 +87,7 @@
 
         const rect = node.getBoundingClientRect();
         const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-        if (rect.top <= viewportHeight * 0.88) {
+        if (rect.top <= viewportHeight * 0.9) {
             requestAnimationFrame(() => reveal(node));
             return;
         }
@@ -93,14 +111,16 @@
             if (!(node instanceof HTMLElement)) {
                 return;
             }
-            node.style.setProperty("--fx-delay", `${Math.min(index * 42, 160)}ms`);
+            node.dataset.fxKind = resolveKind(node, node.dataset.fxKind || "panel");
+            node.style.willChange = "opacity, transform";
+            node.style.setProperty("--fx-delay", `${Math.min(index * 36, 150)}ms`);
             if (prefersReducedMotion) {
                 reveal(node);
                 return;
             }
             const rect = node.getBoundingClientRect();
             const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-            if (rect.top <= viewportHeight * 0.92) {
+            if (rect.top <= viewportHeight * 0.93) {
                 requestAnimationFrame(() => reveal(node));
                 return;
             }
@@ -123,6 +143,8 @@
                     }
                     scan(node);
                     if (node.hasAttribute("data-fx")) {
+                        node.dataset.fxKind = resolveKind(node, node.dataset.fxKind || "panel");
+                        node.style.willChange = "opacity, transform";
                         requestAnimationFrame(() => reveal(node));
                     }
                 });

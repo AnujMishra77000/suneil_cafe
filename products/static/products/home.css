@@ -787,34 +787,26 @@ body {
 
 .reveal-ready .scroll-reveal {
     opacity: 0;
-    transform: translateY(28px) scale(0.985);
-    filter: blur(8px);
+    transform: translate3d(0, 24px, 0) scale(0.986);
     animation: none !important;
     transition:
-        opacity 720ms ease,
-        transform 720ms cubic-bezier(0.22, 1, 0.36, 1),
-        filter 720ms ease;
+        opacity 560ms cubic-bezier(0.22, 1, 0.36, 1),
+        transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
     transition-delay: var(--reveal-delay, 0ms);
-    will-change: opacity, transform, filter;
+    will-change: opacity, transform;
 }
 
 .reveal-ready .scroll-reveal.is-visible {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
 }
 
 .reveal-ready .scroll-reveal.ad-card {
-    transform: translateY(24px) scale(0.975);
+    transform: translate3d(0, 22px, 0) scale(0.98);
 }
 
 .reveal-ready .scroll-reveal.ad-card.is-visible {
-    transform: translateY(0) scale(1);
-}
-
-.reveal-ready .scroll-reveal.section-card.is-visible:hover,
-.reveal-ready .scroll-reveal.ad-card.is-visible:hover {
-    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
 }
 
 @media (max-width: 760px) {
@@ -837,8 +829,7 @@ body {
     }
 
     .reveal-ready .scroll-reveal {
-        transform: translateY(22px) scale(0.99);
-        filter: blur(6px);
+        transform: translate3d(0, 18px, 0) scale(0.992);
     }
 }
 
@@ -853,7 +844,7 @@ body {
     .reveal-ready .scroll-reveal.is-visible {
         opacity: 1;
         transform: none;
-        filter: none;
         transition: none;
+        will-change: auto;
     }
 }
