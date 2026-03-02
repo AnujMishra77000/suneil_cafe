@@ -17,6 +17,16 @@
     flex: 0 0 auto;
 }
 
+.thn-root--inline {
+    width: var(--action-icon-size, 48px);
+    height: var(--action-icon-size, 48px);
+}
+
+.thn-root--inline .thn-btn {
+    width: 100%;
+    height: 100%;
+}
+
 .thn-panel-host {
     position: fixed;
     inset: 0;

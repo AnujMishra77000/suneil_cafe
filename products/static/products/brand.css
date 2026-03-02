@@ -238,6 +238,18 @@
     align-items: center;
 }
 
+.has-page-actions .top-actions--icon > *,
+.has-page-actions .topbar .top-actions--icon > *,
+.has-page-actions .buy-header .top-actions--icon > * {
+    flex: 0 0 var(--action-icon-size);
+}
+
+.has-page-actions .buy-header .top-actions--icon {
+    min-width: 0;
+    width: auto;
+    justify-content: flex-start;
+}
+
 .action-icon {
     position: relative;
     width: var(--action-icon-size);

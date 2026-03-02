@@ -49,9 +49,6 @@ body {
     justify-content: flex-start;
 }
 
-.top-actions {
-    min-width: min(100%, 420px);
-}
 
 .buy-card {
     background: linear-gradient(180deg, #fffdfa 0%, #fff7ef 100%);
