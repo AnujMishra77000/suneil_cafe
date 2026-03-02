@@ -1,9 +1,12 @@
+from decimal import Decimal
+
 from django.db import IntegrityError, transaction
 from django.db.models import BooleanField, Case, F, Value, When
 
 from cart.cache_store import clear_cached_cart, get_cached_cart
 from cart.models import Cart, CartItem
 from notifications.services import create_order_notifications
+from orders.coupon_service import calculate_coupon_breakdown
 from orders.models import Order, OrderItem
 from orders.pincode_service import ensure_serviceable_pincode
 from orders.services import create_bills_for_order, create_sales_records_for_order
@@ -27,6 +30,7 @@ def convert_cart_to_order(data):
     address = data["address"]
     pincode = data.get("pincode", "")
     source_phone = normalize_phone(data.get("cart_phone") or phone)
+    coupon_code = data.get("coupon_code", "")
 
     ensure_serviceable_pincode(pincode=pincode, address=address)
 
@@ -44,7 +48,7 @@ def convert_cart_to_order(data):
         customer.address = address
         customer.save(update_fields=["name", "whatsapp_no", "address"])
 
-        total_price = 0
+        subtotal_price = Decimal("0.00")
         products = []
         product_ids = [int(pid) for pid in cached_map.keys()]
         product_qs = Product.objects.select_for_update().filter(id__in=product_ids)
@@ -57,11 +61,13 @@ def convert_cart_to_order(data):
                 continue
             if product.stock_qty < qty:
                 raise Exception(f"{product.name} out of stock")
-            total_price += product.price * qty
+            subtotal_price += product.price * qty
             products.append((product, qty))
 
         if not products:
             raise Exception("Cart is empty")
+
+        pricing = calculate_coupon_breakdown(subtotal_price, coupon_code)
 
         try:
             order = Order.objects.create(
@@ -70,7 +76,11 @@ def convert_cart_to_order(data):
                 phone=phone,
                 shipping_address=address,
                 idempotency_key=idempotency_key,
-                total_price=total_price,
+                subtotal_price=pricing["subtotal"],
+                coupon_code=pricing["coupon_code"],
+                discount_percent=pricing["discount_percent"],
+                discount_amount=pricing["discount_amount"],
+                total_price=pricing["total"],
             )
         except IntegrityError:
             existing = Order.objects.filter(idempotency_key=idempotency_key).first()
@@ -107,7 +117,6 @@ def convert_cart_to_order(data):
 
     customer, cart = None, None
     if source_phone != phone:
-        # Merge guest/anonymous cart into real customer cart by phone.
         _, source_cart = merge_phone_carts(
             phone=source_phone,
             create_if_missing=False,
@@ -152,23 +161,23 @@ def convert_cart_to_order(data):
     if not cart_items.exists():
         raise Exception("Cart is empty")
 
-    total_price = 0
+    subtotal_price = Decimal("0.00")
     products = []
 
-    # Lock product rows
     product_ids = [item.product.id for item in cart_items]
     product_qs = Product.objects.select_for_update().filter(id__in=product_ids)
     product_map = {p.id: p for p in product_qs}
 
-    # Validate stock
     for item in cart_items:
         product = product_map[item.product.id]
 
         if product.stock_qty < item.quantity:
             raise Exception(f"{product.name} out of stock")
 
-        total_price += product.price * item.quantity
+        subtotal_price += product.price * item.quantity
         products.append((product, item.quantity))
+
+    pricing = calculate_coupon_breakdown(subtotal_price, coupon_code)
 
     try:
         order = Order.objects.create(
@@ -177,7 +186,11 @@ def convert_cart_to_order(data):
             phone=phone,
             shipping_address=address,
             idempotency_key=idempotency_key,
-            total_price=total_price,
+            subtotal_price=pricing["subtotal"],
+            coupon_code=pricing["coupon_code"],
+            discount_percent=pricing["discount_percent"],
+            discount_amount=pricing["discount_amount"],
+            total_price=pricing["total"],
         )
     except IntegrityError:
         existing = Order.objects.filter(idempotency_key=idempotency_key).first()
@@ -185,7 +198,6 @@ def convert_cart_to_order(data):
             return existing
         raise
 
-    # Create order items + deduct stock
     for product, qty in products:
         OrderItem.objects.create(
             order=order,
@@ -203,12 +215,10 @@ def convert_cart_to_order(data):
             ),
         )
 
-    # Clear cart
     cart.items.all().delete()
 
     invalidate_catalog_cache()
 
-    # Async notification
     create_bills_for_order(order)
     create_sales_records_for_order(order)
     create_order_notifications(order, event_type="ORDER_PLACED")

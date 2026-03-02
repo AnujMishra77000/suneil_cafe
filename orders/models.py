@@ -5,6 +5,8 @@ from django.db import models
 from products.models import Product
 from users.models import Customer
 
+from .coupon_rules import extract_discount_percent, normalize_coupon_code
+
 
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, db_index=True)
@@ -12,6 +14,10 @@ class Order(models.Model):
     phone = models.CharField(max_length=20, blank=True, default="", db_index=True)
     shipping_address = models.TextField(blank=True, default="")
     idempotency_key = models.UUIDField(default=None, null=True, blank=True, unique=True, db_index=True)
+    subtotal_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    coupon_code = models.CharField(max_length=64, blank=True, default="", db_index=True)
+    discount_percent = models.PositiveSmallIntegerField(default=0)
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=50, default="Placed", db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -21,6 +27,7 @@ class Order(models.Model):
             models.Index(fields=["customer", "created_at"]),
             models.Index(fields=["phone", "created_at"]),
             models.Index(fields=["status", "created_at"]),
+            models.Index(fields=["coupon_code", "created_at"]),
         ]
 
     def __str__(self):
@@ -96,6 +103,10 @@ class Bill(models.Model):
     customer_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=20, db_index=True)
     shipping_address = models.TextField(blank=True, default="")
+    subtotal_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    coupon_code = models.CharField(max_length=64, blank=True, default="", db_index=True)
+    discount_percent = models.PositiveSmallIntegerField(default=0)
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
@@ -104,6 +115,7 @@ class Bill(models.Model):
         indexes = [
             models.Index(fields=["recipient_type", "created_at"]),
             models.Index(fields=["phone", "created_at"]),
+            models.Index(fields=["coupon_code", "created_at"]),
         ]
 
     def __str__(self):
@@ -184,6 +196,35 @@ class DeliveryContactSetting(models.Model):
 
     def __str__(self):
         return self.delivery_contact_number or "No delivery contact"
+
+
+class CouponCode(models.Model):
+    code = models.CharField(max_length=64, unique=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["code"]
+        indexes = [
+            models.Index(fields=["is_active", "code"]),
+        ]
+
+    @property
+    def discount_percent(self):
+        return extract_discount_percent(self.code)
+
+    def clean(self):
+        self.code = normalize_coupon_code(self.code)
+        extract_discount_percent(self.code)
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        state = "Active" if self.is_active else "Inactive"
+        return f"{self.code} ({self.discount_percent}% - {state})"
 
 
 class DashboardAccountProfile(models.Model):

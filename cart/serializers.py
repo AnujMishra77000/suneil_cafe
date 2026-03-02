@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
+from orders.coupon_service import validate_coupon_payload
 from orders.pincode_service import ensure_serviceable_pincode
 from users.phone_utils import PhoneNormalizationError, normalize_phone
 
@@ -74,6 +75,7 @@ class PlaceOrderSerializer(serializers.Serializer):
     address = serializers.CharField()
     pincode = serializers.CharField()
     cart_phone = serializers.CharField(required=False, allow_blank=True)
+    coupon_code = serializers.CharField(required=False, allow_blank=True)
     idempotency_key = serializers.UUIDField()
 
     def validate_phone(self, value):
@@ -96,6 +98,15 @@ class PlaceOrderSerializer(serializers.Serializer):
         try:
             return normalize_phone(value)
         except PhoneNormalizationError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+
+    def validate_coupon_code(self, value):
+        code = (value or "").strip()
+        if not code:
+            return ""
+        try:
+            return validate_coupon_payload(code)["coupon_code"]
+        except ValueError as exc:
             raise serializers.ValidationError(str(exc)) from exc
 
     def validate(self, attrs):

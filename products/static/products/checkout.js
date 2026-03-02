@@ -7,6 +7,13 @@ const state = {
     },
     cart_phone: "",
     idempotency_key: "",
+    coupon: {
+        code: "",
+        discount_percent: 0,
+        subtotal: "0.00",
+        discount_amount: "0.00",
+        total: "0.00"
+    },
     cart: {
         items: [],
         total_items: 0,
@@ -20,10 +27,18 @@ const nameInputEl = document.getElementById("nameInput");
 const phoneInputEl = document.getElementById("phoneInput");
 const addressInputEl = document.getElementById("addressInput");
 const pincodeInputEl = document.getElementById("pincodeInput");
+const couponInputEl = document.getElementById("couponInput");
+const applyCouponBtnEl = document.getElementById("applyCouponBtn");
+const clearCouponBtnEl = document.getElementById("clearCouponBtn");
+const couponMsgEl = document.getElementById("couponMsg");
 const submitBtnEl = document.getElementById("submitBtn");
 const statusMsgEl = document.getElementById("statusMsg");
 const previewItemsEl = document.getElementById("previewItems");
 const totalItemsEl = document.getElementById("totalItems");
+const summarySubtotalEl = document.getElementById("summarySubtotal");
+const couponSummaryRowEl = document.getElementById("couponSummaryRow");
+const couponSummaryLabelEl = document.getElementById("couponSummaryLabel");
+const couponDiscountAmountEl = document.getElementById("couponDiscountAmount");
 const totalAmountEl = document.getElementById("totalAmount");
 const pincodeListEl = document.getElementById("pincodeList");
 
@@ -31,6 +46,15 @@ function setStatus(message, type = "info") {
     statusMsgEl.textContent = message || "";
     statusMsgEl.classList.remove("ok", "error", "info");
     statusMsgEl.classList.add(type);
+}
+
+function setCouponMessage(message, type = "info") {
+    if (!couponMsgEl) return;
+    couponMsgEl.textContent = message || "";
+    couponMsgEl.classList.remove("ok", "error", "info");
+    if (message) {
+        couponMsgEl.classList.add(type);
+    }
 }
 
 function firstErrorMessage(payload) {
@@ -88,6 +112,22 @@ function readProfile() {
     const checkoutPhone = localStorage.getItem("thathwamasi_checkout_phone");
     if (checkoutPhone && !state.profile.phone) {
         state.profile.phone = checkoutPhone;
+    }
+}
+
+function readStoredCoupon() {
+    const stored = (localStorage.getItem("thathwamasi_checkout_coupon_code") || "").trim();
+    if (stored && couponInputEl) {
+        couponInputEl.value = stored;
+    }
+    return stored;
+}
+
+function persistCoupon() {
+    if (state.coupon.code) {
+        localStorage.setItem("thathwamasi_checkout_coupon_code", state.coupon.code);
+    } else {
+        localStorage.removeItem("thathwamasi_checkout_coupon_code");
     }
 }
 
@@ -210,6 +250,11 @@ function escapeHtml(value) {
         .replace(/'/g, "&#39;");
 }
 
+function toAmount(value) {
+    const numeric = Number(value || 0);
+    return Number.isFinite(numeric) ? numeric : 0;
+}
+
 function lineTotal(item) {
     const numeric = Number(item.line_total);
     if (Number.isFinite(numeric)) {
@@ -218,6 +263,42 @@ function lineTotal(item) {
     const qty = Number(item.quantity || 0);
     const price = Number(item.price || 0);
     return (qty * price).toFixed(2);
+}
+
+function resetCouponState({ clearInput = false } = {}) {
+    state.coupon.code = "";
+    state.coupon.discount_percent = 0;
+    state.coupon.discount_amount = "0.00";
+    state.coupon.subtotal = "0.00";
+    state.coupon.total = String(state.cart.total_amount || "0.00");
+    persistCoupon();
+    if (clearInput && couponInputEl) {
+        couponInputEl.value = "";
+    }
+}
+
+function recalcCouponSummary() {
+    const subtotal = toAmount(state.cart.total_amount);
+    let discountAmount = 0;
+    if (state.coupon.code && state.coupon.discount_percent > 0) {
+        discountAmount = subtotal * (state.coupon.discount_percent / 100);
+    }
+    const total = Math.max(subtotal - discountAmount, 0);
+    state.coupon.subtotal = subtotal.toFixed(2);
+    state.coupon.discount_amount = discountAmount.toFixed(2);
+    state.coupon.total = total.toFixed(2);
+}
+
+function renderCouponSummary() {
+    recalcCouponSummary();
+    summarySubtotalEl.textContent = `Rs ${state.coupon.subtotal}`;
+    const hasCoupon = Boolean(state.coupon.code && state.coupon.discount_percent > 0);
+    couponSummaryRowEl.hidden = !hasCoupon;
+    if (hasCoupon) {
+        couponSummaryLabelEl.textContent = `${state.coupon.code} (-${state.coupon.discount_percent}%)`;
+        couponDiscountAmountEl.textContent = `-Rs ${state.coupon.discount_amount}`;
+    }
+    totalAmountEl.textContent = `Rs ${state.coupon.total}`;
 }
 
 function renderPreview() {
@@ -245,7 +326,7 @@ function renderPreview() {
         }).join("");
     }
     totalItemsEl.textContent = String(state.cart.total_items || 0);
-    totalAmountEl.textContent = `Rs ${state.cart.total_amount || "0.00"}`;
+    renderCouponSummary();
 }
 
 async function lookupByPhone() {
@@ -276,6 +357,53 @@ async function lookupByPhone() {
     } catch (err) {
         setStatus(err.message || "Unable to fetch previous details.", "error");
     }
+}
+
+async function applyCoupon() {
+    const code = (couponInputEl.value || "").trim();
+    if (!code) {
+        resetCouponState();
+        renderCouponSummary();
+        setCouponMessage("Enter a coupon code.", "error");
+        return;
+    }
+
+    applyCouponBtnEl.disabled = true;
+    applyCouponBtnEl.textContent = "Applying...";
+    clearCouponBtnEl.disabled = true;
+
+    try {
+        const payload = await apiPost("/api/orders/coupons/validate/", { coupon_code: code });
+        state.coupon.code = payload.coupon_code || code.toUpperCase();
+        state.coupon.discount_percent = Number(payload.discount_percent || 0);
+        persistCoupon();
+        renderCouponSummary();
+        setCouponMessage(`${state.coupon.code} applied for ${state.coupon.discount_percent}% off.`, "ok");
+    } catch (err) {
+        resetCouponState();
+        renderCouponSummary();
+        setCouponMessage(err.message || "Unable to apply coupon.", "error");
+    } finally {
+        applyCouponBtnEl.disabled = false;
+        applyCouponBtnEl.textContent = "Apply";
+        clearCouponBtnEl.disabled = false;
+    }
+}
+
+function clearCoupon() {
+    resetCouponState({ clearInput: true });
+    renderCouponSummary();
+    setCouponMessage("Coupon removed.", "info");
+}
+
+async function restoreCoupon() {
+    const stored = readStoredCoupon();
+    if (!stored) {
+        resetCouponState();
+        renderCouponSummary();
+        return;
+    }
+    await applyCoupon();
 }
 
 async function submitOrder(event) {
@@ -314,6 +442,7 @@ async function submitOrder(event) {
             address: state.profile.address,
             pincode: state.profile.pincode,
             cart_phone: state.cart_phone,
+            coupon_code: state.coupon.code,
             idempotency_key: state.idempotency_key
         });
         setStatus(`Order placed successfully. Order ID: ${result.order_id}`, "ok");
@@ -321,6 +450,7 @@ async function submitOrder(event) {
         if (state.cart_phone !== state.profile.phone) {
             localStorage.setItem("thathwamasi_cart_phone", state.profile.phone);
         }
+        localStorage.removeItem("thathwamasi_checkout_coupon_code");
         rotateIdempotencyKey();
         localStorage.setItem("thathwamasi_last_order_id", String(result.order_id || ""));
         setTimeout(() => {
@@ -329,6 +459,9 @@ async function submitOrder(event) {
         }, 320);
     } catch (err) {
         const message = err.message || "Order failed";
+        if (/coupon/i.test(message)) {
+            setCouponMessage(message, "error");
+        }
         if (/pincode|deliver|serviceable/i.test(message)) {
             const served = serviceablePincodeText();
             const extra = served ? ` We serve only these pincodes: ${served}.` : "";
@@ -344,21 +477,26 @@ async function submitOrder(event) {
 
 async function bootstrap() {
     readProfile();
-    getOrCreateCartPhone();
     loadIdempotencyKey();
     fillForm();
-    await loadServiceablePincodes();
-    try {
-        await loadCart();
-    } catch (err) {
-        setStatus(err.message || "Unable to load cart.", "error");
-    }
+    await Promise.all([loadServiceablePincodes(), loadCart()]);
     renderPreview();
-    if (state.profile.phone) {
-        await lookupByPhone();
-    }
+    await restoreCoupon();
 }
 
 formEl.addEventListener("submit", submitOrder);
 phoneInputEl.addEventListener("blur", lookupByPhone);
-bootstrap();
+applyCouponBtnEl.addEventListener("click", applyCoupon);
+clearCouponBtnEl.addEventListener("click", clearCoupon);
+if (couponInputEl) {
+    couponInputEl.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            applyCoupon();
+        }
+    });
+}
+
+bootstrap().catch((err) => {
+    setStatus(err.message || "Unable to load checkout.", "error");
+});

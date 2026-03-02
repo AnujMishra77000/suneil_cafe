@@ -3,6 +3,7 @@ from rest_framework import serializers
 from products.models import Product
 from users.phone_utils import PhoneNormalizationError, normalize_phone
 
+from .coupon_service import validate_coupon_payload
 from .models import Bill, BillItem, Order, OrderFeedback, OrderItem
 from .pincode_service import ensure_serviceable_pincode
 
@@ -34,6 +35,7 @@ class OrderSerializer(serializers.ModelSerializer):
     whatsapp_no = serializers.CharField(write_only=True)
     address = serializers.CharField(write_only=True)
     pincode = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    coupon_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
     idempotency_key = serializers.UUIDField(write_only=True)
 
     class Meta:
@@ -45,13 +47,24 @@ class OrderSerializer(serializers.ModelSerializer):
             "whatsapp_no",
             "address",
             "pincode",
+            "coupon_code",
             "idempotency_key",
             "items",
+            "subtotal_price",
+            "discount_percent",
+            "discount_amount",
             "total_price",
             "status",
             "created_at",
         ]
-        read_only_fields = ["total_price", "status", "created_at"]
+        read_only_fields = [
+            "subtotal_price",
+            "discount_percent",
+            "discount_amount",
+            "total_price",
+            "status",
+            "created_at",
+        ]
 
     def validate_phone(self, value):
         try:
@@ -63,6 +76,15 @@ class OrderSerializer(serializers.ModelSerializer):
         try:
             return normalize_phone(value)
         except PhoneNormalizationError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+
+    def validate_coupon_code(self, value):
+        code = (value or "").strip()
+        if not code:
+            return ""
+        try:
+            return validate_coupon_payload(code)["coupon_code"]
+        except ValueError as exc:
             raise serializers.ValidationError(str(exc)) from exc
 
     def validate(self, attrs):
@@ -127,6 +149,10 @@ class BillSerializer(serializers.ModelSerializer):
             "customer_name",
             "phone",
             "shipping_address",
+            "subtotal_amount",
+            "coupon_code",
+            "discount_percent",
+            "discount_amount",
             "total_amount",
             "items",
             "created_at",

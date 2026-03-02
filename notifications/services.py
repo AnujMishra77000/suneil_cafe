@@ -19,7 +19,6 @@ def _to_amount(value):
 
 
 def get_admin_identifier():
-    # Use explicit admin phone first, then Twilio sender as fallback, then static key.
     return (
         _safe_phone(getattr(settings, "ADMIN_PHONE", ""))
         or _safe_phone(getattr(settings, "TWILIO_PHONE_NUMBER", ""))
@@ -94,21 +93,35 @@ def create_order_notifications(order, event_type=Notification.EventType.ORDER_PL
     admin_identifier = get_admin_identifier()
     owner_phone = get_delivery_contact_number() or "-"
     items = _items_payload(order)
+    subtotal_price = str(_to_amount(getattr(order, "subtotal_price", order.total_price)))
+    discount_amount = str(_to_amount(getattr(order, "discount_amount", 0)))
     total_price = str(_to_amount(order.total_price))
+    discount_percent = int(getattr(order, "discount_percent", 0) or 0)
+    coupon_code = str(getattr(order, "coupon_code", "") or "").strip()
     event_label = _event_label(event_type)
     bill_ctx = _bill_context(order, customer_phone)
+
+    discount_lines = ""
+    if coupon_code and discount_percent > 0:
+        discount_lines = (
+            f"\nCoupon: {coupon_code} (-{discount_percent}%)"
+            f"\nDiscount: Rs {discount_amount}"
+            f"\nSubtotal: Rs {subtotal_price}"
+        )
 
     user_message = (
         f"{event_label} | Order #{order.id}\n"
         f"Customer: {customer_name}\n"
-        f"{_lines_for_message(items)}\n"
+        f"{_lines_for_message(items)}"
+        f"{discount_lines}\n"
         f"Total: Rs {total_price}\n"
         f"Delivery Contact: {owner_phone}"
     )
     admin_message = (
         f"{event_label} | Order #{order.id}\n"
         f"Customer: {customer_name}\n"
-        f"{_lines_for_message(items)}\n"
+        f"{_lines_for_message(items)}"
+        f"{discount_lines}\n"
         f"Total: Rs {total_price}\n"
         f"Customer Phone: {customer_phone}"
     )
@@ -116,6 +129,10 @@ def create_order_notifications(order, event_type=Notification.EventType.ORDER_PL
     common_payload = {
         "order_id": order.id,
         "event_type": event_type,
+        "subtotal_price": subtotal_price,
+        "discount_amount": discount_amount,
+        "discount_percent": discount_percent,
+        "coupon_code": coupon_code,
         "total_price": total_price,
         "customer_name": customer_name,
         "customer_phone": customer_phone,
@@ -183,6 +200,5 @@ def create_order_notifications(order, event_type=Notification.EventType.ORDER_PL
         )
 
     if created_rows:
-        Notification.objects.bulk_create(created_rows, ignore_conflicts=True)
-
+        Notification.objects.bulk_create(created_rows)
     return created_rows

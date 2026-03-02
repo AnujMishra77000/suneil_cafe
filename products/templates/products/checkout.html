@@ -21,7 +21,7 @@
     </script>
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260228-fx1" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260228-fx1"></script>
-    <link rel="stylesheet" href="{% static 'products/checkout.css' %}?v=20260301-checkout3" />
+    <link rel="stylesheet" href="{% static 'products/checkout.css' %}?v=20260302-coupon1" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260228-brand3" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260228-brand1" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
@@ -85,6 +85,19 @@
 
                 <div id="pincodeList" class="pincode-list"></div>
 
+                <section class="coupon-card" aria-labelledby="couponHeading">
+                    <div class="coupon-head">
+                        <strong id="couponHeading">Coupon Code</strong>
+                        <span>Try RESIDENT10 or RMC10</span>
+                    </div>
+                    <div class="coupon-input-row">
+                        <input id="couponInput" name="coupon_code" placeholder="Enter coupon code" autocomplete="off" />
+                        <button type="button" id="applyCouponBtn" class="coupon-btn">Apply</button>
+                        <button type="button" id="clearCouponBtn" class="coupon-btn coupon-btn--ghost">Remove</button>
+                    </div>
+                    <p id="couponMsg" class="coupon-msg"></p>
+                </section>
+
                 <button type="submit" id="submitBtn" class="submit-btn">Place Order</button>
                 <p id="statusMsg" class="status-msg"></p>
             </form>
@@ -93,11 +106,16 @@
                 <h3>Order Preview</h3>
                 <div id="previewItems" class="preview-items"></div>
                 <div class="row"><span>Total Items</span><strong id="totalItems">0</strong></div>
+                <div class="row"><span>Subtotal</span><strong id="summarySubtotal">Rs 0.00</strong></div>
+                <div class="row row-muted" id="couponSummaryRow" hidden>
+                    <span id="couponSummaryLabel">Coupon Discount</span>
+                    <strong id="couponDiscountAmount">-Rs 0.00</strong>
+                </div>
                 <div class="row total"><span>Total Amount</span><strong id="totalAmount">Rs 0.00</strong></div>
             </aside>
         </section>
     </main>
-    <script src="{% static 'products/checkout.js' %}?v=20260301-checkout2"></script>
+    <script src="{% static 'products/checkout.js' %}?v=20260302-coupon1"></script>
     <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>
     <script>

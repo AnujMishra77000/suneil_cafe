@@ -24,7 +24,7 @@
         .field input,.field textarea{border:1px solid #d0d5dd;border-radius:8px;padding:9px 10px;font-size:14px;font-family:inherit}
         .field textarea{min-height:84px;resize:vertical}
         .field-full{grid-column:1 / -1}
-        .meta{margin-top:14px;padding-top:14px;border-top:1px solid #eaecf0;color:#475467;font-size:13px;display:grid;gap:4px}
+        .meta{margin-top:14px;padding-top:14px;border-top:1px solid #eaecf0;color:#475467;font-size:13px;display:grid;gap:6px}
         .stock-note{margin-top:10px;color:#5f6d7e;font-size:12px}
         table{width:100%;border-collapse:collapse;margin-top:12px}
         th,td{padding:9px 8px;border-bottom:1px solid #eef1f4;text-align:left;font-size:13px;vertical-align:middle}
@@ -82,6 +82,9 @@
 
                 <div class="meta">
                     <div><strong>Order Status:</strong> {{ bill.order.status }}</div>
+                    <div><strong>Coupon:</strong> {% if bill.coupon_code %}{{ bill.coupon_code }} (-{{ bill.discount_percent }}%){% else %}No coupon applied{% endif %}</div>
+                    <div><strong>Subtotal:</strong> <span id="subtotalPreview">Rs {{ bill.subtotal_amount }}</span></div>
+                    <div id="discountPreviewRow" {% if bill.discount_amount <= 0 %}hidden{% endif %}><strong>Discount:</strong> <span id="discountPreview">-Rs {{ bill.discount_amount }}</span></div>
                     <div><strong>Current Total Amount:</strong> <span id="totalAmountPreview">Rs {{ bill.total_amount }}</span></div>
                 </div>
                 <p class="stock-note">Edit quantities below. On save, order stock will be updated immediately. Set quantity to <strong>0</strong> to remove that product from this order.</p>
@@ -137,8 +140,12 @@
     <script>
         (function () {
             const qtyInputs = Array.from(document.querySelectorAll('.qty-input'));
+            const subtotalEl = document.getElementById('subtotalPreview');
+            const discountRowEl = document.getElementById('discountPreviewRow');
+            const discountEl = document.getElementById('discountPreview');
             const totalEl = document.getElementById('totalAmountPreview');
-            if (!qtyInputs.length || !totalEl) return;
+            const discountPercent = Number('{{ bill.discount_percent|default:0 }}');
+            if (!qtyInputs.length || !subtotalEl || !totalEl) return;
 
             const formatAmount = (value) => {
                 const safe = Number.isFinite(value) ? value : 0;
@@ -152,13 +159,13 @@
             };
 
             const recalc = () => {
-                let total = 0;
+                let subtotal = 0;
                 qtyInputs.forEach((input) => {
                     const qty = readQty(input);
                     input.value = String(qty);
                     const unitPrice = Number(input.dataset.unitPrice || 0);
                     const lineTotal = unitPrice * qty;
-                    total += lineTotal;
+                    subtotal += lineTotal;
 
                     const lineTargetId = input.dataset.lineTarget;
                     const lineTarget = lineTargetId ? document.getElementById(lineTargetId) : null;
@@ -166,6 +173,14 @@
                         lineTarget.textContent = formatAmount(lineTotal);
                     }
                 });
+
+                const discount = discountPercent > 0 ? subtotal * (discountPercent / 100) : 0;
+                const total = Math.max(subtotal - discount, 0);
+                subtotalEl.textContent = formatAmount(subtotal);
+                if (discountRowEl && discountEl) {
+                    discountRowEl.hidden = !(discountPercent > 0);
+                    discountEl.textContent = '-'+ formatAmount(discount).replace(/^Rs\s/, 'Rs ');
+                }
                 totalEl.textContent = formatAmount(total);
             };
 

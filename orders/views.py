@@ -6,6 +6,7 @@ import json
 import csv
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import DatabaseError, transaction
 from django.db.models import Count, F, Sum, Value, DecimalField, ExpressionWrapper
 from django.db.models.functions import Coalesce
@@ -16,7 +17,10 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.generic import TemplateView
 from django.views import View
-from core.dashboard_auth import dashboard_staff_required as staff_member_required
+from core.dashboard_auth import (
+    dashboard_admin_required,
+    dashboard_staff_required as staff_member_required,
+)
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -30,7 +34,9 @@ from .admin_repositories import AdminRepository
 from .admin_services import AdminAnalyticsService
 from .analytics import sales_summary, category_sales, top_products, unavailable_product_demand
 from .models import Bill
-from .models import Order, OrderItem, OrderFeedback, BillItem, SalesRecord, ServiceablePincode
+from .models import BillItem, CouponCode, Order, OrderFeedback, OrderItem, SalesRecord, ServiceablePincode
+from .coupon_rules import normalize_coupon_code
+from .coupon_service import apply_stored_coupon_breakdown, validate_coupon_payload
 from .delivery_contact import get_delivery_contact_number, get_or_create_delivery_contact_setting
 from .serializers import OrderSerializer, OrderFeedbackWriteSerializer, BillSerializer
 from .services import create_order, create_order_from_cart
@@ -240,6 +246,18 @@ class ServiceablePincodeListAPIView(APIView):
         return Response({"pincodes": payload})
 
 
+class CouponValidationAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            payload = validate_coupon_payload(request.data.get("coupon_code") or "")
+        except ValueError as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(payload, status=status.HTTP_200_OK)
+
+
 @method_decorator(cache_page(60), name="dispatch")
 class AdminAnalyticsAPIView(APIView):
     def get(self, request):
@@ -332,6 +350,57 @@ class AdminDeliveryContactManageView(TemplateView):
         row.delivery_contact_number = value
         row.save()
         return redirect("/admin-dashboard/delivery-contact/?saved=1")
+
+
+@method_decorator(dashboard_admin_required, name="dispatch")
+class AdminCouponManageView(TemplateView):
+    template_name = "orders/admin_coupon_manage.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["rows"] = CouponCode.objects.order_by("code")
+        context["saved"] = self.request.GET.get("saved", "")
+        context["error"] = kwargs.get("error") or self.request.GET.get("error") or ""
+        return context
+
+    def post(self, request, *args, **kwargs):
+        action = (request.POST.get("action") or "add").strip().lower()
+
+        if action == "toggle":
+            code = normalize_coupon_code(request.POST.get("code") or "")
+            target = (request.POST.get("target") or "").strip()
+            if not code or target not in {"0", "1"}:
+                context = self.get_context_data(error="Invalid coupon status update request.")
+                return self.render_to_response(context, status=400)
+
+            updated = CouponCode.objects.filter(code=code).update(is_active=(target == "1"))
+            if not updated:
+                context = self.get_context_data(error="Coupon code not found.")
+                return self.render_to_response(context, status=404)
+
+            return redirect("/admin-dashboard/coupons/?saved=status")
+
+        code = normalize_coupon_code(request.POST.get("code") or "")
+        is_active = (request.POST.get("is_active") or "").strip().lower() in {"1", "true", "on", "yes"}
+        if not code:
+            context = self.get_context_data(error="Enter a coupon code.")
+            return self.render_to_response(context, status=400)
+
+        coupon = CouponCode.objects.filter(code=code).first() or CouponCode(code=code)
+        coupon.is_active = is_active
+        try:
+            coupon.full_clean()
+        except ValidationError as exc:
+            message = "; ".join(
+                message
+                for values in exc.message_dict.values()
+                for message in values
+            ) or "; ".join(exc.messages)
+            context = self.get_context_data(error=message or "Invalid coupon code.")
+            return self.render_to_response(context, status=400)
+
+        coupon.save()
+        return redirect("/admin-dashboard/coupons/?saved=1")
 
 
 @method_decorator(staff_member_required, name="dispatch")
@@ -561,27 +630,60 @@ class AdminBillEditView(TemplateView):
                 .order_by("id")
             )
 
-            new_total = sum(
+            new_subtotal = sum(
                 (item.price * Decimal(item.quantity) for item in updated_items),
                 Decimal("0.00"),
+            )
+            pricing = apply_stored_coupon_breakdown(
+                new_subtotal,
+                coupon_code=order.coupon_code,
+                discount_percent=order.discount_percent,
             )
 
             order.customer_name = customer_name
             order.phone = phone
             order.shipping_address = shipping_address
-            order.total_price = new_total
-            order.save(update_fields=["customer_name", "phone", "shipping_address", "total_price"])
+            order.subtotal_price = pricing["subtotal"]
+            order.coupon_code = pricing["coupon_code"]
+            order.discount_percent = pricing["discount_percent"]
+            order.discount_amount = pricing["discount_amount"]
+            order.total_price = pricing["total"]
+            order.save(
+                update_fields=[
+                    "customer_name",
+                    "phone",
+                    "shipping_address",
+                    "subtotal_price",
+                    "coupon_code",
+                    "discount_percent",
+                    "discount_amount",
+                    "total_price",
+                ]
+            )
 
             order_bills = list(Bill.objects.filter(order_id=order.id))
             for order_bill in order_bills:
                 order_bill.customer_name = customer_name
                 order_bill.phone = phone
                 order_bill.shipping_address = shipping_address
-                order_bill.total_amount = new_total
+                order_bill.subtotal_amount = pricing["subtotal"]
+                order_bill.coupon_code = pricing["coupon_code"]
+                order_bill.discount_percent = pricing["discount_percent"]
+                order_bill.discount_amount = pricing["discount_amount"]
+                order_bill.total_amount = pricing["total"]
 
             Bill.objects.bulk_update(
                 order_bills,
-                ["customer_name", "phone", "shipping_address", "total_amount"],
+                [
+                    "customer_name",
+                    "phone",
+                    "shipping_address",
+                    "subtotal_amount",
+                    "coupon_code",
+                    "discount_percent",
+                    "discount_amount",
+                    "total_amount",
+                ],
             )
 
             bill_ids = [order_bill.id for order_bill in order_bills]
@@ -632,6 +734,10 @@ class AdminBillingDataAPIView(APIView):
                     "customer_name": bill.customer_name,
                     "phone": bill.phone,
                     "shipping_address": bill.shipping_address,
+                    "subtotal_amount": str(bill.subtotal_amount),
+                    "coupon_code": bill.coupon_code,
+                    "discount_percent": bill.discount_percent,
+                    "discount_amount": str(bill.discount_amount),
                     "total_amount": str(bill.total_amount),
                     "created_at": bill.created_at,
                     "order_status": bill.order.status,
@@ -1455,6 +1561,8 @@ def _build_user_receipt_pdf(bill, delivery_contact):
     table_header_height = 18
     rows_height = sum(row["height"] for row in item_rows)
 
+    discount_rows_height = 26 if getattr(bill, "discount_amount", Decimal("0.00")) > 0 else 0
+
     rendered_height = (
         header_height
         + 10
@@ -1463,6 +1571,7 @@ def _build_user_receipt_pdf(bill, delivery_contact):
         + rows_height
         + 2
         + 14
+        + discount_rows_height
         + 16
     )
     page_height = int(max(190, top_margin + bottom_margin + rendered_height + 6))
@@ -1551,6 +1660,14 @@ def _build_user_receipt_pdf(bill, delivery_contact):
     commands.append(f"{x - 2:.2f} {y:.2f} {content_width - 20:.2f} 0 re S")
     y -= 14
 
+    if getattr(bill, "discount_amount", Decimal("0.00")) > 0:
+        text(x + 350, y, "Subtotal", size=9, bold=True)
+        text(x + 448, y, f"Rs {_money_str(bill.subtotal_amount)}", size=9, bold=True)
+        y -= 13
+        text(x + 300, y, f"Coupon ({bill.coupon_code} - {bill.discount_percent}%)", size=9, bold=True)
+        text(x + 448, y, f"-Rs {_money_str(bill.discount_amount)}", size=9, bold=True)
+        y -= 13
+
     text(x + 350, y, "Grand Total", size=10, bold=True)
     text(x + 448, y, f"Rs {_money_str(bill.total_amount)}", size=11, bold=True)
     y -= 16
@@ -1617,6 +1734,10 @@ class AdminBillPDFDownloadView(APIView):
                 f"- {item.product_name} | Rs {item.unit_price} x {item.quantity} = Rs {item.unit_price * Decimal(item.quantity)}"
             )
         lines.append("")
+        if getattr(bill, "discount_amount", Decimal("0.00")) > 0:
+            lines.append(f"Subtotal: Rs {bill.subtotal_amount}")
+            lines.append(f"Coupon: {bill.coupon_code} (-{bill.discount_percent}%)")
+            lines.append(f"Discount: Rs {bill.discount_amount}")
         lines.append(f"Total Price: Rs {bill.total_amount}")
 
         pdf_data = _build_simple_pdf(lines)

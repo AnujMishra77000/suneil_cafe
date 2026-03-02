@@ -1,5 +1,14 @@
 from django.contrib import admin
-from .models import Order, OrderItem, OrderFeedback, Bill, SalesRecord, ServiceablePincode, DeliveryContactSetting
+from .models import (
+    Bill,
+    CouponCode,
+    DeliveryContactSetting,
+    Order,
+    OrderFeedback,
+    OrderItem,
+    SalesRecord,
+    ServiceablePincode,
+)
 
 
 class OrderItemInline(admin.TabularInline):
@@ -11,8 +20,18 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("id", "customer_name", "phone", "total_price", "status", "created_at")
-    search_fields = ("customer_name", "phone", "shipping_address")
+    list_display = (
+        "id",
+        "customer_name",
+        "phone",
+        "coupon_code",
+        "discount_percent",
+        "discount_amount",
+        "total_price",
+        "status",
+        "created_at",
+    )
+    search_fields = ("customer_name", "phone", "shipping_address", "coupon_code")
     list_filter = ("status", "created_at")
     inlines = [OrderItemInline]
     readonly_fields = ("created_at",)
@@ -33,8 +52,18 @@ class OrderFeedbackAdmin(admin.ModelAdmin):
 
 @admin.register(Bill)
 class BillAdmin(admin.ModelAdmin):
-    list_display = ("id", "bill_number", "recipient_type", "customer_name", "phone", "total_amount", "created_at")
-    search_fields = ("bill_number", "customer_name", "phone", "shipping_address")
+    list_display = (
+        "id",
+        "bill_number",
+        "recipient_type",
+        "customer_name",
+        "phone",
+        "coupon_code",
+        "discount_amount",
+        "total_amount",
+        "created_at",
+    )
+    search_fields = ("bill_number", "customer_name", "phone", "shipping_address", "coupon_code")
     list_filter = ("recipient_type", "created_at")
 
 
@@ -58,3 +87,11 @@ class ServiceablePincodeAdmin(admin.ModelAdmin):
 class DeliveryContactSettingAdmin(admin.ModelAdmin):
     list_display = ("id", "delivery_contact_number", "updated_at")
     readonly_fields = ("updated_at",)
+
+
+@admin.register(CouponCode)
+class CouponCodeAdmin(admin.ModelAdmin):
+    list_display = ("code", "discount_percent", "is_active", "updated_at")
+    search_fields = ("code",)
+    list_filter = ("is_active",)
+    ordering = ("code",)

@@ -28,7 +28,11 @@
         table{width:100%;border-collapse:collapse;margin-top:12px}
         th,td{padding:10px 8px;border-bottom:1px solid #edf1f5;text-align:left;font-size:13px}
         th{background:#f8fafc;color:#334155}
-        .total{margin-top:14px;text-align:right;font-size:20px;font-weight:800;color:#5a2e16}
+        .totals{margin-top:16px;margin-left:auto;max-width:340px;display:grid;gap:8px}
+        .total-row{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #ead8c9;border-radius:10px;background:#fffdf8}
+        .total-row strong{color:#5a2e16}
+        .total-row--discount{background:#fff6ee;border-color:#e6cfbc}
+        .total-row--grand{background:#fff2e3;border-color:#dcb48a;font-size:18px;font-weight:800}
         @media (max-width: 760px){.grid{grid-template-columns:1fr}}
         @media print {.toolbar{display:none}body{background:#fff}.wrap{max-width:none;margin:0;padding:0}.card{border:none;box-shadow:none;border-radius:0}}
     </style>
@@ -87,6 +91,10 @@
                         {% endif %}
                     </div>
                 </div>
+                <div>
+                    <span class="label">Coupon</span>
+                    <div class="value">{% if bill.coupon_code %}{{ bill.coupon_code }} (-{{ bill.discount_percent }}%){% else %}No coupon{% endif %}</div>
+                </div>
                 <div style="grid-column: 1 / -1;">
                     <span class="label">Address of Customer</span>
                     <div class="value address">{{ bill.shipping_address }}</div>
@@ -114,7 +122,22 @@
                 </tbody>
             </table>
 
-            <div class="total">Total Price: Rs {{ bill.total_amount }}</div>
+            <div class="totals">
+                <div class="total-row">
+                    <span>Subtotal</span>
+                    <strong>Rs {{ bill.subtotal_amount }}</strong>
+                </div>
+                {% if bill.discount_amount > 0 %}
+                <div class="total-row total-row--discount">
+                    <span>{{ bill.coupon_code }} Discount</span>
+                    <strong>-Rs {{ bill.discount_amount }}</strong>
+                </div>
+                {% endif %}
+                <div class="total-row total-row--grand">
+                    <span>Total Price</span>
+                    <strong>Rs {{ bill.total_amount }}</strong>
+                </div>
+            </div>
         </section>
     </main>
 

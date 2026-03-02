@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import IntegrityError, transaction
 from django.db.models import BooleanField, Case, F, Value, When
 
@@ -7,29 +9,34 @@ from products.models import Product
 from users.customer_resolver import resolve_primary_customer
 from users.phone_utils import normalize_phone
 
+from .coupon_service import calculate_coupon_breakdown
 from .models import Bill, BillItem, Order, OrderItem, SalesRecord
 from .pincode_service import ensure_serviceable_pincode
 from .tasks import send_order_notifications
 
 
 def create_bills_for_order(order):
+    bill_defaults = {
+        "customer_name": order.customer_name or order.customer.name,
+        "phone": order.phone or order.customer.phone,
+        "shipping_address": order.shipping_address,
+        "subtotal_amount": order.subtotal_price,
+        "coupon_code": order.coupon_code,
+        "discount_percent": order.discount_percent,
+        "discount_amount": order.discount_amount,
+        "total_amount": order.total_price,
+    }
     user_bill = Bill.objects.create(
         order=order,
         recipient_type="USER",
         bill_number=f"ORD-{order.id}-U",
-        customer_name=order.customer_name or order.customer.name,
-        phone=order.phone or order.customer.phone,
-        shipping_address=order.shipping_address,
-        total_amount=order.total_price,
+        **bill_defaults,
     )
     admin_bill = Bill.objects.create(
         order=order,
         recipient_type="ADMIN",
         bill_number=f"ORD-{order.id}-A",
-        customer_name=order.customer_name or order.customer.name,
-        phone=order.phone or order.customer.phone,
-        shipping_address=order.shipping_address,
-        total_amount=order.total_price,
+        **bill_defaults,
     )
     order_items = list(order.items.select_related("product").all())
     for item in order_items:
@@ -76,10 +83,10 @@ def create_order(validated_data):
     address = validated_data.pop("address")
     pincode = validated_data.pop("pincode", "")
     idempotency_key = validated_data.pop("idempotency_key")
+    coupon_code = validated_data.pop("coupon_code", "")
 
     ensure_serviceable_pincode(pincode=pincode, address=address)
 
-    # Atomic transaction (rollback safety)
     with transaction.atomic():
         customer = resolve_primary_customer(
             phone=phone,
@@ -92,16 +99,13 @@ def create_order(validated_data):
         customer.address = address
         customer.save(update_fields=["name", "whatsapp_no", "address"])
 
-        total_price = 0
+        subtotal_price = Decimal("0.00")
         order_items = []
 
-        # Lock rows so no other user can buy same stock
         product_ids = [item["product_id"] for item in items_data]
         products = Product.objects.select_for_update().filter(id__in=product_ids)
-
         products_dict = {p.id: p for p in products}
 
-        # Validate stock again inside transaction
         for item in items_data:
             product = products_dict.get(item["product_id"])
 
@@ -111,8 +115,7 @@ def create_order(validated_data):
             if product.stock_qty < item["quantity"]:
                 raise Exception(f"{product.name} is out of stock")
 
-            price = product.price * item["quantity"]
-            total_price += price
+            subtotal_price += product.price * item["quantity"]
 
             order_items.append(
                 {
@@ -122,6 +125,8 @@ def create_order(validated_data):
                 }
             )
 
+        pricing = calculate_coupon_breakdown(subtotal_price, coupon_code)
+
         try:
             order = Order.objects.create(
                 customer=customer,
@@ -129,7 +134,11 @@ def create_order(validated_data):
                 phone=phone,
                 shipping_address=address,
                 idempotency_key=idempotency_key,
-                total_price=total_price,
+                subtotal_price=pricing["subtotal"],
+                coupon_code=pricing["coupon_code"],
+                discount_percent=pricing["discount_percent"],
+                discount_amount=pricing["discount_amount"],
+                total_price=pricing["total"],
                 status="Placed",
             )
         except IntegrityError:
@@ -138,7 +147,6 @@ def create_order(validated_data):
                 return existing
             raise
 
-        # Create Order Items + Deduct Stock
         for item in order_items:
             OrderItem.objects.create(
                 order=order,
@@ -147,7 +155,6 @@ def create_order(validated_data):
                 price=item["price"],
             )
 
-            # Stock deduction using F expression (safe in concurrency)
             Product.objects.filter(pk=item["product"].pk).update(
                 stock_qty=F("stock_qty") - item["quantity"],
                 is_available=Case(
@@ -168,12 +175,14 @@ def create_order(validated_data):
 
 @transaction.atomic
 def create_order_from_cart(user, cart):
+    subtotal = cart.get_total_price()
     order = Order.objects.create(
         customer=user,
         customer_name=getattr(user, "name", "") or "",
         phone=getattr(user, "phone", "") or "",
         shipping_address=getattr(user, "address", "") or "",
-        total_price=cart.get_total_price(),
+        subtotal_price=subtotal,
+        total_price=subtotal,
         status="Placed",
     )
 
