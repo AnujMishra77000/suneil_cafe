@@ -1,17 +1,22 @@
 const state = {
     phone: "",
+    profile: {
+        name: "",
+        phone: ""
+    },
     orders: [],
     activeOrderId: null,
 };
 
 let isLoadingOrders = false;
 
-const phoneInputEl = document.getElementById("orderPhoneInput");
-const loadBtnEl = document.getElementById("loadOrdersBtn");
 const profileBtnEl = document.getElementById("profileBtn");
 const cartCountEl = document.getElementById("cartCount");
 const pageStatusEl = document.getElementById("pageStatus");
 const ordersListEl = document.getElementById("ordersList");
+const profileSummaryTitleEl = document.getElementById("profileSummaryTitle");
+const profileSummaryTextEl = document.getElementById("profileSummaryText");
+const saveProfileLinkEl = document.getElementById("saveProfileLink");
 const feedbackModalEl = document.getElementById("feedbackModal");
 const feedbackFormEl = document.getElementById("feedbackForm");
 const feedbackTitleEl = document.getElementById("feedbackTitle");
@@ -43,23 +48,8 @@ async function refreshCartCount() {
     }
 }
 
-function readSavedPhone() {
-    return (
-        localStorage.getItem("thathwamasi_checkout_phone") ||
-        localStorage.getItem("thathwamasi_cart_phone") ||
-        ""
-    ).trim();
-}
-
-function savePhone(phone) {
-    const clean = String(phone || "").trim();
-    state.phone = clean;
-    if (clean) {
-        localStorage.setItem("thathwamasi_checkout_phone", clean);
-    }
-}
-
-function setPageStatus(message, type = "error") {
+function setPageStatus(message, type = "info") {
+    if (!pageStatusEl) return;
     pageStatusEl.textContent = message || "";
     pageStatusEl.classList.remove("ok");
     if (type === "ok") {
@@ -68,6 +58,7 @@ function setPageStatus(message, type = "error") {
 }
 
 function setFeedbackStatus(message, type = "error") {
+    if (!feedbackStatusEl) return;
     feedbackStatusEl.textContent = message || "";
     feedbackStatusEl.classList.remove("ok");
     if (type === "ok") {
@@ -123,7 +114,7 @@ async function apiGet(url) {
     let data;
     try {
         data = raw ? JSON.parse(raw) : {};
-    } catch (err) {
+    } catch {
         throw new Error(`Server returned non-JSON response (${res.status}).`);
     }
     if (!res.ok) throw new Error(resolveApiError(data, `Request failed (${res.status})`));
@@ -140,11 +131,53 @@ async function apiPost(url, payload) {
     let data;
     try {
         data = raw ? JSON.parse(raw) : {};
-    } catch (err) {
+    } catch {
         throw new Error(`Server returned non-JSON response (${res.status}).`);
     }
     if (!res.ok) throw new Error(resolveApiError(data, `Request failed (${res.status})`));
     return data;
+}
+
+function readSavedProfile() {
+    const raw = localStorage.getItem("thathwamasi_profile");
+    if (raw) {
+        try {
+            const profile = JSON.parse(raw);
+            if (profile.name) state.profile.name = String(profile.name).trim();
+            if (profile.phone) state.profile.phone = String(profile.phone).trim();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const fallbackPhone = (localStorage.getItem("thathwamasi_checkout_phone") || "").trim();
+    if (!state.profile.phone && fallbackPhone) {
+        state.profile.phone = fallbackPhone;
+    }
+
+    state.phone = state.profile.phone;
+
+    if (state.profile.name && state.profile.phone) {
+        setProfileButtonState(`Saved profile for ${state.profile.name}`, true);
+    } else if (state.profile.phone) {
+        setProfileButtonState(`Saved profile for ${state.profile.phone}`, true);
+    }
+}
+
+function renderProfileSummary() {
+    if (!profileSummaryTitleEl || !profileSummaryTextEl || !saveProfileLinkEl) return;
+
+    if (state.phone) {
+        profileSummaryTitleEl.textContent = state.profile.name
+            ? `Orders for ${state.profile.name}`
+            : "Saved profile order history";
+        profileSummaryTextEl.textContent = `Showing orders linked to ${state.phone}. To check another number, update Save Profile first.`;
+        saveProfileLinkEl.textContent = "Change Profile";
+    } else {
+        profileSummaryTitleEl.textContent = "Save profile to view your orders";
+        profileSummaryTextEl.textContent = "Order Details now uses the mobile number saved in your profile on this device.";
+        saveProfileLinkEl.textContent = "Save Profile";
+    }
 }
 
 function buildItemsRows(items) {
@@ -176,8 +209,15 @@ function buildItemsRows(items) {
 }
 
 function renderOrders() {
+    if (!ordersListEl) return;
+
+    if (!state.phone) {
+        ordersListEl.innerHTML = '<div class="empty-block">Save your profile to load order details for that mobile number.</div>';
+        return;
+    }
+
     if (!state.orders.length) {
-        ordersListEl.innerHTML = '<div class="empty-block">No orders found for this number.</div>';
+        ordersListEl.innerHTML = '<div class="empty-block">No orders found for this saved mobile number.</div>';
         return;
     }
 
@@ -266,28 +306,23 @@ function closeFeedbackModal(clearQuery = true) {
 async function loadOrders() {
     if (isLoadingOrders) return;
 
-    const phone = (phoneInputEl.value || "").trim();
-    if (!phone) {
-        setPageStatus("Please enter your phone number.");
+    if (!state.phone) {
+        state.orders = [];
+        renderOrders();
+        setPageStatus("Save your profile first to load order history.");
         return;
     }
 
     isLoadingOrders = true;
-    if (loadBtnEl) {
-        loadBtnEl.disabled = true;
-        loadBtnEl.textContent = "Loading...";
-    }
-
-    savePhone(phone);
     setPageStatus("Loading orders...", "ok");
 
     try {
-        const payload = await apiGet("/api/orders/history-by-phone/?phone=" + encodeURIComponent(phone));
+        const payload = await apiGet("/api/orders/history-by-phone/?phone=" + encodeURIComponent(state.phone));
         state.orders = Array.isArray(payload.orders) ? payload.orders : [];
         renderOrders();
 
         if (!state.orders.length) {
-            setPageStatus("No orders found for this number.");
+            setPageStatus("No orders found for this saved mobile number.");
             return;
         }
 
@@ -304,10 +339,6 @@ async function loadOrders() {
         setPageStatus(err.message || "Unable to load orders.");
     } finally {
         isLoadingOrders = false;
-        if (loadBtnEl) {
-            loadBtnEl.disabled = false;
-            loadBtnEl.textContent = "Load Orders";
-        }
     }
 }
 
@@ -326,9 +357,8 @@ async function submitFeedback(event) {
         return;
     }
 
-    const phone = (state.phone || phoneInputEl.value || "").trim();
-    if (!phone) {
-        setFeedbackStatus("Please set your phone number first.");
+    if (!state.phone) {
+        setFeedbackStatus("Save your profile first.");
         return;
     }
 
@@ -339,7 +369,7 @@ async function submitFeedback(event) {
     try {
         const payload = {
             order_id: state.activeOrderId,
-            phone,
+            phone: state.phone,
             message,
             rating: ratingValue ? Number(ratingValue) : null,
         };
@@ -376,49 +406,36 @@ function onOrdersListClick(event) {
     openFeedbackModal(orderId, true);
 }
 
-function askPhoneForHistory() {
-    const phone = prompt("Enter phone number");
-    if (!phone) return false;
-    const clean = phone.trim();
-    phoneInputEl.value = clean;
-    savePhone(clean);
-    setProfileButtonState(`Using phone ${clean}`, true);
-    loadOrders().catch(() => {});
-    return true;
+function openProfilePage(event) {
+    if (event) event.preventDefault();
+    window.location.href = "/profile/";
 }
 
 function bootstrap() {
     setProfileButtonState();
-    const savedPhone = readSavedPhone();
-    if (savedPhone) {
-        savePhone(savedPhone);
-        phoneInputEl.value = savedPhone;
-        setProfileButtonState(`Using phone ${savedPhone}`, true);
+    readSavedProfile();
+    renderProfileSummary();
+    renderOrders();
+    if (state.phone) {
         loadOrders().catch(() => {});
     } else {
-        renderOrders();
-        setPageStatus("Enter phone number to load your order history.");
+        setPageStatus("Save your profile to load your order history.");
     }
     refreshCartCount().catch(() => {});
 }
 
 if (profileBtnEl) {
-    profileBtnEl.addEventListener("click", askPhoneForHistory);
+    profileBtnEl.addEventListener("click", openProfilePage);
 }
-
-loadBtnEl.addEventListener("click", function () {
-    loadOrders().catch(() => {});
-});
-
-phoneInputEl.addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        loadOrders().catch(() => {});
-    }
-});
-
-ordersListEl.addEventListener("click", onOrdersListClick);
-feedbackFormEl.addEventListener("submit", submitFeedback);
+if (saveProfileLinkEl) {
+    saveProfileLinkEl.addEventListener("click", openProfilePage);
+}
+if (ordersListEl) {
+    ordersListEl.addEventListener("click", onOrdersListClick);
+}
+if (feedbackFormEl) {
+    feedbackFormEl.addEventListener("submit", submitFeedback);
+}
 
 feedbackCancelBtnEl.addEventListener("click", function () {
     closeFeedbackModal();

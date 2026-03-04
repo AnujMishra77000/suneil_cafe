@@ -18,7 +18,7 @@
 }
 
 .site-lockup--compact {
-    gap: 12px;
+    gap: 14px;
 }
 
 .site-lockup--logo-only {
@@ -26,21 +26,21 @@
 }
 
 .site-logo {
-    width: 72px;
-    height: 72px;
+    width: 88px;
+    height: 88px;
     flex: 0 0 auto;
     object-fit: contain;
     filter: drop-shadow(0 12px 24px rgba(23, 63, 57, 0.12));
 }
 
 .site-logo--hero {
-    width: 86px;
-    height: 86px;
+    width: 108px;
+    height: 108px;
 }
 
 .site-logo--compact {
-    width: 60px;
-    height: 60px;
+    width: 96px;
+    height: 96px;
 }
 
 .site-copy {
@@ -207,14 +207,14 @@
 .has-page-actions .top.container,
 .has-page-actions .topbar,
 .has-page-actions .buy-header {
-    min-height: 88px;
+    min-height: 128px;
 }
 
 .has-page-actions .top-leading,
 .has-page-actions .topbar .top-leading,
 .has-page-actions .buy-header .top-leading {
     position: fixed;
-    top: calc(var(--action-rail-top) - 2px);
+    top: calc(var(--action-rail-top) - 6px);
     left: var(--action-logo-left);
     z-index: 11950;
     display: grid;
@@ -373,8 +373,13 @@ button.action-icon {
     }
 
     .site-logo--hero {
-        width: 72px;
-        height: 72px;
+        width: 88px;
+        height: 88px;
+    }
+
+    .site-logo--compact {
+        width: 84px;
+        height: 84px;
     }
 
     .site-subtitle {
@@ -401,18 +406,18 @@ button.action-icon {
     }
 
     .site-logo {
-        width: 58px;
-        height: 58px;
+        width: 68px;
+        height: 68px;
     }
 
     .site-logo--hero {
-        width: 64px;
-        height: 64px;
+        width: 80px;
+        height: 80px;
     }
 
     .site-logo--compact {
-        width: 52px;
-        height: 52px;
+        width: 72px;
+        height: 72px;
     }
 
     .site-title {
@@ -457,12 +462,23 @@ button.action-icon {
     .has-page-actions .top.container,
     .has-page-actions .topbar,
     .has-page-actions .buy-header {
-        min-height: 76px;
+        min-height: 104px;
     }
 }
 
 @media (max-width: 380px) {
     :root {
         --action-icon-gap: 5px;
+    }
+
+    .site-logo--compact {
+        width: 66px;
+        height: 66px;
+    }
+
+    .has-page-actions .top.container,
+    .has-page-actions .topbar,
+    .has-page-actions .buy-header {
+        min-height: 98px;
     }
 }

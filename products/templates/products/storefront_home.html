@@ -9,18 +9,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260302-homeflow2" />
-    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260302-brand6" />
-    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260302-menu2" />
-    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260302-bell15" />
+    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260304-homeheader13" />
+    <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260304-brand14" />
+    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260304-menu7" />
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260304-bell16" />
 </head>
 <body class="has-customer-menu">
     <div class="customer-menu" data-customer-menu>
         <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
-        <nav class="customer-menu-panel" data-menu-panel>
-            <a href="/">Home</a>
-            <a href="/bakery/">Bakery</a>
-            <a href="/snacks/">Snacks</a>
+        <nav class="customer-menu-panel" data-menu-panel aria-label="Customer navigation">
+            <a href="/profile/">Profile</a>
+            <a href="/billing/">Cart</a>
             <a href="/order-details/">Order Details</a>
         </nav>
     </div>
@@ -28,7 +27,7 @@
     <header class="hero">
         <nav class="topbar container scroll-reveal">
             <div class="site-lockup site-lockup--hero">
-                <img class="site-logo site-logo--hero" src="{% static 'products/images/thathwamasi-badge.svg' %}" alt="Thathwamasi Bakery Cafe logo" />
+                <img class="site-logo site-logo--hero" src="{% static 'products/images/thathwamasi-logo.png' %}" alt="Thathwamasi Bakery Cafe logo" />
                 <div class="site-copy">
                     <h1 class="site-title">Thathwamasi Bakery Cafe</h1>
                 </div>
@@ -40,36 +39,56 @@
                 <div class="slide active">
                     <img class="slide-bg" src="{% static 'products/images/hero/cr1.jpg' %}" alt="Fresh Bakery Every Morning" />
                     <div class="overlay">
-                        <h2>Fresh Bakery Every Morning</h2>
-                        <p>Handcrafted breads, cakes and warm bites delivered fast.</p>
+                        <div class="overlay-copy">
+                            <span class="overlay-eyebrow">Freshly baked today</span>
+                            <h2>Fresh Bakery Every Morning</h2>
+                            <p>Handcrafted breads, cakes and warm bites delivered fast.</p>
+                            <a class="overlay-cta" href="/bakery/">Explore now</a>
+                        </div>
                     </div>
                 </div>
                 <div class="slide">
                     <img class="slide-bg" src="{% static 'products/images/hero/cr5.jpg' %}" alt="Hot Snacks, Fast Delivery" />
                     <div class="overlay">
-                        <h2>Hot Snacks, Fast Delivery</h2>
-                        <p>Freshly packed snacks with consistent quality every time.</p>
+                        <div class="overlay-copy">
+                            <span class="overlay-eyebrow">Quick delivery picks</span>
+                            <h2>Hot Snacks, Fast Delivery</h2>
+                            <p>Freshly packed snacks with consistent quality every time.</p>
+                            <a class="overlay-cta" href="/snacks/">Order snacks</a>
+                        </div>
                     </div>
                 </div>
                 <div class="slide">
                     <img class="slide-bg" src="{% static 'products/images/hero/cr6.jpg' %}" alt="Daily Special Combos" />
                     <div class="overlay">
-                        <h2>Daily Special Combos</h2>
-                        <p>Smart combos for family tea-time and office breaks.</p>
+                        <div class="overlay-copy">
+                            <span class="overlay-eyebrow">Value combos</span>
+                            <h2>Daily Special Combos</h2>
+                            <p>Smart combos for family tea-time and office breaks.</p>
+                            <a class="overlay-cta" href="/bakery/">See combos</a>
+                        </div>
                     </div>
                 </div>
                 <div class="slide">
                     <img class="slide-bg" src="{% static 'products/images/hero/cr4.jpg' %}" alt="Family Pack Offers" />
                     <div class="overlay">
-                        <h2>Family Pack Offers</h2>
-                        <p>Best value packs curated for your everyday cravings.</p>
+                        <div class="overlay-copy">
+                            <span class="overlay-eyebrow">Family favourites</span>
+                            <h2>Family Pack Offers</h2>
+                            <p>Best value packs curated for your everyday cravings.</p>
+                            <a class="overlay-cta" href="/bakery/">View offers</a>
+                        </div>
                     </div>
                 </div>
                 <div class="slide">
                     <img class="slide-bg" src="{% static 'products/images/hero/cr3.jpg' %}" alt="Premium Taste, Better Prices" />
                     <div class="overlay">
-                        <h2>Premium Taste, Better Prices</h2>
-                        <p>Top-quality bakery and snacks at affordable prices.</p>
+                        <div class="overlay-copy">
+                            <span class="overlay-eyebrow">Premium everyday taste</span>
+                            <h2>Premium Taste, Better Prices</h2>
+                            <p>Top-quality bakery and snacks at affordable prices.</p>
+                            <a class="overlay-cta" href="/bakery/">Start ordering</a>
+                        </div>
                     </div>
                 </div>
                 <button type="button" class="carousel-nav prev" id="heroPrev" aria-label="Previous slide">‹</button>
@@ -135,9 +154,9 @@
             <div id="homeHistoryList" class="history-grid"></div>
         </section>
     </main>
-    <script src="{% static 'products/home.js' %}?v=20260302-homeflow2"></script>
-    <script src="{% static 'products/customer_menu.js' %}?v=20260224-1"></script>
-    <script src="{% static 'notifications/notification_bell.js' %}?v=20260302-bell15"></script>
+    <script src="{% static 'products/home.js' %}?v=20260304-homecarousel8"></script>
+    <script src="{% static 'products/customer_menu.js' %}?v=20260304-menu8"></script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260304-bell16"></script>
     <script>
         if (window.ThathwamasiNotifications) {
             window.ThathwamasiNotifications.mount({

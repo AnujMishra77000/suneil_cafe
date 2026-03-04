@@ -74,7 +74,9 @@
             this.items = [];
             this.unreadCount = 0;
             this.root = null;
-            this.countEl = null;
+            this.triggerEls = [];
+            this.countEls = [];
+            this.activeTriggerEl = null;
             this.panelEl = null;
             this.listEl = null;
             this.panelHostEl = null;
@@ -122,26 +124,47 @@
         }
 
         mount() {
-            if (this.root) return;
+            if (this.panelHostEl) return;
 
-            const root = document.createElement("div");
-            root.className = "thn-root";
-            root.innerHTML = `
-                <button type="button" class="thn-btn action-icon action-icon--bell" title="Notifications" aria-label="Notifications">
-                    <span class="thn-btn-icon" aria-hidden="true"></span>
-                    <span class="thn-count action-icon-count">0</span>
-                </button>
-            `;
+            const externalSelector = String(this.options.externalTriggerSelector || "").trim();
+            const externalButtons = externalSelector ? Array.from(document.querySelectorAll(externalSelector)) : [];
 
-            const actionRail = document.body.classList.contains("has-page-actions")
-                ? document.querySelector(".top-actions--icon")
-                : null;
-
-            if (actionRail) {
-                root.classList.add("thn-root--inline");
-                actionRail.appendChild(root);
+            if (externalButtons.length) {
+                this.triggerEls = externalButtons;
+                this.root = externalButtons[0] || null;
+                const externalCountSelector = String(this.options.externalCountSelector || "").trim();
+                if (externalCountSelector) {
+                    this.countEls = Array.from(document.querySelectorAll(externalCountSelector));
+                }
+                if (!this.countEls.length) {
+                    this.countEls = externalButtons
+                        .map((button) => button.querySelector(".thn-count"))
+                        .filter(Boolean);
+                }
             } else {
-                document.body.appendChild(root);
+                const root = document.createElement("div");
+                root.className = "thn-root";
+                root.innerHTML = `
+                    <button type="button" class="thn-btn action-icon action-icon--bell" title="Notifications" aria-label="Notifications">
+                        <span class="thn-btn-icon" aria-hidden="true"></span>
+                        <span class="thn-count action-icon-count">0</span>
+                    </button>
+                `;
+
+                const actionRail = document.body.classList.contains("has-page-actions")
+                    ? document.querySelector(".top-actions--icon")
+                    : null;
+
+                if (actionRail) {
+                    root.classList.add("thn-root--inline");
+                    actionRail.appendChild(root);
+                } else {
+                    document.body.appendChild(root);
+                }
+
+                this.root = root;
+                this.triggerEls = [root];
+                this.countEls = [root.querySelector(".thn-count")].filter(Boolean);
             }
 
             const panelHost = document.createElement("div");
@@ -160,22 +183,23 @@
             `;
             document.body.appendChild(panelHost);
 
-            this.root = root;
             this.panelHostEl = panelHost;
-            this.countEl = root.querySelector(".thn-count");
             this.panelEl = panelHost.querySelector(".thn-panel");
             this.listEl = panelHost.querySelector(".thn-list");
 
-            root.querySelector(".thn-btn").addEventListener("click", (event) => {
-                event.stopPropagation();
-                this.togglePanel();
+            this.triggerEls.forEach((trigger) => {
+                trigger.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    this.togglePanel(trigger);
+                });
             });
+
             panelHost.querySelector(".thn-mark-all").addEventListener("click", () => this.markAllRead());
             panelHost.querySelector(".thn-close").addEventListener("click", () => this.closePanel());
 
             document.addEventListener("click", (event) => {
                 if (!this.isOpen) return;
-                const insideButton = this.root?.contains(event.target);
+                const insideButton = this.triggerEls.some((node) => node && node.contains(event.target));
                 const insidePanel = this.panelEl?.contains(event.target);
                 if (!insideButton && !insidePanel) {
                     this.closePanel();
@@ -188,15 +212,43 @@
                 }
             });
 
+            window.addEventListener("resize", () => {
+                if (this.isOpen) {
+                    this.positionPanel();
+                }
+            });
+
             this.refreshCount();
             setInterval(() => this.refreshCount(), this.pollMs);
         }
 
         renderCount() {
-            if (!this.countEl) return;
+            if (!this.countEls.length) return;
             const count = Number(this.unreadCount || 0);
-            this.countEl.textContent = count > 99 ? "99+" : String(count);
-            this.countEl.style.display = count > 0 ? "inline-block" : "none";
+            this.countEls.forEach((node) => {
+                if (!node) return;
+                node.textContent = count > 99 ? "99+" : String(count);
+                node.hidden = !(count > 0);
+                node.style.display = count > 0 ? "inline-flex" : "none";
+            });
+        }
+
+        positionPanel(triggerEl = null) {
+            if (!this.panelEl) return;
+            const source = triggerEl || this.activeTriggerEl || this.triggerEls.find((node) => node && node.offsetParent !== null) || this.triggerEls[0];
+            if (!source || source.classList.contains("thn-root")) {
+                this.panelEl.style.top = "";
+                this.panelEl.style.right = "";
+                this.panelEl.style.left = "";
+                return;
+            }
+
+            const rect = source.getBoundingClientRect();
+            const top = Math.max(14, Math.round(rect.bottom + 12));
+            const right = Math.max(14, Math.round(window.innerWidth - rect.right));
+            this.panelEl.style.top = `${top}px`;
+            this.panelEl.style.right = `${right}px`;
+            this.panelEl.style.left = "auto";
         }
 
         renderProducts(items) {
@@ -388,10 +440,12 @@
             }
         }
 
-        async togglePanel() {
+        async togglePanel(triggerEl = null) {
             if (!this.panelEl || !this.panelHostEl) return;
             this.isOpen = !this.isOpen;
             if (this.isOpen) {
+                this.activeTriggerEl = triggerEl || this.activeTriggerEl;
+                this.positionPanel(triggerEl || this.activeTriggerEl);
                 this.panelHostEl.classList.add("open");
                 this.panelEl.classList.add("open");
                 await this.loadFeed();

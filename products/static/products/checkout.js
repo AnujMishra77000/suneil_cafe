@@ -234,6 +234,19 @@ function saveProfileFromForm() {
     return true;
 }
 
+function openProfilePage() {
+    state.profile.name = nameInputEl.value.trim();
+    state.profile.phone = phoneInputEl.value.trim();
+    state.profile.address = addressInputEl.value.trim();
+    state.profile.pincode = pincodeInputEl.value.trim();
+
+    if (state.profile.name || state.profile.phone || state.profile.address || state.profile.pincode) {
+        writeProfile();
+    }
+
+    window.location.href = "/profile/";
+}
+
 async function apiGet(url) {
     const res = await fetch(url);
     const raw = await res.text();
@@ -535,7 +548,7 @@ async function bootstrap() {
 
 formEl.addEventListener("submit", submitOrder);
 if (profileBtnEl) {
-    profileBtnEl.addEventListener("click", saveProfileFromForm);
+    profileBtnEl.addEventListener("click", openProfilePage);
 }
 phoneInputEl.addEventListener("blur", lookupByPhone);
 applyCouponBtnEl.addEventListener("click", applyCoupon);

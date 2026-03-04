@@ -61,20 +61,27 @@ function rememberContinueShoppingUrl() {
 }
 
 function readProfile() {
+    const raw = localStorage.getItem("thathwamasi_profile");
+    if (raw) {
+        try {
+            const profile = JSON.parse(raw);
+            if (profile.name && profile.phone) {
+                setProfileButtonState(`Saved profile for ${profile.name}`, true);
+                return;
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     const checkoutPhone = localStorage.getItem("thathwamasi_checkout_phone");
     if (checkoutPhone) {
         setProfileButtonState(`Using phone ${checkoutPhone}`, true);
     }
 }
 
-function askPhoneForHistory() {
-    const phone = prompt("Enter phone number");
-    if (!phone) return false;
-    localStorage.setItem("thathwamasi_checkout_phone", phone.trim());
-    setProfileButtonState(`Using phone ${phone.trim()}`, true);
-    historyLoaded = false;
-    setupHistoryAccess(true).catch(() => {});
-    return true;
+function openProfilePage() {
+    window.location.href = "/profile/";
 }
 
 function generateCartPhone() {
@@ -456,7 +463,7 @@ async function bootstrap() {
     await setupHistoryAccess();
 }
 
-profileBtnEl.addEventListener("click", askPhoneForHistory);
+profileBtnEl.addEventListener("click", openProfilePage);
 cartListEl.addEventListener("click", onCartAction);
 placeOrderBtnEl.addEventListener("click", proceedToCheckout);
 

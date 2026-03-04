@@ -136,6 +136,10 @@ class BillingPageView(TemplateView):
     template_name = "products/billing.html"
 
 
+class CustomerProfilePageView(TemplateView):
+    template_name = "products/profile.html"
+
+
 class CustomerOrderDetailsPageView(TemplateView):
     template_name = "products/order_details.html"
 

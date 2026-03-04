@@ -304,3 +304,8 @@
         justify-content: flex-end;
     }
 }
+
+
+.has-home-notification-nav .thn-panel {
+    z-index: 19990;
+}

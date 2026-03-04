@@ -322,3 +322,60 @@ body {
         text-align: center;
     }
 }
+
+.profile-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.profile-summary-copy {
+    display: grid;
+    gap: 6px;
+    flex: 1 1 320px;
+}
+
+.profile-summary-title {
+    color: var(--brand-700);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.profile-summary-text {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.profile-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 15px;
+    border-radius: 999px;
+    background: var(--brand-700);
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 10px 18px rgba(90, 46, 22, 0.12);
+}
+
+.profile-link-btn:hover {
+    background: var(--brand-500);
+}
+
+@media (max-width: 640px) {
+    .profile-summary {
+        align-items: stretch;
+    }
+
+    .profile-link-btn {
+        width: 100%;
+    }
+}

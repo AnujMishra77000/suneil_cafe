@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Thathwamasi Bakery Cafe | Billing</title>
+    <title>Thathwamasi Bakery Cafe | Save Profile</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
@@ -21,53 +21,55 @@
     </script>
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260302-fx2" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260302-fx2"></script>
-    <link rel="stylesheet" href="{% static 'products/billing.css' %}?v=20260302-billing6" />
+    <link rel="stylesheet" href="{% static 'products/profile.css' %}?v=20260304-profile1" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260304-brand15" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260302-bell15" />
 </head>
 <body class="has-page-actions">
-    <main class="container">
-        <header class="top">
-            <div class="page-intro page-intro--tight">
-                <div class="top-leading">
-                    <div class="site-lockup site-lockup--compact site-lockup--logo-only">
-                        <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-logo.png' %}" alt="Thathwamasi Bakery Cafe logo" />
-                    </div>
+    <main class="profile-page">
+        <header class="topbar">
+            <div class="top-leading">
+                <div class="site-lockup site-lockup--compact site-lockup--logo-only">
+                    <img class="site-logo site-logo--compact" src="{% static 'products/images/thathwamasi-logo.png' %}" alt="Thathwamasi Bakery Cafe logo" />
                 </div>
             </div>
             <div class="top-actions top-actions--icon">
                 <a href="/" class="action-icon action-icon--home" aria-label="Home" title="Home"></a>
-                <button id="profileBtn" class="action-icon action-icon--profile" type="button" aria-label="Save Profile (Optional)" title="Save Profile (Optional)" data-profile-ready="false"></button>
+                <button id="profileBtn" class="action-icon action-icon--profile" type="button" aria-label="Save Profile" title="Save Profile" data-profile-ready="false"></button>
                 <a href="/billing/" class="action-icon action-icon--cart" aria-label="Cart" title="Cart">
                     <span id="cartCount" class="action-icon-count">0</span>
                 </a>
             </div>
         </header>
 
-        <section class="layout">
-            <section class="bill-card" data-fx>
-                <div class="head">
-                    <h2>Your Cart</h2>
-                    <p id="itemCount">0 items</p>
+        <section class="profile-shell" data-fx>
+            <div class="profile-card">
+                <div class="profile-copy">
+                    <p class="profile-kicker">Save Profile</p>
+                    <h1>Keep your name and mobile ready.</h1>
+                    <p>Checkout and Order Details will use this saved profile on this browser. To check orders for another number, update the mobile number here and save again.</p>
                 </div>
-                <div id="cartList" class="cart-list"></div>
-            </section>
 
-            <aside class="summary-card" data-fx>
-                <div class="summary-head">
-                    <h3>Order Summary</h3>
-                    <p>Everything is arranged before checkout.</p>
-                </div>
-                <div class="row"><span>Items</span><strong id="summaryItems">0</strong></div>
-                <div class="row"><span>Subtotal</span><strong id="summarySubtotal">Rs 0.00</strong></div>
-                <div class="row total"><span>Total</span><strong id="summaryTotal">Rs 0.00</strong></div>
-                <button id="placeOrderBtn" class="place-btn">Proceed to Checkout</button>
-                <p class="note">Bills are generated for both customer and admin after order placement.</p>
-                <p id="statusMsg" class="status-msg"></p>
-            </aside>
+                <form id="profileForm" class="profile-form">
+                    <label>
+                        Full Name
+                        <input id="profileName" name="name" placeholder="Enter your name" autocomplete="name" required />
+                    </label>
+                    <label>
+                        Mobile Number
+                        <input id="profilePhone" name="phone" inputmode="tel" maxlength="15" placeholder="Enter mobile number" autocomplete="tel" required />
+                    </label>
+                    <div class="profile-actions">
+                        <button id="saveProfileBtn" class="profile-save-btn" type="submit">Save Profile</button>
+                        <span id="profileStatus" class="profile-status"></span>
+                    </div>
+                </form>
+
+            </div>
         </section>
     </main>
-    <script src="{% static 'products/billing.js' %}?v=20260304-profile1"></script>
+
+    <script src="{% static 'products/profile.js' %}?v=20260304-profile1"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260302-bell15"></script>
     <script>
         if (window.ThathwamasiNotifications) {

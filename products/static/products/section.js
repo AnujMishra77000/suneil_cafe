@@ -5,8 +5,7 @@ const state = {
     filteredCategories: [],
     profile: {
         name: "",
-        phone: "",
-        whatsapp_no: ""
+        phone: ""
     },
     cart_phone: ""
 };
@@ -72,8 +71,11 @@ function readProfile() {
     if (!raw) return;
     try {
         const profile = JSON.parse(raw);
-        if (profile.name && profile.phone && profile.whatsapp_no) {
-            state.profile = profile;
+        if (profile.name && profile.phone) {
+            state.profile = {
+                name: profile.name,
+                phone: profile.phone
+            };
             setProfileButtonState(`Saved profile for ${profile.name}`, true);
         }
     } catch (e) {
@@ -96,22 +98,8 @@ function getOrCreateCartPhone() {
     return cartPhone;
 }
 
-function askProfile() {
-    const name = prompt("Enter your name");
-    if (!name) return false;
-    const phone = prompt("Enter phone number");
-    if (!phone) return false;
-    const whatsapp = prompt("Enter WhatsApp number");
-    if (!whatsapp) return false;
-
-    state.profile = {
-        name: name.trim(),
-        phone: phone.trim(),
-        whatsapp_no: whatsapp.trim()
-    };
-    localStorage.setItem("thathwamasi_profile", JSON.stringify(state.profile));
-    setProfileButtonState(`Saved profile for ${state.profile.name}`, true);
-    return true;
+function openProfilePage() {
+    window.location.href = "/profile/";
 }
 
 async function apiGet(url) {
@@ -269,7 +257,7 @@ if (searchInputEl) {
 }
 if (profileBtnEl) {
     setProfileButtonState();
-    profileBtnEl.addEventListener("click", askProfile);
+    profileBtnEl.addEventListener("click", openProfilePage);
 }
 
 bootstrap();
