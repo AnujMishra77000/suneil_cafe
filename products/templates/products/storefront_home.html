@@ -9,18 +9,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260304-homeheader13" />
+    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260304-homeheader14" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260304-brand14" />
-    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260304-menu7" />
-    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260304-bell16" />
+    <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260304-menu12" />
+    <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260304-bell17" />
 </head>
-<body class="has-customer-menu">
+<body class="has-customer-menu has-home-notification-nav">
     <div class="customer-menu" data-customer-menu>
-        <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">&#9776;</button>
+        <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">
+            <span class="customer-menu-toggle-icon" aria-hidden="true">&#9776;</span>
+            <span class="customer-menu-count" data-menu-notification-count hidden>0</span>
+        </button>
         <nav class="customer-menu-panel" data-menu-panel aria-label="Customer navigation">
-            <a href="/profile/">Profile</a>
-            <a href="/billing/">Cart</a>
-            <a href="/order-details/">Order Details</a>
+            <a class="customer-menu-item" href="/profile/"><span class="customer-menu-item-label">Profile</span></a>
+            <a class="customer-menu-item" href="/billing/"><span class="customer-menu-item-label">Cart</span></a>
+            <button type="button" class="customer-menu-item customer-menu-item--button" data-home-notification-trigger data-menu-close="true">
+                <span class="customer-menu-item-label">Notification</span>
+                <span class="customer-menu-item-count" data-home-notification-count hidden>0</span>
+            </button>
+            <a class="customer-menu-item" href="/order-details/"><span class="customer-menu-item-label">Order Details</span></a>
         </nav>
     </div>
 
@@ -155,13 +162,15 @@
         </section>
     </main>
     <script src="{% static 'products/home.js' %}?v=20260304-homecarousel8"></script>
-    <script src="{% static 'products/customer_menu.js' %}?v=20260304-menu8"></script>
-    <script src="{% static 'notifications/notification_bell.js' %}?v=20260304-bell16"></script>
+    <script src="{% static 'products/customer_menu.js' %}?v=20260304-menu12"></script>
+    <script src="{% static 'notifications/notification_bell.js' %}?v=20260304-bell17"></script>
     <script>
         if (window.ThathwamasiNotifications) {
             window.ThathwamasiNotifications.mount({
                 mode: "USER",
                 storageKey: "thathwamasi_checkout_phone",
+                externalTriggerSelector: "[data-home-notification-trigger]",
+                externalCountSelector: "[data-menu-notification-count], [data-home-notification-count]",
                 resolveIdentifier: function () {
                     return (
                         localStorage.getItem("thathwamasi_checkout_phone") ||

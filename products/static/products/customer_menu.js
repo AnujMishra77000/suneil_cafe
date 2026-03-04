@@ -27,13 +27,15 @@
     function positionPanel() {
         if (!toggle || !panel) return;
         const toggleRect = toggle.getBoundingClientRect();
-        const headerRect = document.querySelector(".topbar")?.getBoundingClientRect();
-        const panelWidth = Math.min(panel.offsetWidth || 220, window.innerWidth - 16);
-        const left = Math.max(8, Math.min(toggleRect.left, window.innerWidth - panelWidth - 8));
-        const topBase = Math.max(toggleRect.bottom + 10, (headerRect?.bottom || toggleRect.bottom) + 8);
+        const panelWidth = Math.min(panel.offsetWidth || 212, window.innerWidth - 12);
+        const right = Math.max(8, Math.round(window.innerWidth - toggleRect.right));
+        const desiredLeft = window.innerWidth - right - panelWidth;
+        const left = Math.max(8, Math.min(desiredLeft, window.innerWidth - panelWidth - 8));
+        const topBase = Math.max(8, Math.round(toggleRect.bottom + 6));
         panel.style.left = `${left}px`;
+        panel.style.right = 'auto';
         panel.style.top = `${topBase}px`;
-        panel.style.maxHeight = `${Math.max(180, window.innerHeight - topBase - 12)}px`;
+        panel.style.maxHeight = `${Math.max(180, window.innerHeight - topBase - 10)}px`;
     }
 
     function closeMenu() {
@@ -46,7 +48,7 @@
         if (!toggle || !panel) return;
         root.classList.add("open");
         toggle.setAttribute("aria-expanded", "true");
-        window.requestAnimationFrame(positionPanel);
+        window.requestAnimationFrame(() => positionPanel());
     }
 
     if (toggle && panel) {

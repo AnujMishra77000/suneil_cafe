@@ -1,53 +1,81 @@
 .customer-menu {
+    width: auto;
     position: fixed;
     top: 14px;
-    left: 14px;
+    right: 14px;
+    left: auto;
     z-index: 1200;
 }
 
 .customer-menu-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid rgba(90, 46, 22, 0.12);
-    border-radius: 16px;
+    border-radius: 14px;
     width: 46px;
     height: 46px;
     cursor: pointer;
-    font-size: 21px;
-    font-weight: 700;
     color: #5a2e16;
     background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(255, 237, 221, 0.96));
-    box-shadow: 0 16px 28px rgba(90, 46, 22, 0.18);
+    box-shadow: 0 14px 24px rgba(90, 46, 22, 0.16);
     transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
 .customer-menu-toggle:hover,
 .customer-menu-toggle:focus-visible {
     transform: translateY(-1px);
-    box-shadow: 0 20px 34px rgba(90, 46, 22, 0.22);
+    box-shadow: 0 18px 30px rgba(90, 46, 22, 0.2);
     outline: none;
+}
+
+.customer-menu-toggle-icon {
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.customer-menu-count {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 999px;
+    border: 1.5px solid #fff;
+    background: #dc2626;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 18px;
+    text-align: center;
 }
 
 .customer-menu-panel {
     position: fixed;
-    top: 68px;
-    left: 14px;
-    max-height: calc(100vh - 80px);
+    top: 62px;
+    left: auto;
+    right: 14px;
+    max-height: calc(100vh - 74px);
     overflow: auto;
-    min-width: 220px;
-    max-width: min(260px, calc(100vw - 24px));
-    padding: 12px;
-    border: 1px solid rgba(229, 211, 196, 0.9);
-    border-radius: 24px;
-    background: rgba(255, 255, 255, 0.94);
-    box-shadow: 0 28px 44px rgba(42, 22, 11, 0.16);
-    backdrop-filter: blur(16px);
+    min-width: 188px;
+    max-width: min(212px, calc(100vw - 20px));
+    padding: 8px;
+    border: 1px solid rgba(218, 198, 183, 0.92);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 18px 28px rgba(42, 22, 11, 0.14);
+    backdrop-filter: blur(12px);
     display: grid;
-    gap: 8px;
+    gap: 6px;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transform: translateY(-8px) scale(0.98);
-    transform-origin: top left;
-    transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+    transform: translateY(-6px) scale(0.98);
+    transform-origin: top right;
+    transition: opacity 170ms ease, transform 170ms ease, visibility 170ms ease;
 }
 
 .customer-menu.open .customer-menu-panel {
@@ -57,84 +85,118 @@
     transform: translateY(0) scale(1);
 }
 
-.customer-menu-panel a {
+.customer-menu-item {
+    width: 100%;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 10px;
     text-decoration: none;
-    border-radius: 16px;
-    padding: 12px 14px;
+    border-radius: 12px;
+    padding: 10px 12px;
     color: #3b2a20;
-    font-size: 13px;
+    font-family: "Sora", sans-serif;
+    font-size: 12px;
     font-weight: 700;
-    background: linear-gradient(180deg, #fff8f1, #fff3e7);
-    border: 1px solid rgba(231, 211, 194, 0.72);
-    transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    line-height: 1.15;
+    letter-spacing: 0;
+    background: #fffaf5;
+    border: 1px solid rgba(233, 218, 205, 0.82);
+    transition: background 160ms ease, box-shadow 160ms ease, border-color 160ms ease, transform 160ms ease;
 }
 
-.customer-menu-panel a::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: #ff7a1a;
-    box-shadow: 0 0 0 4px rgba(255, 122, 26, 0.12);
-    flex: 0 0 auto;
+button.customer-menu-item {
+    appearance: none;
+    cursor: pointer;
+    font-family: "Sora", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: 0;
+    color: #3b2a20;
+    text-align: left;
 }
 
-.customer-menu-panel a:hover,
-.customer-menu-panel a:focus-visible {
-    transform: translateX(2px);
-    background: linear-gradient(180deg, #fffdf9, #fff6ee);
-    box-shadow: 0 10px 18px rgba(42, 22, 11, 0.08);
+.customer-menu-item-label {
+    display: inline-flex;
+    align-items: center;
+    font: inherit;
+    color: inherit;
+}
+
+.customer-menu-item:hover,
+.customer-menu-item:focus-visible {
+    transform: translateY(-1px);
+    background: #fffdf9;
+    border-color: rgba(214, 189, 170, 0.92);
+    box-shadow: 0 8px 14px rgba(42, 22, 11, 0.08);
     outline: none;
 }
 
-.customer-menu-panel a.active {
-    background: linear-gradient(180deg, #fff1e3, #ffe6d2);
+.customer-menu-item.active {
+    background: #fff2e4;
     color: #5a2e16;
+    border-color: rgba(214, 180, 152, 0.95);
+}
+
+.customer-menu-item-count {
+    margin-left: auto;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 18px;
+    text-align: center;
 }
 
 @media (max-width: 700px) {
     .customer-menu {
         top: 10px;
-        left: 10px;
+        right: 10px;
     }
 
     .customer-menu-toggle {
         width: 44px;
         height: 44px;
-        border-radius: 15px;
+        border-radius: 13px;
     }
 
     .customer-menu-panel {
-        left: 10px;
-        min-width: 200px;
-        max-height: calc(100vh - 72px);
+        right: 10px;
+        min-width: 180px;
+        max-width: min(206px, calc(100vw - 18px));
+        max-height: calc(100vh - 66px);
     }
 }
 
 @media (max-width: 520px) {
     .customer-menu-panel {
-        left: 10px;
-        min-width: 184px;
-        max-width: min(220px, calc(100vw - 20px));
-        max-height: calc(100vh - 68px);
-        padding: 10px;
-        border-radius: 20px;
+        right: 10px;
+        min-width: 172px;
+        max-width: min(196px, calc(100vw - 18px));
+        padding: 7px;
+        border-radius: 16px;
     }
 
-    .customer-menu-panel a {
-        padding: 11px 12px;
-        border-radius: 14px;
+    .customer-menu-item {
+        padding: 9px 10px;
+        border-radius: 11px;
     }
 }
 
-
 @media (max-width: 380px) {
+    .customer-menu {
+        top: 8px;
+        right: 8px;
+    }
+
     .customer-menu-panel {
-        left: 8px;
-        min-width: 172px;
-        max-width: min(208px, calc(100vw - 16px));
+        right: 8px;
+        min-width: 166px;
+        max-width: min(188px, calc(100vw - 14px));
     }
 }
