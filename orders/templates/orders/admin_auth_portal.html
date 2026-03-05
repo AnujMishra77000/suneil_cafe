@@ -18,6 +18,10 @@
                 <h1>Admin &amp; Staff Dashboard</h1>
             </div>
 
+            {% if blocked_message %}
+            <div class="banner banner-warn">{{ blocked_message }}</div>
+            {% endif %}
+
             <section class="portal-grid portal-grid--cards">
                 {% for card in cards %}
                 <article class="portal-card portal-card--link portal-card--{{ card.slug }}" style="--card-index: {{ forloop.counter0 }};">

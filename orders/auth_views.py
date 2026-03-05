@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model, login, logout
-from django.db import IntegrityError
+from django.db import DatabaseError, IntegrityError
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -109,6 +109,14 @@ def _safe_next_url(request, default):
     return default
 
 
+def _is_active_admin(user):
+    return bool(user and user.is_authenticated and user.is_active and user.is_staff and user.is_superuser)
+
+
+def _active_admin_exists():
+    return User.objects.filter(is_active=True, is_staff=True, is_superuser=True).exists()
+
+
 
 def _dashboard_session_expiry_seconds():
     from django.conf import settings
@@ -143,13 +151,17 @@ def _track_staff_login_activity(request, user):
     if not user.is_authenticated or not user.is_staff or user.is_superuser:
         return
     email, mobile_number = _resolved_profile_contact(user)
-    DashboardLoginActivity.objects.create(
-        user=user,
-        email=email,
-        mobile_number=mobile_number,
-        session_key=(request.session.session_key or "").strip(),
-        ip_address=_request_ip_address(request),
-    )
+    try:
+        DashboardLoginActivity.objects.create(
+            user=user,
+            email=email,
+            mobile_number=mobile_number,
+            session_key=(request.session.session_key or "").strip(),
+            ip_address=_request_ip_address(request),
+        )
+    except DatabaseError:
+        # Do not break auth flow if activity-log table is unavailable.
+        return
 
 
 def _track_staff_logout_activity(request, user):
@@ -157,10 +169,13 @@ def _track_staff_logout_activity(request, user):
         return
 
     session_key = (request.session.session_key or "").strip()
-    pending_rows = DashboardLoginActivity.objects.filter(
-        user=user,
-        logout_at__isnull=True,
-    )
+    try:
+        pending_rows = DashboardLoginActivity.objects.filter(
+            user=user,
+            logout_at__isnull=True,
+        )
+    except DatabaseError:
+        return
 
     row = None
     if session_key:
@@ -170,19 +185,31 @@ def _track_staff_logout_activity(request, user):
     if row is None:
         return
 
-    row.logout_at = timezone.now()
-    row.save(update_fields=["logout_at"])
+    try:
+        row.logout_at = timezone.now()
+        row.save(update_fields=["logout_at"])
+    except DatabaseError:
+        return
 
 
 class DashboardAccessPortalView(View):
     template_name = "orders/admin_auth_portal.html"
 
     def get(self, request):
-        if is_dashboard_staff(request.user):
+        if is_dashboard_staff(request.user) and not _is_active_admin(request.user):
             return redirect(_safe_next_url(request, "/admin-dashboard/"))
 
+        admin_exists = _active_admin_exists()
         cards = []
         for slug, item in PORTAL_CARD_CONFIG.items():
+            # Once an admin exists, registration flows are admin-only.
+            if admin_exists and slug in {"admin-register", "staff-register"} and not _is_active_admin(request.user):
+                continue
+
+            # During first bootstrap, only admin registration/login should appear.
+            if not admin_exists and slug in {"staff-register", "staff-login"}:
+                continue
+
             cards.append(
                 {
                     "slug": slug,
@@ -194,12 +221,18 @@ class DashboardAccessPortalView(View):
                 }
             )
 
+        blocked = (request.GET.get("blocked") or "").strip()
+        blocked_message = ""
+        if blocked in {"admin-register", "staff-register"}:
+            blocked_message = "Only Admin can open registration pages. Login as Admin first."
+
         return render(
             request,
             self.template_name,
             {
                 "cards": cards,
                 "next_url": request.GET.get("next", ""),
+                "blocked_message": blocked_message,
             },
         )
 
@@ -214,6 +247,17 @@ class DashboardAuthFormView(View):
     def _form_instance(self, data=None):
         config = self._page_config()
         return config["form_class"](data=data, prefix=config["prefix"])
+
+    def _registration_allowed(self, request):
+        if self.page_key == "admin-register":
+            if not _active_admin_exists():
+                return True
+            return _is_active_admin(request.user)
+
+        if self.page_key == "staff-register":
+            return _is_active_admin(request.user)
+
+        return True
 
     def _context(self, request, form, status_code=200):
         config = self._page_config()
@@ -230,26 +274,43 @@ class DashboardAuthFormView(View):
         }
 
     def get(self, request):
-        if is_dashboard_staff(request.user):
+        config = self._page_config()
+
+        if config["mode"] == "login" and is_dashboard_staff(request.user):
             return redirect(_safe_next_url(request, "/admin-dashboard/"))
+
+        if config["mode"] == "register" and not self._registration_allowed(request):
+            if is_dashboard_staff(request.user) and not _is_active_admin(request.user):
+                logout(request)
+            return redirect(f"{reverse('dashboard-auth-portal')}?blocked={self.page_key}")
+
         form = self._form_instance()
         return render(request, self.template_name, self._context(request, form))
 
     def post(self, request):
-        if is_dashboard_staff(request.user):
+        config = self._page_config()
+
+        if config["mode"] == "login" and is_dashboard_staff(request.user):
             return redirect(_safe_next_url(request, "/admin-dashboard/"))
+
+        if config["mode"] == "register" and not self._registration_allowed(request):
+            if is_dashboard_staff(request.user) and not _is_active_admin(request.user):
+                logout(request)
+            return redirect(f"{reverse('dashboard-auth-portal')}?blocked={self.page_key}")
 
         form = self._form_instance(data=request.POST)
         if not form.is_valid():
             context = self._context(request, form, status_code=400)
             return render(request, self.template_name, context, status=400)
 
-        config = self._page_config()
         if config["mode"] == "register":
             try:
                 user = form.save()
-            except IntegrityError:
-                form.add_error(None, "Registration could not be completed. Please try again.")
+            except (IntegrityError, DatabaseError):
+                form.add_error(
+                    None,
+                    "Registration could not be completed. Please run pending migrations and try again.",
+                )
                 context = self._context(request, form, status_code=400)
                 return render(request, self.template_name, context, status=400)
         else:
@@ -300,9 +361,13 @@ class DashboardLogoutView(View):
 
 class DashboardAdminBootstrapView(View):
     def get(self, request):
+        if _active_admin_exists() and not _is_active_admin(request.user):
+            return redirect(reverse("dashboard-auth-admin-login"))
         return redirect(reverse("dashboard-auth-admin-register"))
 
     def post(self, request):
+        if _active_admin_exists() and not _is_active_admin(request.user):
+            return redirect(reverse("dashboard-auth-admin-login"))
         return redirect(reverse("dashboard-auth-admin-register"))
 
 
