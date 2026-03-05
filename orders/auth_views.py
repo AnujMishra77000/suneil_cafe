@@ -109,15 +109,6 @@ def _safe_next_url(request, default):
     return default
 
 
-def _is_active_admin(user):
-    return bool(user and user.is_authenticated and user.is_active and user.is_staff and user.is_superuser)
-
-
-def _active_admin_exists():
-    return User.objects.filter(is_active=True, is_staff=True, is_superuser=True).exists()
-
-
-
 def _dashboard_session_expiry_seconds():
     from django.conf import settings
 
@@ -196,50 +187,18 @@ class DashboardAccessPortalView(View):
     template_name = "orders/admin_auth_portal.html"
 
     def get(self, request):
-        if is_dashboard_staff(request.user) and not _is_active_admin(request.user):
-            return redirect(_safe_next_url(request, "/admin-dashboard/"))
-
-        admin_exists = _active_admin_exists()
         cards = []
         for slug, item in PORTAL_CARD_CONFIG.items():
-            is_locked = False
-            lock_reason = ""
-            button_label = item["button_label"]
-            url = reverse(item["url_name"])
-
-            # Registration flows remain admin-only after bootstrap, but cards stay visible.
-            if admin_exists and slug in {"admin-register", "staff-register"} and not _is_active_admin(request.user):
-                is_locked = True
-                lock_reason = "Admin only access"
-                button_label = "Admin Login Required"
-                url = f"{reverse('dashboard-auth-portal')}?blocked={slug}"
-
-            # Before any admin exists, staff flows are locked.
-            if not admin_exists and slug in {"staff-register", "staff-login"}:
-                is_locked = True
-                lock_reason = "Setup Admin first"
-                button_label = "Admin Setup Required"
-                url = f"{reverse('dashboard-auth-portal')}?blocked=bootstrap"
-
             cards.append(
                 {
                     "slug": slug,
                     "title": item["title"],
                     "eyebrow": item["eyebrow"],
                     "description": item["description"],
-                    "button_label": button_label,
-                    "url": url,
-                    "is_locked": is_locked,
-                    "lock_reason": lock_reason,
+                    "button_label": item["button_label"],
+                    "url": reverse(item["url_name"]),
                 }
             )
-
-        blocked = (request.GET.get("blocked") or "").strip()
-        blocked_message = ""
-        if blocked in {"admin-register", "staff-register"}:
-            blocked_message = "Only Admin can open registration pages. Login as Admin first."
-        elif blocked == "bootstrap":
-            blocked_message = "Admin setup is required first. Staff access opens after Admin account setup."
 
         return render(
             request,
@@ -247,7 +206,6 @@ class DashboardAccessPortalView(View):
             {
                 "cards": cards,
                 "next_url": request.GET.get("next", ""),
-                "blocked_message": blocked_message,
             },
         )
 
@@ -262,17 +220,6 @@ class DashboardAuthFormView(View):
     def _form_instance(self, data=None):
         config = self._page_config()
         return config["form_class"](data=data, prefix=config["prefix"])
-
-    def _registration_allowed(self, request):
-        if self.page_key == "admin-register":
-            if not _active_admin_exists():
-                return True
-            return _is_active_admin(request.user)
-
-        if self.page_key == "staff-register":
-            return _is_active_admin(request.user)
-
-        return True
 
     def _context(self, request, form, status_code=200):
         config = self._page_config()
@@ -290,28 +237,11 @@ class DashboardAuthFormView(View):
 
     def get(self, request):
         config = self._page_config()
-
-        if config["mode"] == "login" and is_dashboard_staff(request.user):
-            return redirect(_safe_next_url(request, "/admin-dashboard/"))
-
-        if config["mode"] == "register" and not self._registration_allowed(request):
-            if is_dashboard_staff(request.user) and not _is_active_admin(request.user):
-                logout(request)
-            return redirect(f"{reverse('dashboard-auth-portal')}?blocked={self.page_key}")
-
         form = self._form_instance()
         return render(request, self.template_name, self._context(request, form))
 
     def post(self, request):
         config = self._page_config()
-
-        if config["mode"] == "login" and is_dashboard_staff(request.user):
-            return redirect(_safe_next_url(request, "/admin-dashboard/"))
-
-        if config["mode"] == "register" and not self._registration_allowed(request):
-            if is_dashboard_staff(request.user) and not _is_active_admin(request.user):
-                logout(request)
-            return redirect(f"{reverse('dashboard-auth-portal')}?blocked={self.page_key}")
 
         form = self._form_instance(data=request.POST)
         if not form.is_valid():
@@ -376,13 +306,9 @@ class DashboardLogoutView(View):
 
 class DashboardAdminBootstrapView(View):
     def get(self, request):
-        if _active_admin_exists() and not _is_active_admin(request.user):
-            return redirect(reverse("dashboard-auth-admin-login"))
         return redirect(reverse("dashboard-auth-admin-register"))
 
     def post(self, request):
-        if _active_admin_exists() and not _is_active_admin(request.user):
-            return redirect(reverse("dashboard-auth-admin-login"))
         return redirect(reverse("dashboard-auth-admin-register"))
 
 

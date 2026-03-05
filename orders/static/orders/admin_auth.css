@@ -274,17 +274,6 @@ body {
     color: #68462f;
 }
 
-.auth-card--portal-entry .portal-card--link .portal-card-lock {
-    margin: 0;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #7a3d20;
-}
-
-.auth-card--portal-entry .portal-card--link.portal-card--locked {
-    filter: saturate(0.86);
-}
-
 .auth-card--portal-entry .portal-card--link h2 {
     color: #4e2a18;
 }
