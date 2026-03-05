@@ -1346,10 +1346,6 @@ body.launch-lock {
     transition: opacity 180ms ease;
 }
 
-html.skip-launch-splash .launch-splash {
-    display: none !important;
-}
-
 .launch-splash.is-closing {
     opacity: 0;
 }

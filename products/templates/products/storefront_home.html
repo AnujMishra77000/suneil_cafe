@@ -5,26 +5,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>document.documentElement.classList.add("reveal-ready");</script>
-    <script>
-        (function () {
-            try {
-                if (window.sessionStorage.getItem("thathwamasi_launch_seen") === "1") {
-                    document.documentElement.classList.add("skip-launch-splash");
-                }
-            } catch (e) {}
-        })();
-    </script>
     <title>Thathwamasi Bakery Cafe | Home</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260305-homeintro2" />
+    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260305-homeintro3" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260304-brand17" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260304-menu14" />
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260305-fx3" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260304-bell17" />
 </head>
-<body class="has-customer-menu has-home-notification-nav skip-page-load-fx">
+<body class="has-customer-menu has-home-notification-nav launch-lock skip-page-load-fx">
     <div class="customer-menu" data-customer-menu>
         <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">
             <span class="customer-menu-toggle-icon" aria-hidden="true">&#9776;</span>
@@ -207,23 +198,8 @@
             if (!splash) return;
 
             const body = document.body;
-            const root = document.documentElement;
             const dismissMs = 1000;
             const closeMs = 1220;
-            const splashSeen = root.classList.contains("skip-launch-splash");
-
-            if (splashSeen) {
-                splash.remove();
-                body.classList.remove("launch-lock");
-                body.classList.add("launch-complete");
-                return;
-            }
-
-            body.classList.add("launch-lock");
-
-            try {
-                window.sessionStorage.setItem("thathwamasi_launch_seen", "1");
-            } catch (e) {}
 
             const launchTimer = window.setTimeout(function () {
                 splash.classList.add("is-closing");
