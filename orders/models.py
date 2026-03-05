@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+import re
 
 from products.models import Product
 from users.models import Customer
@@ -229,6 +230,7 @@ class CouponCode(models.Model):
 
 class DashboardAccountProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="dashboard_profile")
+    display_name = models.CharField(max_length=150, blank=True, default="")
     email = models.EmailField(unique=True)
     mobile_number = models.CharField(max_length=15, unique=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -238,6 +240,9 @@ class DashboardAccountProfile(models.Model):
         ordering = ["user__username"]
 
     def clean(self):
+        self.display_name = " ".join(str(self.display_name or "").strip().split())
+        if self.display_name and not re.fullmatch(r"[A-Za-z ]+", self.display_name):
+            raise ValidationError({"display_name": "Display name can contain only letters and spaces"})
         self.email = (self.email or "").strip().lower()
         digits = "".join(ch for ch in str(self.mobile_number or "") if ch.isdigit())
         if len(digits) != 10:
@@ -249,7 +254,7 @@ class DashboardAccountProfile(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.user.username} ({self.email})"
+        return f"{self.display_name or self.user.username} ({self.email})"
 
 
 class DashboardLoginActivity(models.Model):

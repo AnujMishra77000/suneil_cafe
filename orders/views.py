@@ -274,6 +274,12 @@ class AdminAnalyticsAPIView(APIView):
 class AdminDashboardView(TemplateView):
     template_name = "orders/admin_dashboard.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profile = getattr(self.request.user, "dashboard_profile", None)
+        context["dashboard_display_name"] = (getattr(profile, "display_name", "") or self.request.user.username).strip()
+        return context
+
 
 @method_decorator(staff_member_required, name="dispatch")
 class AdminPincodeManageView(TemplateView):

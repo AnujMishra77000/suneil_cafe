@@ -47,7 +47,7 @@
                         <tbody>
                             {% for row in rows %}
                             <tr>
-                                <td>{{ row.user.username }}</td>
+                                <td>{{ row.username }}</td>
                                 <td>{{ row.email }}</td>
                                 <td>{{ row.mobile_number|default:"-" }}</td>
                                 <td>{{ row.login_at|date:"Y-m-d H:i:s" }}</td>

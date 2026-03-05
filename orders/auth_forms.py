@@ -32,7 +32,7 @@ class BaseDashboardRegistrationForm(_DashboardMasterPasswordMixin, UserCreationF
         label="User Name",
         max_length=150,
         widget=forms.TextInput(attrs={"autocomplete": "username"}),
-        help_text="Use letters only (A-Z). No numbers or special symbols.",
+        help_text="Use letters and spaces only. Example: Anuj Mishra",
     )
     email = forms.EmailField(
         label="Mail ID",
@@ -81,11 +81,15 @@ class BaseDashboardRegistrationForm(_DashboardMasterPasswordMixin, UserCreationF
         return email
 
     def clean_username(self):
-        username = (self.cleaned_data.get("username") or "").strip()
-        if not username:
+        display_name = " ".join(str(self.cleaned_data.get("username") or "").strip().split())
+        if not display_name:
             raise forms.ValidationError("User Name is required.")
-        if not re.fullmatch(r"[A-Za-z]+", username):
-            raise forms.ValidationError("User Name can contain only letters (A-Z).")
+        if not re.fullmatch(r"[A-Za-z ]+", display_name):
+            raise forms.ValidationError("User Name can contain only letters and spaces.")
+
+        # Keep a clean display name while storing a backend-safe username key.
+        self.cleaned_data["display_name"] = display_name
+        username = display_name.lower().replace(" ", "_")
         if User.objects.filter(username__iexact=username).exists():
             raise forms.ValidationError("This user name is already in use.")
         return username
@@ -107,6 +111,7 @@ class BaseDashboardRegistrationForm(_DashboardMasterPasswordMixin, UserCreationF
                 user.save()
                 DashboardAccountProfile.objects.create(
                     user=user,
+                    display_name=self.cleaned_data.get("display_name", ""),
                     email=self.cleaned_data["email"],
                     mobile_number=self.cleaned_data["mobile_number"],
                 )

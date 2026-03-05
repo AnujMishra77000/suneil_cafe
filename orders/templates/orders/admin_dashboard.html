@@ -17,14 +17,14 @@
                     <p class="dashboard-eyebrow">Admin Panel</p>
                     <h1>Thathwamasi Control Center</h1>
                     <p class="dashboard-welcome">
-                        Logged in as <strong>{{ request.user.username }}</strong>
+                        Logged in as <strong>{{ dashboard_display_name }}</strong>
                         <span class="dot-sep" aria-hidden="true">&middot;</span>
                         <span class="role-pill">{% if request.user.is_superuser %}Admin{% else %}Staff{% endif %}</span>
                     </p>
                 </div>
             </div>
             <div class="dashboard-user">
-                <span class="user-row"><strong>User Name</strong><em>{{ request.user.username }}</em></span>
+                <span class="user-row"><strong>User Name</strong><em>{{ dashboard_display_name }}</em></span>
                 <span class="user-row"><strong>Role</strong><em>{% if request.user.is_superuser %}Admin{% else %}Staff{% endif %}</em></span>
                 <span class="user-row"><strong>Mail ID</strong><em>{{ request.user.email|default:"-" }}</em></span>
             </div>

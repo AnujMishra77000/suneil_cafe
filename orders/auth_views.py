@@ -311,12 +311,25 @@ class AdminStaffManageView(View):
     template_name = "orders/admin_staff_manage.html"
 
     def get(self, request):
-        rows = list(
+        activities = list(
             DashboardLoginActivity.objects.select_related("user")
             .filter(user__is_staff=True, user__is_superuser=False)
             .order_by("-login_at")
         )
-        active_count = sum(1 for row in rows if row.logout_at is None)
+        rows = []
+        for activity in activities:
+            profile = getattr(activity.user, "dashboard_profile", None)
+            rows.append(
+                {
+                    "username": (getattr(profile, "display_name", "") or activity.user.username).strip(),
+                    "email": activity.email,
+                    "mobile_number": activity.mobile_number,
+                    "login_at": activity.login_at,
+                    "logout_at": activity.logout_at,
+                }
+            )
+
+        active_count = sum(1 for row in rows if row["logout_at"] is None)
 
         return render(
             request,
