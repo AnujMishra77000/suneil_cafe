@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard Access | Thathwamasi</title>
-    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260305-auth6" />
+    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260305-auth8" />
 </head>
 <body>
     <main class="auth-shell auth-shell--wide">
@@ -20,7 +20,8 @@
 
             <section class="portal-grid portal-grid--cards">
                 {% for card in cards %}
-                <article class="portal-card portal-card--link">
+                <article class="portal-card portal-card--link portal-card--{{ card.slug }}" style="--card-index: {{ forloop.counter0 }};">
+                    <p class="portal-card__eyebrow">{{ card.eyebrow }}</p>
                     <h2>{{ card.title }}</h2>
                     <a class="btn btn-primary" href="{{ card.url }}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">{{ card.button_label }}</a>
                 </article>

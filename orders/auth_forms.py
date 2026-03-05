@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
 from django.utils.crypto import constant_time_compare
+import re
 
 from .models import DashboardAccountProfile
 
@@ -27,6 +28,12 @@ class _DashboardMasterPasswordMixin:
 
 
 class BaseDashboardRegistrationForm(_DashboardMasterPasswordMixin, UserCreationForm):
+    username = forms.CharField(
+        label="User Name",
+        max_length=150,
+        widget=forms.TextInput(attrs={"autocomplete": "username"}),
+        help_text="Use letters only (A-Z) with optional spaces.",
+    )
     email = forms.EmailField(
         label="Mail ID",
         widget=forms.EmailInput(attrs={"autocomplete": "email"}),
@@ -52,7 +59,7 @@ class BaseDashboardRegistrationForm(_DashboardMasterPasswordMixin, UserCreationF
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["username"].label = "User Name"
-        self.fields["username"].widget.attrs.update({"autocomplete": "username"})
+        self.fields["username"].widget.attrs.update({"autocomplete": "username", "placeholder": "Enter full name"})
         self.fields["password1"].label = "Password"
         self.fields["password2"].label = "Confirm Password"
 
@@ -72,6 +79,17 @@ class BaseDashboardRegistrationForm(_DashboardMasterPasswordMixin, UserCreationF
         if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("This mail ID is already in use.")
         return email
+
+    def clean_username(self):
+        username = (self.cleaned_data.get("username") or "").strip()
+        username = re.sub(r"\s+", " ", username)
+        if not username:
+            raise forms.ValidationError("User Name is required.")
+        if not re.fullmatch(r"[A-Za-z ]+", username):
+            raise forms.ValidationError("User Name can contain only letters and spaces.")
+        if User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError("This user name is already in use.")
+        return username
 
     def clean_mobile_number(self):
         mobile_number = self.normalize_mobile_number(self.cleaned_data.get("mobile_number"))
