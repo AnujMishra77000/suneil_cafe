@@ -175,6 +175,15 @@ body {
 }
 
 .quick-link {
+    --card-from: #fef5ed;
+    --card-to: #fbdcc5;
+    --card-border: rgba(126, 74, 45, 0.28);
+    --card-shadow: rgba(92, 52, 30, 0.18);
+    --card-text: #3f2417;
+    --card-muted: #5f4333;
+    --card-cta: #6f3a20;
+    --card-tag-bg: rgba(255, 255, 255, 0.74);
+    --card-tag-border: rgba(118, 72, 43, 0.26);
     position: relative;
     overflow: hidden;
     display: flex;
@@ -184,17 +193,25 @@ body {
     color: #23160f;
     min-height: 156px;
     border-radius: 16px;
-    border: 1px solid rgba(112, 66, 39, 0.2);
+    border: 1px solid var(--card-border);
+    background: linear-gradient(145deg, var(--card-from) 0%, var(--card-to) 100%);
     padding: 14px;
-    box-shadow: 0 12px 22px rgba(88, 53, 30, 0.14);
-    transition: transform 170ms ease, box-shadow 170ms ease;
+    box-shadow: 0 12px 22px var(--card-shadow);
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+    animation: dashCardIn 620ms cubic-bezier(0.2, 0.95, 0.24, 1) forwards;
+    transition: transform 220ms cubic-bezier(0.2, 0.9, 0.24, 1), box-shadow 220ms ease, filter 220ms ease;
 }
 
 .quick-link::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.06));
+    background:
+        radial-gradient(220px 140px at 15% 18%, rgba(255, 255, 255, 0.62), transparent 70%),
+        linear-gradient(120deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.26));
+    background-size: 220% 220%;
+    animation: dashSheen 12s ease-in-out infinite;
     pointer-events: none;
 }
 
@@ -212,8 +229,9 @@ body {
 }
 
 .quick-link:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 18px 28px rgba(83, 49, 28, 0.18);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 22px 36px color-mix(in srgb, var(--card-shadow) 72%, black 8%);
+    filter: saturate(1.06);
 }
 
 .quick-head,
@@ -233,7 +251,7 @@ body {
 .quick-link h2 {
     margin: 0;
     font-size: 1.2rem;
-    color: #3c1f12;
+    color: var(--card-text);
 }
 
 .quick-tag {
@@ -244,15 +262,15 @@ body {
     font-weight: 700;
     padding: 4px 9px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.64);
-    color: #5d2f1b;
-    border: 1px solid rgba(115, 67, 39, 0.25);
+    background: var(--card-tag-bg);
+    color: var(--card-text);
+    border: 1px solid var(--card-tag-border);
 }
 
 .quick-link p {
     margin: 0;
     font-size: 0.9rem;
-    color: #513628;
+    color: var(--card-muted);
 }
 
 .quick-cta {
@@ -261,19 +279,159 @@ body {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-weight: 700;
-    color: #6f3a20;
+    color: var(--card-cta);
 }
 
-.quick-link--orders { background: linear-gradient(145deg, #ffe5d8 0%, #ffd3c3 100%); }
-.quick-link--billing { background: linear-gradient(145deg, #ffe8c7 0%, #ffd6a6 100%); }
-.quick-link--analytics { background: linear-gradient(145deg, #dff6e6 0%, #c8eecf 100%); }
-.quick-link--visuals { background: linear-gradient(145deg, #d8ecff 0%, #c2dfff 100%); }
-.quick-link--products { background: linear-gradient(145deg, #ece4ff 0%, #ddd2ff 100%); }
-.quick-link--stock { background: linear-gradient(145deg, #ffe1ee 0%, #ffd0e3 100%); }
-.quick-link--ads { background: linear-gradient(145deg, #ffeacc 0%, #ffdfb0 100%); }
-.quick-link--pincode { background: linear-gradient(145deg, #e2f9f4 0%, #c8f1e7 100%); }
-.quick-link--contact { background: linear-gradient(145deg, #fff0d9 0%, #ffe5bc 100%); }
-.quick-link--activity { background: linear-gradient(145deg, #e8f2ff 0%, #d2e5ff 100%); }
+.quick-link--orders {
+    --card-from: #ffe0d7;
+    --card-to: #ffc8bc;
+    --card-border: rgba(178, 75, 57, 0.34);
+    --card-shadow: rgba(171, 73, 56, 0.2);
+    --card-text: #61251b;
+    --card-muted: #6f3d31;
+    --card-cta: #7a271d;
+    --card-tag-border: rgba(167, 69, 52, 0.32);
+}
+
+.quick-link--billing {
+    --card-from: #ffefcd;
+    --card-to: #ffd9a6;
+    --card-border: rgba(178, 117, 44, 0.34);
+    --card-shadow: rgba(168, 111, 44, 0.2);
+    --card-text: #5f3d14;
+    --card-muted: #6d542d;
+    --card-cta: #7c4a0f;
+    --card-tag-border: rgba(156, 102, 35, 0.34);
+}
+
+.quick-link--analytics {
+    --card-from: #dcf8e8;
+    --card-to: #bce8ce;
+    --card-border: rgba(39, 134, 95, 0.32);
+    --card-shadow: rgba(42, 130, 96, 0.2);
+    --card-text: #104d36;
+    --card-muted: #2c684f;
+    --card-cta: #0f5b3f;
+    --card-tag-border: rgba(38, 122, 88, 0.3);
+}
+
+.quick-link--visuals {
+    --card-from: #ddeeff;
+    --card-to: #bfdcff;
+    --card-border: rgba(47, 111, 181, 0.32);
+    --card-shadow: rgba(51, 103, 173, 0.2);
+    --card-text: #173c68;
+    --card-muted: #31567f;
+    --card-cta: #1d4f86;
+    --card-tag-border: rgba(46, 106, 174, 0.32);
+}
+
+.quick-link--products {
+    --card-from: #efe6ff;
+    --card-to: #ddceff;
+    --card-border: rgba(104, 69, 166, 0.32);
+    --card-shadow: rgba(100, 64, 160, 0.2);
+    --card-text: #3f236d;
+    --card-muted: #5a3f86;
+    --card-cta: #552c93;
+    --card-tag-border: rgba(95, 61, 153, 0.32);
+}
+
+.quick-link--stock {
+    --card-from: #ffe2ee;
+    --card-to: #ffcfe0;
+    --card-border: rgba(171, 73, 125, 0.32);
+    --card-shadow: rgba(161, 67, 117, 0.2);
+    --card-text: #661d4c;
+    --card-muted: #7b3560;
+    --card-cta: #7f1e58;
+    --card-tag-border: rgba(158, 66, 111, 0.32);
+}
+
+.quick-link--ads {
+    --card-from: #ffeccc;
+    --card-to: #ffd9a8;
+    --card-border: rgba(177, 109, 38, 0.32);
+    --card-shadow: rgba(168, 102, 34, 0.2);
+    --card-text: #61390e;
+    --card-muted: #765124;
+    --card-cta: #7f4506;
+    --card-tag-border: rgba(161, 97, 31, 0.32);
+}
+
+.quick-link--pincode {
+    --card-from: #dffaf2;
+    --card-to: #c1f0e3;
+    --card-border: rgba(40, 137, 115, 0.32);
+    --card-shadow: rgba(41, 131, 111, 0.2);
+    --card-text: #0f5344;
+    --card-muted: #2e6d5f;
+    --card-cta: #0f6653;
+    --card-tag-border: rgba(38, 125, 106, 0.32);
+}
+
+.quick-link--contact {
+    --card-from: #fff0da;
+    --card-to: #ffe2bb;
+    --card-border: rgba(182, 123, 59, 0.32);
+    --card-shadow: rgba(172, 112, 49, 0.2);
+    --card-text: #674014;
+    --card-muted: #74562e;
+    --card-cta: #88521a;
+    --card-tag-border: rgba(167, 108, 47, 0.32);
+}
+
+.quick-link--activity {
+    --card-from: #e7f2ff;
+    --card-to: #d2e5ff;
+    --card-border: rgba(58, 118, 183, 0.32);
+    --card-shadow: rgba(57, 111, 173, 0.2);
+    --card-text: #1a3f69;
+    --card-muted: #365a80;
+    --card-cta: #1d4d84;
+    --card-tag-border: rgba(52, 105, 166, 0.32);
+}
+
+.quick-cards .quick-link:nth-child(1) { animation-delay: 40ms; }
+.quick-cards .quick-link:nth-child(2) { animation-delay: 95ms; }
+.quick-cards .quick-link:nth-child(3) { animation-delay: 150ms; }
+.quick-cards .quick-link:nth-child(4) { animation-delay: 205ms; }
+.quick-cards .quick-link:nth-child(5) { animation-delay: 260ms; }
+.quick-cards .quick-link:nth-child(6) { animation-delay: 315ms; }
+.quick-cards .quick-link:nth-child(7) { animation-delay: 370ms; }
+.quick-cards .quick-link:nth-child(8) { animation-delay: 425ms; }
+.quick-cards .quick-link:nth-child(9) { animation-delay: 480ms; }
+.quick-cards .quick-link:nth-child(10) { animation-delay: 535ms; }
+
+@keyframes dashCardIn {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes dashSheen {
+    0% { background-position: 0% 20%; }
+    50% { background-position: 100% 70%; }
+    100% { background-position: 0% 20%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .quick-link {
+        opacity: 1;
+        transform: none;
+        animation: none;
+        transition: none;
+    }
+
+    .quick-link::before {
+        animation: none;
+    }
+}
 
 @media (max-width: 980px) {
     .dashboard-top {
