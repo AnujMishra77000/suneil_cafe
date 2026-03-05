@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model, login, logout
+from django.db import IntegrityError
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
@@ -14,6 +16,7 @@ from .auth_forms import (
     StaffRegistrationForm,
 )
 from .models import DashboardAccountProfile
+from .models import DashboardLoginActivity
 
 
 User = get_user_model()
@@ -121,8 +124,54 @@ def _login_dashboard_user(request, user):
 
 
 
-def _role_label(user):
-    return "Admin" if user.is_superuser else "Staff"
+def _resolved_profile_contact(user):
+    profile = getattr(user, "dashboard_profile", None)
+    email = (getattr(profile, "email", "") or user.email or "").strip().lower()
+    mobile_number = (getattr(profile, "mobile_number", "") or "").strip()
+    return email, mobile_number
+
+
+def _request_ip_address(request):
+    forwarded_for = (request.META.get("HTTP_X_FORWARDED_FOR") or "").strip()
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip() or None
+    remote_addr = (request.META.get("REMOTE_ADDR") or "").strip()
+    return remote_addr or None
+
+
+def _track_staff_login_activity(request, user):
+    if not user.is_authenticated or not user.is_staff or user.is_superuser:
+        return
+    email, mobile_number = _resolved_profile_contact(user)
+    DashboardLoginActivity.objects.create(
+        user=user,
+        email=email,
+        mobile_number=mobile_number,
+        session_key=(request.session.session_key or "").strip(),
+        ip_address=_request_ip_address(request),
+    )
+
+
+def _track_staff_logout_activity(request, user):
+    if not user.is_authenticated or not user.is_staff or user.is_superuser:
+        return
+
+    session_key = (request.session.session_key or "").strip()
+    pending_rows = DashboardLoginActivity.objects.filter(
+        user=user,
+        logout_at__isnull=True,
+    )
+
+    row = None
+    if session_key:
+        row = pending_rows.filter(session_key=session_key).order_by("-login_at").first()
+    if row is None:
+        row = pending_rows.order_by("-login_at").first()
+    if row is None:
+        return
+
+    row.logout_at = timezone.now()
+    row.save(update_fields=["logout_at"])
 
 
 class DashboardAccessPortalView(View):
@@ -197,11 +246,17 @@ class DashboardAuthFormView(View):
 
         config = self._page_config()
         if config["mode"] == "register":
-            user = form.save()
+            try:
+                user = form.save()
+            except IntegrityError:
+                form.add_error(None, "Registration could not be completed. Please try again.")
+                context = self._context(request, form, status_code=400)
+                return render(request, self.template_name, context, status=400)
         else:
             user = form.get_user()
 
         _login_dashboard_user(request, user)
+        _track_staff_login_activity(request, user)
         return redirect(_safe_next_url(request, config["success_redirect"]))
 
 
@@ -231,10 +286,15 @@ class DashboardLoginView(View):
 
 class DashboardLogoutView(View):
     def post(self, request):
+        if request.user.is_authenticated:
+            _track_staff_logout_activity(request, request.user)
         logout(request)
         return redirect(reverse("dashboard-auth-portal"))
 
     def get(self, request):
+        if request.user.is_authenticated:
+            _track_staff_logout_activity(request, request.user)
+            logout(request)
         return redirect(reverse("dashboard-auth-portal"))
 
 
@@ -251,27 +311,19 @@ class AdminStaffManageView(View):
     template_name = "orders/admin_staff_manage.html"
 
     def get(self, request):
-        users = User.objects.filter(is_staff=True).select_related("dashboard_profile").order_by("-is_superuser", "username")
-        rows = []
-        for user in users:
-            profile = getattr(user, "dashboard_profile", None)
-            rows.append(
-                {
-                    "username": user.username,
-                    "role": _role_label(user),
-                    "email": getattr(profile, "email", user.email or "-"),
-                    "mobile_number": getattr(profile, "mobile_number", "-"),
-                    "is_active": user.is_active,
-                    "last_login": user.last_login,
-                }
-            )
+        rows = list(
+            DashboardLoginActivity.objects.select_related("user")
+            .filter(user__is_staff=True, user__is_superuser=False)
+            .order_by("-login_at")
+        )
+        active_count = sum(1 for row in rows if row.logout_at is None)
 
         return render(
             request,
             self.template_name,
             {
                 "rows": rows,
-                "login_url": reverse("dashboard-auth-portal"),
-                "profile_count": DashboardAccountProfile.objects.count(),
+                "profile_count": DashboardAccountProfile.objects.filter(user__is_staff=True, user__is_superuser=False).count(),
+                "active_count": active_count,
             },
         )

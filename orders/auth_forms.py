@@ -2,6 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
+from django.db import transaction
 from django.utils.crypto import constant_time_compare
 
 from .models import DashboardAccountProfile
@@ -85,12 +86,13 @@ class BaseDashboardRegistrationForm(_DashboardMasterPasswordMixin, UserCreationF
         user.is_staff = True
         user.is_superuser = self.target_is_superuser
         if commit:
-            user.save()
-            DashboardAccountProfile.objects.create(
-                user=user,
-                email=self.cleaned_data["email"],
-                mobile_number=self.cleaned_data["mobile_number"],
-            )
+            with transaction.atomic():
+                user.save()
+                DashboardAccountProfile.objects.create(
+                    user=user,
+                    email=self.cleaned_data["email"],
+                    mobile_number=self.cleaned_data["mobile_number"],
+                )
         return user
 
 

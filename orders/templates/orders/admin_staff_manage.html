@@ -4,21 +4,20 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard Accounts | Thathwamasi Admin</title>
-    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260301-auth3" />
+    <title>Staff Login Activity | Thathwamasi Admin</title>
+    <link rel="stylesheet" href="{% static 'orders/admin_auth.css' %}?v=20260305-auth7" />
 </head>
 <body>
     <main class="auth-shell auth-shell--wide" style="padding-top:18px;padding-bottom:18px;">
         <section class="auth-card auth-card--wide">
             <div class="toolbar">
                 <div class="auth-top" style="margin-bottom:0;">
-                    <p class="auth-eyebrow">Account Directory</p>
-                    <h1>Dashboard accounts</h1>
-                    <p>Registrations and role-specific logins now happen on the dashboard access portal. This page is a read-only directory of current dashboard accounts.</p>
+                    <p class="auth-eyebrow">Staff Monitor</p>
+                    <h1>Staff Login Activity</h1>
+                    <p>Real-time login and logout records for staff dashboard users.</p>
                 </div>
                 <div class="toolbar-actions">
                     <a class="btn" href="/admin-dashboard/">Back to Dashboard</a>
-                    <a class="btn" href="{{ login_url }}">Open Access Portal</a>
                     <form method="post" action="{% url 'dashboard-auth-logout' %}" class="inline-form">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-primary">Logout</button>
@@ -26,10 +25,14 @@
                 </div>
             </div>
 
-            <div class="banner banner-info" style="margin-bottom:16px;">Total dashboard profiles with email/mobile records: <strong>{{ profile_count }}</strong></div>
+            <div class="banner banner-info" style="margin-bottom:16px;">
+                Total Staff Profiles: <strong>{{ profile_count }}</strong>
+                &nbsp;|&nbsp;
+                Active Sessions: <strong>{{ active_count }}</strong>
+            </div>
 
             <div class="card">
-                <h2>Current Dashboard Accounts</h2>
+                <h2>Staff Login / Logout Table</h2>
                 <div class="table-wrap">
                     <table>
                         <thead>
@@ -37,35 +40,27 @@
                                 <th>User Name</th>
                                 <th>Mail ID</th>
                                 <th>Mobile No.</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Last Login</th>
+                                <th>Login DateTime</th>
+                                <th>Logout DateTime</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for row in rows %}
                             <tr>
-                                <td>{{ row.username }}</td>
+                                <td>{{ row.user.username }}</td>
                                 <td>{{ row.email }}</td>
-                                <td>{{ row.mobile_number }}</td>
+                                <td>{{ row.mobile_number|default:"-" }}</td>
+                                <td>{{ row.login_at|date:"Y-m-d H:i:s" }}</td>
                                 <td>
-                                    {% if row.role == 'Admin' %}
-                                    <span class="role-pill role-admin">Admin</span>
+                                    {% if row.logout_at %}
+                                    {{ row.logout_at|date:"Y-m-d H:i:s" }}
                                     {% else %}
-                                    <span class="role-pill role-staff">Staff</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if row.is_active %}
                                     <span class="state-pill state-active">Active</span>
-                                    {% else %}
-                                    <span class="state-pill state-inactive">Inactive</span>
                                     {% endif %}
                                 </td>
-                                <td>{% if row.last_login %}{{ row.last_login|date:"Y-m-d H:i" }}{% else %}-{% endif %}</td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="6">No dashboard users found.</td></tr>
+                            <tr><td colspan="5">No staff login activity found.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>

@@ -250,3 +250,27 @@ class DashboardAccountProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} ({self.email})"
+
+
+class DashboardLoginActivity(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="dashboard_login_activities",
+    )
+    email = models.EmailField()
+    mobile_number = models.CharField(max_length=15, blank=True, default="")
+    session_key = models.CharField(max_length=64, blank=True, default="", db_index=True)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    login_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    logout_at = models.DateTimeField(blank=True, null=True, db_index=True)
+
+    class Meta:
+        ordering = ["-login_at"]
+        indexes = [
+            models.Index(fields=["user", "login_at"]),
+            models.Index(fields=["logout_at", "login_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} @ {self.login_at:%Y-%m-%d %H:%M:%S}"

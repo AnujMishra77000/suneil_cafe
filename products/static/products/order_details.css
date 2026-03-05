@@ -20,9 +20,10 @@ body {
 }
 
 .page {
-    width: min(1120px, 92vw);
-    margin: 0 auto;
-    padding: 28px 0 50px;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 24px clamp(12px, 3.2vw, 42px) 52px;
 }
 
 .topbar {
@@ -50,6 +51,7 @@ body {
     padding: 14px;
     display: grid;
     gap: 10px;
+    width: 100%;
 }
 
 .control-row {
@@ -94,6 +96,7 @@ body {
     margin-top: 16px;
     display: grid;
     gap: 12px;
+    width: 100%;
 }
 
 .order-card {
@@ -104,6 +107,7 @@ body {
     box-shadow: 0 10px 20px rgba(90, 46, 22, 0.08);
     display: grid;
     gap: 10px;
+    width: 100%;
 }
 
 .order-head {
@@ -296,8 +300,9 @@ body {
 
 @media (max-width: 640px) {
     .page {
-        width: min(100%, calc(100vw - 24px));
-        padding: 24px 0 40px;
+        width: 100%;
+        max-width: none;
+        padding: 18px 12px 38px;
     }
 
     .control-row {
