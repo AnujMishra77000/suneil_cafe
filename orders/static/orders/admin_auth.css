@@ -129,3 +129,74 @@ th{background:#f8fafc;color:#334155}
         min-height: 150px;
     }
 }
+
+/* Portal quality pass: prevent overflow + center actions */
+.auth-brand-block {
+    display: grid;
+    gap: 8px;
+    justify-items: center;
+}
+
+.auth-brand-name {
+    margin: 0;
+    font-family: "Fraunces", serif;
+    font-size: clamp(1.15rem, 2.1vw, 1.42rem);
+    line-height: 1.15;
+    color: #1f5b54;
+}
+
+.auth-card--portal-entry {
+    background: linear-gradient(180deg, #fffdfa 0%, #fff6ef 100%);
+}
+
+.auth-card--portal-entry .portal-grid--cards {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+}
+
+.auth-card--portal-entry .portal-card--link {
+    min-width: 0;
+    overflow: hidden;
+    padding: 18px 16px;
+    border-radius: 16px;
+    border-color: rgba(219, 191, 170, 0.95);
+    background: linear-gradient(180deg, #fffaf6 0%, #fff2e8 100%);
+    box-shadow: 0 12px 24px rgba(16, 24, 40, 0.08);
+}
+
+.auth-card--portal-entry .portal-card--link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px rgba(16, 24, 40, 0.11);
+}
+
+.auth-card--portal-entry .portal-card--link h2 {
+    min-width: 0;
+    margin: 0;
+    text-align: center;
+    font-size: clamp(1.1rem, 1.7vw, 1.26rem);
+    line-height: 1.28;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+.auth-card--portal-entry .portal-card--link .btn {
+    align-self: center;
+    width: min(84%, 230px);
+    min-height: 42px;
+    border-radius: 11px;
+}
+
+@media (max-width: 700px) {
+    .auth-brand-name {
+        font-size: clamp(1.05rem, 4vw, 1.24rem);
+    }
+
+    .auth-card--portal-entry .portal-card--link {
+        min-height: 154px;
+    }
+
+    .auth-card--portal-entry .portal-card--link .btn {
+        width: min(88%, 240px);
+    }
+}
