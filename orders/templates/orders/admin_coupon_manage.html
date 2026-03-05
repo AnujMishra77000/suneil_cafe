@@ -68,7 +68,7 @@
                     </div>
                 </div>
             </form>
-            <p class="hint">Examples: <strong>RESIDENT10</strong> and <strong>RMC10</strong> give 10% off. The backend reads the numeric digits at the end of the coupon code and applies that percentage to the total order subtotal.</p>
+            <p class="hint">Examples: <strong>RESIDENT10</strong> and <strong>RMC10</strong> give 10% off. The backend reads the last two trailing digits in the coupon code and applies that percentage to the total order subtotal.</p>
 
             {% if saved == "1" %}
             <div class="msg msg-ok">Coupon saved successfully.</div>

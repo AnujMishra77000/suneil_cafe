@@ -1,7 +1,7 @@
 import re
 
 
-_TRAILING_DIGITS_RE = re.compile(r"(\d{1,3})$")
+_TRAILING_DIGITS_RE = re.compile(r"(\d{2})$")
 
 
 def normalize_coupon_code(raw_value):
@@ -15,7 +15,7 @@ def extract_discount_percent(code):
 
     match = _TRAILING_DIGITS_RE.search(normalized)
     if not match:
-        raise ValueError("Coupon code must end with discount digits.")
+        raise ValueError("Coupon code must end with two discount digits.")
 
     percent = int(match.group(1))
     if percent <= 0 or percent > 100:

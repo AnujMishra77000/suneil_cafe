@@ -352,7 +352,7 @@ class AdminDeliveryContactManageView(TemplateView):
         return redirect("/admin-dashboard/delivery-contact/?saved=1")
 
 
-@method_decorator(dashboard_admin_required, name="dispatch")
+@method_decorator(staff_member_required, name="dispatch")
 class AdminCouponManageView(TemplateView):
     template_name = "orders/admin_coupon_manage.html"
 
