@@ -32,7 +32,7 @@ class BaseDashboardRegistrationForm(_DashboardMasterPasswordMixin, UserCreationF
         label="User Name",
         max_length=150,
         widget=forms.TextInput(attrs={"autocomplete": "username"}),
-        help_text="Use letters only (A-Z) with optional spaces.",
+        help_text="Use letters only (A-Z). No numbers or special symbols.",
     )
     email = forms.EmailField(
         label="Mail ID",
@@ -82,11 +82,10 @@ class BaseDashboardRegistrationForm(_DashboardMasterPasswordMixin, UserCreationF
 
     def clean_username(self):
         username = (self.cleaned_data.get("username") or "").strip()
-        username = re.sub(r"\s+", " ", username)
         if not username:
             raise forms.ValidationError("User Name is required.")
-        if not re.fullmatch(r"[A-Za-z ]+", username):
-            raise forms.ValidationError("User Name can contain only letters and spaces.")
+        if not re.fullmatch(r"[A-Za-z]+", username):
+            raise forms.ValidationError("User Name can contain only letters (A-Z).")
         if User.objects.filter(username__iexact=username).exists():
             raise forms.ValidationError("This user name is already in use.")
         return username
