@@ -29,7 +29,6 @@
                 <span class="user-row"><strong>Mail ID</strong><em>{{ request.user.email|default:"-" }}</em></span>
             </div>
             <div class="dashboard-actions">
-                <a href="/admin-dashboard/team/" class="btn btn-secondary">Accounts</a>
                 <form method="post" action="{% url 'dashboard-auth-logout' %}" class="logout-form">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-primary">Logout</button>
