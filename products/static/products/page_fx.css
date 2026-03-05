@@ -24,6 +24,20 @@ html.fx-mounted .fx-auto.is-fx-visible {
     transform: translate3d(0, 0, 0) scale(1);
 }
 
+
+html.fx-mounted body.fx-page {
+    opacity: 0.001;
+    transform: translate3d(0, 10px, 0);
+    transition:
+        opacity 380ms var(--fx-ease),
+        transform 380ms var(--fx-ease);
+}
+
+html.fx-mounted body.fx-page.fx-page-loaded {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
 html.fx-mounted [data-fx-kind="hero"],
 html.fx-mounted .fx-auto[data-fx-kind="hero"] {
     --fx-translate: calc(var(--fx-distance) + 10px);
@@ -58,7 +72,9 @@ html.fx-mounted .fx-auto[data-fx-kind="inline"] {
 
 @media (prefers-reduced-motion: reduce) {
     html.fx-mounted [data-fx],
-    html.fx-mounted .fx-auto {
+    html.fx-mounted .fx-auto,
+    html.fx-mounted body.fx-page,
+    html.fx-mounted body.fx-page.fx-page-loaded {
         opacity: 1;
         transform: none;
         transition: none;

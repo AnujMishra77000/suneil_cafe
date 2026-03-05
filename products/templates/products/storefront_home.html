@@ -9,12 +9,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260304-homeheader15" />
+    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260305-homeintro1" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260304-brand17" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260304-menu14" />
+    <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260305-fx3" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260304-bell17" />
 </head>
-<body class="has-customer-menu has-home-notification-nav">
+<body class="has-customer-menu has-home-notification-nav launch-lock skip-page-load-fx">
     <div class="customer-menu" data-customer-menu>
         <button type="button" class="customer-menu-toggle" data-menu-toggle aria-label="Open menu" aria-expanded="false">
             <span class="customer-menu-toggle-icon" aria-hidden="true">&#9776;</span>
@@ -29,6 +30,14 @@
             </button>
             <a class="customer-menu-item" href="/order-details/"><span class="customer-menu-item-label">Order Details</span></a>
         </nav>
+    </div>
+
+
+    <div class="launch-splash" id="launchSplash" aria-hidden="true">
+        <div class="launch-splash-card">
+            <p class="launch-splash-text">Welcome to</p>
+            <img class="launch-splash-logo" src="{% static 'products/images/thathwamasi-logo.png' %}" alt="Thathwamasi Bakery Cafe" />
+        </div>
     </div>
 
     <header class="hero">
@@ -161,6 +170,7 @@
             <div id="homeHistoryList" class="history-grid"></div>
         </section>
     </main>
+    <script defer src="{% static 'products/page_fx.js' %}?v=20260305-fx3"></script>
     <script src="{% static 'products/home.js' %}?v=20260304-homecarousel8"></script>
     <script src="{% static 'products/customer_menu.js' %}?v=20260304-menu14"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260304-bell17"></script>
@@ -180,6 +190,31 @@
                 },
             });
         }
+    </script>
+
+    <script>
+        (function () {
+            const splash = document.getElementById("launchSplash");
+            if (!splash) return;
+
+            const body = document.body;
+            const dismissMs = 1000;
+            const closeMs = 1220;
+
+            const launchTimer = window.setTimeout(function () {
+                splash.classList.add("is-closing");
+                body.classList.remove("launch-lock");
+            }, dismissMs);
+
+            window.setTimeout(function () {
+                splash.remove();
+                body.classList.add("launch-complete");
+            }, closeMs);
+
+            window.addEventListener("beforeunload", function () {
+                window.clearTimeout(launchTimer);
+            }, { once: true });
+        })();
     </script>
 </body>
 </html>

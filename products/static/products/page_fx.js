@@ -1,6 +1,6 @@
 (function () {
     const root = document.documentElement;
-    root.classList.add("fx-ready");
+    root.classList.add("fx-ready", "fx-mounted");
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const observed = new WeakSet();
@@ -131,7 +131,27 @@
         });
     }
 
+
+
+    function mountPageLoadFx() {
+        const body = document.body;
+        if (!body) return;
+
+        if (body.classList.contains("skip-page-load-fx") || prefersReducedMotion) {
+            body.classList.add("fx-page-loaded");
+            return;
+        }
+
+        body.classList.add("fx-page");
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                body.classList.add("fx-page-loaded");
+            });
+        });
+    }
+
     function init() {
+        mountPageLoadFx();
         hydrateStatic();
         scan(document);
 
