@@ -5,65 +5,110 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard | Thathwamasi</title>
-    <link rel="stylesheet" href="{% static 'orders/admin_dashboard.css' %}" />
+    <link rel="stylesheet" href="{% static 'orders/admin_dashboard.css' %}?v=20260305-dash2" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
 </head>
 <body>
-    <main class="wrap">
-        <header class="top">
-            <div>
-                <h1>Thathwamasi Admin Dashboard</h1>
-                <p class="top-meta">Signed in as <strong>{{ request.user.username }}</strong> · {% if request.user.is_superuser %}Admin{% else %}Staff{% endif %}</p>
+    <main class="dashboard-wrap">
+        <header class="dashboard-top">
+            <div class="dashboard-brand">
+                <img class="dashboard-brand-logo" src="{% static 'products/images/thathwamasi-logo.png' %}" alt="Thathwamasi Bakery Cafe logo" />
+                <div class="dashboard-brand-copy">
+                    <p class="dashboard-eyebrow">Admin Panel</p>
+                    <h1>Thathwamasi Control Center</h1>
+                    <p class="dashboard-welcome">
+                        Logged in as <strong>{{ request.user.username }}</strong>
+                        <span class="dot-sep" aria-hidden="true">&middot;</span>
+                        <span class="role-pill">{% if request.user.is_superuser %}Admin{% else %}Staff{% endif %}</span>
+                    </p>
+                </div>
             </div>
-            <div class="top-actions">
-                <a href="/admin-dashboard/team/" class="btn btn-light">Accounts</a>
-                <form method="post" action="{% url 'dashboard-auth-logout' %}" class="inline-form">
+            <div class="dashboard-user">
+                <span class="user-row"><strong>User Name</strong><em>{{ request.user.username }}</em></span>
+                <span class="user-row"><strong>Role</strong><em>{% if request.user.is_superuser %}Admin{% else %}Staff{% endif %}</em></span>
+                <span class="user-row"><strong>Mail ID</strong><em>{{ request.user.email|default:"-" }}</em></span>
+            </div>
+            <div class="dashboard-actions">
+                <a href="/admin-dashboard/team/" class="btn btn-secondary">Accounts</a>
+                <form method="post" action="{% url 'dashboard-auth-logout' %}" class="logout-form">
                     {% csrf_token %}
-                    <button type="submit" class="btn">Logout</button>
+                    <button type="submit" class="btn btn-primary">Logout</button>
                 </form>
             </div>
         </header>
 
-        <section class="quick-cards quick-cards--two">
-            <a class="quick-link" href="/admin-dashboard/order-details/">
-                <h2>Order Details</h2>
-                <p>Open live order detail table with customer and product fields.</p>
+        <section class="quick-cards">
+            <a class="quick-link quick-link--orders" href="/admin-dashboard/order-details/" data-mark="ORDERS">
+                <div class="quick-head">
+                    <h2>Order Details</h2>
+                    <span class="quick-tag">Orders</span>
+                </div>
+                <p>Track live customer orders.</p>
+                <span class="quick-cta">Open module</span>
             </a>
-            <a class="quick-link" href="/admin-dashboard/billing/">
-                <h2>Billing</h2>
-                <p>See all bills with product quantity, price, total and address details.</p>
+            <a class="quick-link quick-link--billing" href="/admin-dashboard/billing/" data-mark="BILLING">
+                <div class="quick-head">
+                    <h2>Billing</h2>
+                    <span class="quick-tag">Finance</span>
+                </div>
+                <p>Review bills and totals.</p>
+                <span class="quick-cta">Open module</span>
             </a>
-            <a class="quick-link" href="/admin-dashboard/analytics/">
-                <h2>Analytics</h2>
-                <p>Track total sales and category-wise performance from 6:00 AM to 11:59 PM.</p>
+            <a class="quick-link quick-link--analytics" href="/admin-dashboard/analytics/" data-mark="ANALYTICS">
+                <div class="quick-head">
+                    <h2>Analytics</h2>
+                    <span class="quick-tag">Insights</span>
+                </div>
+                <p>Track revenue and growth.</p>
+                <span class="quick-cta">Open module</span>
             </a>
-            <a class="quick-link" href="/admin-dashboard/analytics/visualization/">
-                <h2>Sales Visualization</h2>
-                <p>View pie-chart insights by section with daily, weekly, monthly and yearly toggles.</p>
+            <a class="quick-link quick-link--visuals" href="/admin-dashboard/analytics/visualization/" data-mark="CHARTS">
+                <div class="quick-head">
+                    <h2>Sales Visualization</h2>
+                    <span class="quick-tag">Charts</span>
+                </div>
+                <p>View visual sales trends.</p>
+                <span class="quick-cta">Open module</span>
             </a>
-            <a class="quick-link" href="/admin-dashboard/products/add/">
-                <h2>Add Product</h2>
-                <p>Select section, choose category, and add product details with image and stock.</p>
+            <a class="quick-link quick-link--products" href="/admin-dashboard/products/add/" data-mark="PRODUCTS">
+                <div class="quick-head">
+                    <h2>Add Product</h2>
+                    <span class="quick-tag">Catalog</span>
+                </div>
+                <p>Create products and categories.</p>
+                <span class="quick-cta">Open module</span>
             </a>
-            <a class="quick-link" href="/admin-dashboard/stock/">
-                <h2>Stock Tracker</h2>
-                <p>Track live stock by section/category/product and update quantity instantly.</p>
+            <a class="quick-link quick-link--stock" href="/admin-dashboard/stock/" data-mark="STOCK">
+                <div class="quick-head">
+                    <h2>Stock Tracker</h2>
+                    <span class="quick-tag">Inventory</span>
+                </div>
+                <p>Update stock availability fast.</p>
+                <span class="quick-cta">Open module</span>
             </a>
-            <a class="quick-link" href="/admin-dashboard/advertising/">
-                <h2>Advertising</h2>
-                <p>Add dynamic ad cards with image and stylish overlay text for homepage display.</p>
+            <a class="quick-link quick-link--ads" href="/admin-dashboard/advertising/" data-mark="ADS">
+                <div class="quick-head">
+                    <h2>Advertising</h2>
+                    <span class="quick-tag">Promotions</span>
+                </div>
+                <p>Manage home offer cards.</p>
+                <span class="quick-cta">Open module</span>
             </a>
-            <a class="quick-link" href="/admin-dashboard/pincodes/">
-                <h2>Pincode Manager</h2>
-                <p>Add and manage serviceable delivery pincodes used for order validation.</p>
+            <a class="quick-link quick-link--pincode" href="/admin-dashboard/pincodes/" data-mark="PINCODE">
+                <div class="quick-head">
+                    <h2>Pincode Manager</h2>
+                    <span class="quick-tag">Delivery</span>
+                </div>
+                <p>Control serviceable areas.</p>
+                <span class="quick-cta">Open module</span>
             </a>
-            <a class="quick-link" href="/admin-dashboard/delivery-contact/">
-                <h2>Delivery Contact</h2>
-                <p>Set the delivery boy number shown on customer receipts and success screens.</p>
-            </a>
-            <a class="quick-link" href="/admin-dashboard/coupons/">
-                <h2>Coupon Manager</h2>
-                <p>Create, activate, and deactivate coupon codes where the last two trailing digits define the discount percent.</p>
+            <a class="quick-link quick-link--contact" href="/admin-dashboard/delivery-contact/" data-mark="CONTACT">
+                <div class="quick-head">
+                    <h2>Delivery Contact</h2>
+                    <span class="quick-tag">Operations</span>
+                </div>
+                <p>Set active delivery number.</p>
+                <span class="quick-cta">Open module</span>
             </a>
         </section>
     </main>
