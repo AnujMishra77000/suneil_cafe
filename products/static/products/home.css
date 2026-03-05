@@ -1346,6 +1346,10 @@ body.launch-lock {
     transition: opacity 180ms ease;
 }
 
+html.skip-launch-splash .launch-splash {
+    display: none !important;
+}
+
 .launch-splash.is-closing {
     opacity: 0;
 }
@@ -1361,7 +1365,7 @@ body.launch-lock {
     margin: 0;
     font-family: "Fraunces", serif;
     color: #5a2e16;
-    font-size: clamp(1.2rem, 2.6vw, 1.95rem);
+    font-size: clamp(1.7rem, 4.2vw, 3.1rem);
     letter-spacing: 0.02em;
     animation: launch-fade 360ms ease both;
 }
