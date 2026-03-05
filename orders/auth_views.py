@@ -202,13 +202,24 @@ class DashboardAccessPortalView(View):
         admin_exists = _active_admin_exists()
         cards = []
         for slug, item in PORTAL_CARD_CONFIG.items():
-            # Once an admin exists, registration flows are admin-only.
-            if admin_exists and slug in {"admin-register", "staff-register"} and not _is_active_admin(request.user):
-                continue
+            is_locked = False
+            lock_reason = ""
+            button_label = item["button_label"]
+            url = reverse(item["url_name"])
 
-            # During first bootstrap, only admin registration/login should appear.
+            # Registration flows remain admin-only after bootstrap, but cards stay visible.
+            if admin_exists and slug in {"admin-register", "staff-register"} and not _is_active_admin(request.user):
+                is_locked = True
+                lock_reason = "Admin only access"
+                button_label = "Admin Login Required"
+                url = f"{reverse('dashboard-auth-portal')}?blocked={slug}"
+
+            # Before any admin exists, staff flows are locked.
             if not admin_exists and slug in {"staff-register", "staff-login"}:
-                continue
+                is_locked = True
+                lock_reason = "Setup Admin first"
+                button_label = "Admin Setup Required"
+                url = f"{reverse('dashboard-auth-portal')}?blocked=bootstrap"
 
             cards.append(
                 {
@@ -216,8 +227,10 @@ class DashboardAccessPortalView(View):
                     "title": item["title"],
                     "eyebrow": item["eyebrow"],
                     "description": item["description"],
-                    "button_label": item["button_label"],
-                    "url": reverse(item["url_name"]),
+                    "button_label": button_label,
+                    "url": url,
+                    "is_locked": is_locked,
+                    "lock_reason": lock_reason,
                 }
             )
 
@@ -225,6 +238,8 @@ class DashboardAccessPortalView(View):
         blocked_message = ""
         if blocked in {"admin-register", "staff-register"}:
             blocked_message = "Only Admin can open registration pages. Login as Admin first."
+        elif blocked == "bootstrap":
+            blocked_message = "Admin setup is required first. Staff access opens after Admin account setup."
 
         return render(
             request,
