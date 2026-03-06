@@ -474,16 +474,19 @@ class AdminBillDetailView(TemplateView):
         return context
 
 
-@method_decorator(staff_member_required, name="dispatch")
-class AdminBillThermalPrintView(TemplateView):
-    template_name = "orders/admin_bill_thermal_print.html"
+class AdminBillThermalPrintView(APIView):
+    permission_classes = [IsAdminUser]
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        bill_id = kwargs.get("bill_id")
-        context.update(AdminBillDetailView._build_bill_context(bill_id))
-        context["printed_at"] = timezone.localtime()
-        return context
+    def get(self, request, bill_id):
+        bill = get_object_or_404(
+            Bill.objects.filter(recipient_type="ADMIN").select_related("order").prefetch_related("items"),
+            id=bill_id,
+        )
+        pdf_data = _build_admin_thermal_receipt_pdf(bill)
+        filename = f"thermal_2inch_{bill.bill_number or bill.id}.pdf"
+        response = HttpResponse(pdf_data, content_type="application/pdf")
+        response["Content-Disposition"] = f'inline; filename="{filename}"'
+        return response
 
 
 def _is_cancelled_status(status_value):
@@ -1699,6 +1702,93 @@ def _build_user_receipt_pdf(bill, delivery_contact):
     y -= 16
 
     text(x, y, "This is a computer-generated receipt.", size=8, gray=0.35)
+
+    stream = "\n".join(commands).encode("latin-1", errors="replace")
+    return _build_pdf_document(stream, page_width=page_width, page_height=page_height)
+
+
+def _build_admin_thermal_receipt_pdf(bill):
+    # 58mm roll width (2-inch thermal printer) in PDF points.
+    page_width = int(round((58 / 25.4) * 72))
+    left_margin = 6
+    right_margin = 6
+    top_margin = 8
+    bottom_margin = 8
+    line_step = 10
+    content_chars = 30
+    content_width = page_width - left_margin - right_margin
+
+    rows = []
+
+    def push(text, *, size=8, bold=False):
+        rows.append({"text": str(text or ""), "size": size, "bold": bold})
+
+    def push_wrapped(text, *, size=8, bold=False, width=content_chars):
+        for line in _wrap_pdf_text(text, width=width):
+            push(line, size=size, bold=bold)
+
+    separator = "-" * content_chars
+    push("THATHWAMASI BAKERY CAFE", size=9, bold=True)
+    push("ADMIN THERMAL BILL (58mm)", size=8, bold=True)
+    push(separator, size=8)
+    push(f"Bill: {bill.bill_number}", size=8, bold=True)
+    push(f"Date: {bill.created_at.strftime('%Y-%m-%d %H:%M')}", size=8)
+    push(f"Status: {bill.order.status}", size=8)
+    push_wrapped(f"Customer: {bill.customer_name}", size=8)
+    push(f"Phone: {bill.phone}", size=8)
+    push_wrapped(f"Address: {bill.shipping_address}", size=8)
+    push(separator, size=8)
+    push("Items", size=8, bold=True)
+
+    for item in bill.items.all():
+        line_total = item.unit_price * Decimal(item.quantity)
+        push_wrapped(item.product_name, size=8, bold=True, width=content_chars)
+        push(
+            f"{item.quantity} x Rs {_money_str(item.unit_price)} = Rs {_money_str(line_total)}",
+            size=8,
+        )
+
+    push(separator, size=8)
+    push(f"Subtotal: Rs {_money_str(bill.subtotal_amount)}", size=8, bold=True)
+    if getattr(bill, "discount_amount", Decimal("0.00")) > 0:
+        push(
+            f"Discount ({bill.coupon_code} - {bill.discount_percent}%): -Rs {_money_str(bill.discount_amount)}",
+            size=8,
+            bold=True,
+        )
+    push(f"Grand Total: Rs {_money_str(bill.total_amount)}", size=9, bold=True)
+    push(separator, size=8)
+    push(f"Printed: {timezone.localtime().strftime('%Y-%m-%d %H:%M:%S')}", size=7)
+    push("This is a computer-generated bill.", size=7)
+
+    page_height = max(
+        210,
+        int(top_margin + bottom_margin + (len(rows) * line_step) + 8),
+    )
+
+    commands = []
+
+    def set_fill_gray(gray):
+        commands.append(f"{gray:.2f} {gray:.2f} {gray:.2f} rg")
+
+    def text(x, y_pos, txt, size=8, bold=False, gray=0.0):
+        font = "F2" if bold else "F1"
+        set_fill_gray(gray)
+        commands.append("BT")
+        commands.append(f"/{font} {size} Tf")
+        commands.append(f"1 0 0 1 {x:.2f} {y_pos:.2f} Tm ({_pdf_escape(txt)}) Tj")
+        commands.append("ET")
+
+    y = page_height - top_margin
+    commands.append("0.85 0.85 0.85 RG")
+    commands.append("1 w")
+    commands.append(
+        f"{left_margin:.2f} {bottom_margin:.2f} {content_width:.2f} {page_height - top_margin - bottom_margin:.2f} re S"
+    )
+
+    for row in rows:
+        text(left_margin + 3, y, row["text"], size=row["size"], bold=row["bold"])
+        y -= line_step
 
     stream = "\n".join(commands).encode("latin-1", errors="replace")
     return _build_pdf_document(stream, page_width=page_width, page_height=page_height)

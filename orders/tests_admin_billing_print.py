@@ -60,15 +60,17 @@ class AdminBillingThermalPrintTests(TestCase):
         self.client.force_login(staff_user)
         response = self.client.get(reverse("admin-bill-thermal-print", kwargs={"bill_id": self.bill.id}))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.bill.bill_number)
-        self.assertContains(response, "Thermal Receipt (2-inch / 58mm)")
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertIn(b"%PDF-1.4", response.content[:16])
+        self.assertIn(b"/MediaBox [0 0 164", response.content)
 
     def test_thermal_print_page_is_accessible_for_admin(self):
         admin_user = self._create_dashboard_user("adminone", "adminone@example.com", True)
         self.client.force_login(admin_user)
         response = self.client.get(reverse("admin-bill-thermal-print", kwargs={"bill_id": self.bill.id}))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Thathwamasi Bakery Cafe")
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertIn(b"%PDF-1.4", response.content[:16])
 
     def test_thermal_print_requires_staff_session(self):
         basic_user = User.objects.create_user(
