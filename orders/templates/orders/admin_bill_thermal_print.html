@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>3-inch Bill {{ bill.bill_number }} | Thathwamasi</title>
+    <title>2-inch Bill {{ bill.bill_number }} | Thathwamasi</title>
     <style>
         :root {
-            --paper-width: 72mm;
+            --paper-width: 54mm;
             --font-main: "Arial", sans-serif;
         }
 
@@ -62,7 +62,7 @@
             border: 1px solid #e5e7eb;
             box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
             padding: 8px 7px 10px;
-            font-size: 11px;
+            font-size: 9.8px;
         }
 
         .center {
@@ -71,27 +71,27 @@
 
         .brand {
             margin: 0;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 800;
             letter-spacing: 0.03em;
         }
 
         .sub {
             margin: 2px 0 0;
-            font-size: 10px;
+            font-size: 9px;
             color: #374151;
         }
 
         .divider {
             border-top: 1px dashed #6b7280;
-            margin: 7px 0;
+            margin: 6px 0;
         }
 
         .meta-row {
             display: flex;
             justify-content: space-between;
             gap: 6px;
-            margin: 2px 0;
+            margin: 1px 0;
         }
 
         .meta-row span:first-child {
@@ -105,8 +105,8 @@
         }
 
         .address {
-            margin-top: 4px;
-            padding: 4px;
+            margin-top: 3px;
+            padding: 3px;
             border: 1px dashed #d1d5db;
             border-radius: 4px;
             white-space: pre-wrap;
@@ -116,14 +116,14 @@
         .items-head {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 3px;
-            font-size: 10px;
+            margin-bottom: 2px;
+            font-size: 8.5px;
             color: #374151;
             font-weight: 700;
         }
 
         .item {
-            padding: 5px 0;
+            padding: 4px 0;
             border-bottom: 1px solid #f1f5f9;
         }
 
@@ -138,7 +138,7 @@
         }
 
         .item-line {
-            margin-top: 2px;
+            margin-top: 1px;
             display: flex;
             justify-content: space-between;
             gap: 6px;
@@ -146,9 +146,9 @@
         }
 
         .totals {
-            margin-top: 6px;
+            margin-top: 5px;
             display: grid;
-            gap: 3px;
+            gap: 2px;
         }
 
         .total-row {
@@ -162,22 +162,22 @@
         }
 
         .grand {
-            font-size: 12px;
+            font-size: 10.5px;
             border-top: 1px dashed #6b7280;
             padding-top: 4px;
             margin-top: 1px;
         }
 
         .foot {
-            margin-top: 7px;
+            margin-top: 6px;
             text-align: center;
-            font-size: 9px;
+            font-size: 8px;
             color: #4b5563;
         }
 
         @page {
-            size: 80mm auto;
-            margin: 2mm;
+            size: 58mm auto;
+            margin: 1.5mm;
         }
 
         @media print {
@@ -199,7 +199,7 @@
                 border: none;
                 box-shadow: none;
                 padding: 0;
-                font-size: 10.8px;
+                font-size: 9.4px;
             }
         }
     </style>
@@ -207,14 +207,14 @@
 <body>
     <div class="screen-toolbar">
         <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/">Back to Bill</a>
-        <button class="btn btn-primary" type="button" onclick="window.print()">Print 3-inch</button>
+        <button class="btn btn-primary" type="button" onclick="window.print()">Print 2-inch</button>
     </div>
 
     <main class="page">
         <section class="receipt">
             <div class="center">
                 <p class="brand">Thathwamasi Bakery Cafe</p>
-                <p class="sub">Thermal Receipt (3-inch)</p>
+                <p class="sub">Thermal Receipt (2-inch / 58mm)</p>
             </div>
 
             <div class="divider"></div>

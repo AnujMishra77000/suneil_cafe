@@ -61,7 +61,7 @@ class AdminBillingThermalPrintTests(TestCase):
         response = self.client.get(reverse("admin-bill-thermal-print", kwargs={"bill_id": self.bill.id}))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.bill.bill_number)
-        self.assertContains(response, "Thermal Receipt (3-inch)")
+        self.assertContains(response, "Thermal Receipt (2-inch / 58mm)")
 
     def test_thermal_print_page_is_accessible_for_admin(self):
         admin_user = self._create_dashboard_user("adminone", "adminone@example.com", True)
