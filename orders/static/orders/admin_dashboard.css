@@ -392,6 +392,17 @@ body {
     --card-tag-border: rgba(52, 105, 166, 0.32);
 }
 
+.quick-link--staff-register {
+    --card-from: #e7e5ff;
+    --card-to: #d4ceff;
+    --card-border: rgba(79, 61, 171, 0.34);
+    --card-shadow: rgba(77, 58, 163, 0.2);
+    --card-text: #322061;
+    --card-muted: #4a3b7f;
+    --card-cta: #3f2991;
+    --card-tag-border: rgba(74, 57, 161, 0.32);
+}
+
 .quick-cards .quick-link:nth-child(1) { animation-delay: 40ms; }
 .quick-cards .quick-link:nth-child(2) { animation-delay: 95ms; }
 .quick-cards .quick-link:nth-child(3) { animation-delay: 150ms; }
@@ -402,6 +413,7 @@ body {
 .quick-cards .quick-link:nth-child(8) { animation-delay: 425ms; }
 .quick-cards .quick-link:nth-child(9) { animation-delay: 480ms; }
 .quick-cards .quick-link:nth-child(10) { animation-delay: 535ms; }
+.quick-cards .quick-link:nth-child(11) { animation-delay: 590ms; }
 
 @keyframes dashCardIn {
     from {

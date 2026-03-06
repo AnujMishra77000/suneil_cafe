@@ -278,6 +278,7 @@ class AdminDashboardView(TemplateView):
         context = super().get_context_data(**kwargs)
         profile = getattr(self.request.user, "dashboard_profile", None)
         context["dashboard_display_name"] = (getattr(profile, "display_name", "") or self.request.user.username).strip()
+        context["is_dashboard_admin"] = bool(self.request.user.is_superuser)
         return context
 
 

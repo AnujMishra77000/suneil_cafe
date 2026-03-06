@@ -110,3 +110,45 @@ class DashboardAuthTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertContains(response, "not registered as a Staff account", status_code=400)
+
+    def test_admin_login_page_does_not_show_staff_registration_card(self):
+        response = self.client.get(reverse("dashboard-auth-admin-login"))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Open Staff Registration")
+
+    def test_staff_registration_card_visible_only_to_admin_on_dashboard(self):
+        admin_user = User.objects.create_user(
+            username="chiefadmin",
+            email="chiefadmin@example.com",
+            password="ChiefPass12345",
+            is_staff=True,
+            is_superuser=True,
+        )
+        DashboardAccountProfile.objects.create(
+            user=admin_user,
+            email="chiefadmin@example.com",
+            mobile_number="9011111111",
+        )
+        self.client.force_login(admin_user)
+        response = self.client.get(reverse("admin-dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("dashboard-auth-staff-register"))
+
+        self.client.logout()
+
+        staff_user = User.objects.create_user(
+            username="floorstaff02",
+            email="floorstaff02@example.com",
+            password="StaffPass12345",
+            is_staff=True,
+            is_superuser=False,
+        )
+        DashboardAccountProfile.objects.create(
+            user=staff_user,
+            email="floorstaff02@example.com",
+            mobile_number="9022222222",
+        )
+        self.client.force_login(staff_user)
+        response = self.client.get(reverse("admin-dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, reverse("dashboard-auth-staff-register"))

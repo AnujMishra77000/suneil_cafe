@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard | Thathwamasi</title>
-    <link rel="stylesheet" href="{% static 'orders/admin_dashboard.css' %}?v=20260305-dash4" />
+    <link rel="stylesheet" href="{% static 'orders/admin_dashboard.css' %}?v=20260306-dash5" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260224-2" />
 </head>
 <body>
@@ -117,6 +117,16 @@
                 <p>Monitor staff login/logout times.</p>
                 <span class="quick-cta">Open module</span>
             </a>
+            {% if is_dashboard_admin %}
+            <a class="quick-link quick-link--staff-register" href="{% url 'dashboard-auth-staff-register' %}" data-mark="STAFF">
+                <div class="quick-head">
+                    <h2>Staff Registration</h2>
+                    <span class="quick-tag">Accounts</span>
+                </div>
+                <p>Create new staff accounts from admin-only access.</p>
+                <span class="quick-cta">Open module</span>
+            </a>
+            {% endif %}
         </section>
     </main>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260224-2"></script>

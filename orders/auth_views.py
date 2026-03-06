@@ -234,16 +234,6 @@ class DashboardAuthFormView(View):
         if blocked == "staff-register":
             blocked_message = "Staff registration is Admin-only. Login as Admin to continue."
 
-        support_card = None
-        if self.page_key == "admin-login":
-            support_card = {
-                "title": "Staff Registration",
-                "description": "After Admin login, open this to create Staff credentials.",
-                "cta_label": "Open Staff Registration",
-                "cta_url": reverse("dashboard-auth-staff-register"),
-                "locked": not _is_active_admin(request.user),
-            }
-
         return {
             "page_title": config["title"],
             "page_eyebrow": config["eyebrow"],
@@ -255,7 +245,6 @@ class DashboardAuthFormView(View):
             "portal_url": reverse("dashboard-auth-portal"),
             "status_code": status_code,
             "blocked_message": blocked_message,
-            "support_card": support_card,
         }
 
     def get(self, request):

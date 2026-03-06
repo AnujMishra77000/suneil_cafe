@@ -28,18 +28,6 @@
             <div class="banner banner-warn">{{ blocked_message }}</div>
             {% endif %}
 
-            {% if support_card %}
-            <article class="support-card{% if support_card.locked %} support-card--locked{% endif %}">
-                <p class="support-card__eyebrow">Admin Tool</p>
-                <h2>{{ support_card.title }}</h2>
-                <p>{{ support_card.description }}</p>
-                <a class="btn btn-primary" href="{{ support_card.cta_url }}">{{ support_card.cta_label }}</a>
-                {% if support_card.locked %}
-                <small>Login as Admin first to open Staff Registration.</small>
-                {% endif %}
-            </article>
-            {% endif %}
-
             <form method="post" class="auth-form">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ next_url }}" />
