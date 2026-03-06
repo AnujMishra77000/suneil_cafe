@@ -2,6 +2,7 @@ from io import BytesIO
 from decimal import Decimal
 from datetime import datetime, time, timedelta
 from urllib.parse import urlencode
+from pathlib import Path
 import json
 import csv
 
@@ -44,6 +45,7 @@ from products.cache_utils import invalidate_catalog_cache
 from products.models import Category, Product, Section
 from users.customer_resolver import resolve_primary_customer
 from .pincode_service import normalize_pincode
+from PIL import Image
 
 
 class CreateOrderAPIView(APIView):
@@ -1465,7 +1467,11 @@ def _pdf_escape(text):
     return str(text or "").replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
 
 
-def _build_pdf_document(stream, page_width=595, page_height=842):
+def _build_pdf_document(stream, page_width=595, page_height=842, image_obj=None):
+    xobject_resource = ""
+    if image_obj:
+        xobject_resource = " /XObject << /Im1 7 0 R >>"
+
     objects = []
     objects.append(b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n")
     objects.append(b"2 0 obj\n<< /Type /Pages /Count 1 /Kids [3 0 R] >>\nendobj\n")
@@ -1473,7 +1479,7 @@ def _build_pdf_document(stream, page_width=595, page_height=842):
         (
             "3 0 obj\n"
             f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {int(page_width)} {int(page_height)}] "
-            "/Resources << /Font << /F1 4 0 R /F2 6 0 R >> >> /Contents 5 0 R >>\n"
+            f"/Resources << /Font << /F1 4 0 R /F2 6 0 R >>{xobject_resource} >> /Contents 5 0 R >>\n"
             "endobj\n"
         ).encode("ascii")
     )
@@ -1484,6 +1490,25 @@ def _build_pdf_document(stream, page_width=595, page_height=842):
         + b"\nendstream\nendobj\n"
     )
     objects.append(b"6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n")
+    if image_obj:
+        image_bytes = image_obj["bytes"]
+        image_width = int(image_obj["width"])
+        image_height = int(image_obj["height"])
+        color_space = image_obj.get("color_space", "DeviceRGB")
+        bits_per_component = int(image_obj.get("bits", 8))
+        image_filter = image_obj.get("filter", "DCTDecode")
+        objects.append(
+            (
+                "7 0 obj\n"
+                "<< /Type /XObject /Subtype /Image "
+                f"/Width {image_width} /Height {image_height} "
+                f"/ColorSpace /{color_space} /BitsPerComponent {bits_per_component} "
+                f"/Filter /{image_filter} /Length {len(image_bytes)} >>\n"
+                "stream\n"
+            ).encode("ascii")
+            + image_bytes
+            + b"\nendstream\nendobj\n"
+        )
 
     pdf = BytesIO()
     pdf.write(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")
@@ -1520,6 +1545,48 @@ def _build_simple_pdf(
     commands.append("ET")
     stream = "\n".join(commands).encode("latin-1", errors="replace")
     return _build_pdf_document(stream)
+
+
+def _load_brand_logo_monochrome_jpeg():
+    logo_path = Path(settings.BASE_DIR) / "products" / "static" / "products" / "images" / "thathwamasi-logo.png"
+    if not logo_path.exists():
+        logo_path = Path(settings.BASE_DIR) / "products" / "static" / "products" / "images" / "thathwamasi-logo.jpg"
+    if not logo_path.exists():
+        return None
+
+    try:
+        with Image.open(logo_path) as img:
+            if img.mode in ("RGBA", "LA"):
+                base = Image.new("RGB", img.size, "white")
+                base.paste(img, mask=img.split()[-1])
+                img = base
+            else:
+                img = img.convert("RGB")
+
+            max_px_width = 260
+            if img.width > max_px_width:
+                ratio = max_px_width / float(img.width)
+                resized = (max(1, int(img.width * ratio)), max(1, int(img.height * ratio)))
+                try:
+                    img = img.resize(resized, Image.Resampling.LANCZOS)
+                except AttributeError:
+                    img = img.resize(resized)
+
+            grayscale = img.convert("L")
+            monochrome = grayscale.point(lambda px: 0 if px < 170 else 255).convert("L")
+
+            image_buffer = BytesIO()
+            monochrome.save(image_buffer, format="JPEG", quality=86, optimize=True)
+            return {
+                "bytes": image_buffer.getvalue(),
+                "width": monochrome.width,
+                "height": monochrome.height,
+                "color_space": "DeviceGray",
+                "bits": 8,
+                "filter": "DCTDecode",
+            }
+    except Exception:
+        return None
 
 
 def _money_str(value):
@@ -1717,6 +1784,13 @@ def _build_admin_thermal_receipt_pdf(bill):
     line_step = 10
     content_chars = 30
     content_width = page_width - left_margin - right_margin
+    logo_image = _load_brand_logo_monochrome_jpeg()
+    logo_draw_width = 0
+    logo_draw_height = 0
+    if logo_image:
+        logo_draw_width = min(content_width - 10, 78)
+        logo_ratio = float(logo_image["height"]) / max(float(logo_image["width"]), 1.0)
+        logo_draw_height = logo_draw_width * logo_ratio
 
     rows = []
 
@@ -1728,8 +1802,6 @@ def _build_admin_thermal_receipt_pdf(bill):
             push(line, size=size, bold=bold)
 
     separator = "-" * content_chars
-    push("THATHWAMASI BAKERY CAFE", size=9, bold=True)
-    push("ADMIN THERMAL BILL (58mm)", size=8, bold=True)
     push(separator, size=8)
     push(f"Bill: {bill.bill_number}", size=8, bold=True)
     push(f"Date: {bill.created_at.strftime('%Y-%m-%d %H:%M')}", size=8)
@@ -1761,9 +1833,13 @@ def _build_admin_thermal_receipt_pdf(bill):
     push(f"Printed: {timezone.localtime().strftime('%Y-%m-%d %H:%M:%S')}", size=7)
     push("This is a computer-generated bill.", size=7)
 
+    header_block_height = 16
+    if logo_image:
+        header_block_height += int(logo_draw_height + 6)
+
     page_height = max(
         210,
-        int(top_margin + bottom_margin + (len(rows) * line_step) + 8),
+        int(top_margin + bottom_margin + header_block_height + (len(rows) * line_step) + 8),
     )
 
     commands = []
@@ -1779,6 +1855,11 @@ def _build_admin_thermal_receipt_pdf(bill):
         commands.append(f"1 0 0 1 {x:.2f} {y_pos:.2f} Tm ({_pdf_escape(txt)}) Tj")
         commands.append("ET")
 
+    def text_center(y_pos, txt, size=9, bold=True, gray=0.0):
+        approx_width = len(str(txt or "")) * size * 0.52
+        x = max(left_margin + 2, (page_width - approx_width) / 2)
+        text(x, y_pos, txt, size=size, bold=bold, gray=gray)
+
     y = page_height - top_margin
     commands.append("0.85 0.85 0.85 RG")
     commands.append("1 w")
@@ -1786,12 +1867,29 @@ def _build_admin_thermal_receipt_pdf(bill):
         f"{left_margin:.2f} {bottom_margin:.2f} {content_width:.2f} {page_height - top_margin - bottom_margin:.2f} re S"
     )
 
+    if logo_image:
+        logo_x = (page_width - logo_draw_width) / 2
+        logo_bottom = y - logo_draw_height
+        commands.append("q")
+        commands.append(f"{logo_draw_width:.2f} 0 0 {logo_draw_height:.2f} {logo_x:.2f} {logo_bottom:.2f} cm")
+        commands.append("/Im1 Do")
+        commands.append("Q")
+        y = logo_bottom - 5
+
+    text_center(y, "THATHWAMASI BAKERY CAFE", size=9, bold=True)
+    y -= 11
+
     for row in rows:
         text(left_margin + 3, y, row["text"], size=row["size"], bold=row["bold"])
         y -= line_step
 
     stream = "\n".join(commands).encode("latin-1", errors="replace")
-    return _build_pdf_document(stream, page_width=page_width, page_height=page_height)
+    return _build_pdf_document(
+        stream,
+        page_width=page_width,
+        page_height=page_height,
+        image_obj=logo_image,
+    )
 
 class UserBillPDFDownloadView(APIView):
     authentication_classes = []
