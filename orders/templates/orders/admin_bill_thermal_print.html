@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3-inch Bill {{ bill.bill_number }} | Thathwamasi</title>
+    <style>
+        :root {
+            --paper-width: 72mm;
+            --font-main: "Arial", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--font-main);
+            background: #f4f5f7;
+            color: #111;
+            line-height: 1.3;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .screen-toolbar {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            padding: 10px 8px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            color: #1f2937;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #5a2e16;
+            border-color: #5a2e16;
+            color: #fff;
+        }
+
+        .page {
+            display: grid;
+            place-items: start center;
+            padding: 10px 0 14px;
+        }
+
+        .receipt {
+            width: var(--paper-width);
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            padding: 8px 7px 10px;
+            font-size: 11px;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .brand {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+        }
+
+        .sub {
+            margin: 2px 0 0;
+            font-size: 10px;
+            color: #374151;
+        }
+
+        .divider {
+            border-top: 1px dashed #6b7280;
+            margin: 7px 0;
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 6px;
+            margin: 2px 0;
+        }
+
+        .meta-row span:first-child {
+            color: #374151;
+        }
+
+        .meta-row span:last-child {
+            text-align: right;
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        .address {
+            margin-top: 4px;
+            padding: 4px;
+            border: 1px dashed #d1d5db;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .items-head {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+            font-size: 10px;
+            color: #374151;
+            font-weight: 700;
+        }
+
+        .item {
+            padding: 5px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            margin: 0;
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        .item-line {
+            margin-top: 2px;
+            display: flex;
+            justify-content: space-between;
+            gap: 6px;
+            color: #374151;
+        }
+
+        .totals {
+            margin-top: 6px;
+            display: grid;
+            gap: 3px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .total-row strong {
+            font-weight: 800;
+        }
+
+        .grand {
+            font-size: 12px;
+            border-top: 1px dashed #6b7280;
+            padding-top: 4px;
+            margin-top: 1px;
+        }
+
+        .foot {
+            margin-top: 7px;
+            text-align: center;
+            font-size: 9px;
+            color: #4b5563;
+        }
+
+        @page {
+            size: 80mm auto;
+            margin: 2mm;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+            }
+
+            .screen-toolbar {
+                display: none;
+            }
+
+            .page {
+                padding: 0;
+                margin: 0;
+            }
+
+            .receipt {
+                width: auto;
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                font-size: 10.8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-toolbar">
+        <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/">Back to Bill</a>
+        <button class="btn btn-primary" type="button" onclick="window.print()">Print 3-inch</button>
+    </div>
+
+    <main class="page">
+        <section class="receipt">
+            <div class="center">
+                <p class="brand">Thathwamasi Bakery Cafe</p>
+                <p class="sub">Thermal Receipt (3-inch)</p>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="meta-row"><span>Bill No</span><span>{{ bill.bill_number }}</span></div>
+            <div class="meta-row"><span>Date</span><span>{{ bill.created_at|date:"Y-m-d H:i" }}</span></div>
+            <div class="meta-row"><span>Status</span><span>{% if is_cancelled %}Cancelled{% else %}{{ bill.order.status }}{% endif %}</span></div>
+            <div class="meta-row"><span>Customer</span><span>{{ bill.customer_name }}</span></div>
+            <div class="meta-row"><span>Phone</span><span>{{ bill.phone }}</span></div>
+            <div class="meta-row"><span>Qty Total</span><span>{{ total_quantity }}</span></div>
+            <div class="meta-row"><span>Coupon</span><span>{% if bill.coupon_code %}{{ bill.coupon_code }} (-{{ bill.discount_percent }}%){% else %}N/A{% endif %}</span></div>
+
+            <div class="address">{{ bill.shipping_address }}</div>
+
+            <div class="divider"></div>
+
+            <div class="items-head">
+                <span>Item Details</span>
+                <span>Amount</span>
+            </div>
+            {% for item in item_rows %}
+            <div class="item">
+                <p class="item-name">{{ item.product_name }}</p>
+                <div class="item-line">
+                    <span>{{ item.quantity }} x Rs {{ item.unit_price }}</span>
+                    <strong>Rs {{ item.line_total }}</strong>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="divider"></div>
+
+            <div class="totals">
+                <div class="total-row"><span>Subtotal</span><span>Rs {{ bill.subtotal_amount }}</span></div>
+                {% if bill.discount_amount > 0 %}
+                <div class="total-row"><span>Discount</span><span>-Rs {{ bill.discount_amount }}</span></div>
+                {% endif %}
+                <div class="total-row grand"><strong>Total</strong><strong>Rs {{ bill.total_amount }}</strong></div>
+            </div>
+
+            <div class="divider"></div>
+
+            <p class="foot">Printed: {{ printed_at|date:"Y-m-d H:i:s" }}</p>
+            <p class="foot">Thank you for serving customers with care.</p>
+        </section>
+    </main>
+
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get("autoprint") === "0") return;
+            window.setTimeout(() => window.print(), 260);
+        })();
+    </script>
+</body>
+</html>

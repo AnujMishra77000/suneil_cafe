@@ -39,6 +39,7 @@ from orders.views import (
     AdminOrderDetailsView,
     AdminBillingListView,
     AdminBillDetailView,
+    AdminBillThermalPrintView,
     AdminBillEditView,
     AdminSalesAnalyticsView,
     AdminCategorySalesDetailView,
@@ -91,6 +92,7 @@ urlpatterns = [
     path('admin-dashboard/coupons/', AdminCouponManageView.as_view(), name='admin-coupon-manage'),
     path('admin-dashboard/billing/', AdminBillingListView.as_view(), name='admin-billing-list'),
     path('admin-dashboard/billing/<int:bill_id>/', AdminBillDetailView.as_view(), name='admin-bill-detail'),
+    path('admin-dashboard/billing/<int:bill_id>/print/3inch/', AdminBillThermalPrintView.as_view(), name='admin-bill-thermal-print'),
     path('admin-dashboard/billing/<int:bill_id>/edit/', AdminBillEditView.as_view(), name='admin-bill-edit'),
     path(
         'admin-dashboard/products/add/',

@@ -445,12 +445,11 @@ class AdminBillingListView(TemplateView):
 class AdminBillDetailView(TemplateView):
     template_name = "orders/admin_bill_detail.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        bill_id = kwargs.get("bill_id")
+    @staticmethod
+    def _build_bill_context(bill_id):
         bill = get_object_or_404(
             Bill.objects.filter(recipient_type="ADMIN").select_related("order").prefetch_related("items"),
-            id=bill_id,
+            id=bill_id
         )
         item_rows = [
             {
@@ -461,9 +460,29 @@ class AdminBillDetailView(TemplateView):
             }
             for item in bill.items.all()
         ]
-        context["bill"] = bill
-        context["item_rows"] = item_rows
-        context["is_cancelled"] = _is_cancelled_status(bill.order.status)
+        return {
+            "bill": bill,
+            "item_rows": item_rows,
+            "is_cancelled": _is_cancelled_status(bill.order.status),
+            "total_quantity": sum(row["quantity"] for row in item_rows),
+        }
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        bill_id = kwargs.get("bill_id")
+        context.update(self._build_bill_context(bill_id))
+        return context
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class AdminBillThermalPrintView(TemplateView):
+    template_name = "orders/admin_bill_thermal_print.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        bill_id = kwargs.get("bill_id")
+        context.update(AdminBillDetailView._build_bill_context(bill_id))
+        context["printed_at"] = timezone.localtime()
         return context
 
 
