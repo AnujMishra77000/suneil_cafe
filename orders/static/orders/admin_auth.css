@@ -400,3 +400,126 @@ body {
         transition: none;
     }
 }
+
+/* Dashboard-auth structure pass (2026-03-06) */
+.auth-top--portal .auth-brand-logo {
+    width: clamp(138px, 12vw, 182px);
+    height: clamp(138px, 12vw, 182px);
+}
+
+.auth-top--portal .auth-brand-name {
+    font-size: clamp(1.24rem, 2.4vw, 1.68rem);
+    letter-spacing: 0.01em;
+}
+
+.auth-card--portal-entry {
+    width: min(1080px, 100%);
+}
+
+.auth-card--portal-entry .portal-grid--cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.auth-card--portal-entry .portal-card--link {
+    min-height: 196px;
+    align-items: center;
+    text-align: center;
+}
+
+.auth-card--portal-entry .portal-card--link .btn {
+    width: min(88%, 240px);
+}
+
+.auth-brand-inline {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.auth-brand-logo--form {
+    width: 78px;
+    height: 78px;
+    object-fit: contain;
+}
+
+.auth-brand-name--form {
+    margin: 0;
+    color: #1f5b54;
+    font-size: clamp(1.05rem, 2vw, 1.3rem);
+    font-weight: 700;
+}
+
+.support-card {
+    margin: 0 0 14px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(173, 133, 101, 0.4);
+    background: linear-gradient(140deg, #fff7f2 0%, #ffe8da 100%);
+    box-shadow: 0 10px 22px rgba(26, 22, 18, 0.1);
+    display: grid;
+    gap: 10px;
+}
+
+.support-card__eyebrow {
+    margin: 0;
+    color: #8a5a2b;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.support-card h2 {
+    margin: 0;
+    color: #4f2916;
+    font-size: 1.15rem;
+    line-height: 1.25;
+}
+
+.support-card p {
+    margin: 0;
+    color: #5f6470;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.support-card small {
+    color: #7b3f16;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.support-card .btn {
+    width: fit-content;
+    min-width: 220px;
+}
+
+.support-card--locked .btn {
+    opacity: 0.92;
+}
+
+@media (max-width: 1100px) {
+    .auth-card--portal-entry .portal-grid--cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .auth-card--portal-entry .portal-grid--cards {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-brand-inline {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .support-card .btn {
+        width: 100%;
+        min-width: 0;
+    }
+}

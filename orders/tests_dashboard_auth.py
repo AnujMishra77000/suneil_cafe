@@ -16,8 +16,8 @@ class DashboardAuthTests(TestCase):
         self.assertContains(response, "Admin Registration")
         self.assertContains(response, reverse("dashboard-auth-admin-register"))
         self.assertContains(response, reverse("dashboard-auth-admin-login"))
-        self.assertContains(response, reverse("dashboard-auth-staff-register"))
         self.assertContains(response, reverse("dashboard-auth-staff-login"))
+        self.assertNotContains(response, reverse("dashboard-auth-staff-register"))
 
     def test_admin_registration_creates_admin_profile(self):
         response = self.client.post(
@@ -39,7 +39,23 @@ class DashboardAuthTests(TestCase):
         self.assertEqual(profile.email, "admin@example.com")
         self.assertEqual(profile.mobile_number, "9876543210")
 
+    def test_staff_registration_requires_admin_login(self):
+        response = self.client.get(reverse("dashboard-auth-staff-register"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("dashboard-auth-admin-login"), response["Location"])
+        self.assertIn("blocked=staff-register", response["Location"])
+
     def test_staff_registration_creates_staff_profile(self):
+        admin_user = User.objects.create_user(
+            username="boss",
+            email="boss@example.com",
+            password="BossPass12345",
+            is_staff=True,
+            is_superuser=True,
+        )
+        DashboardAccountProfile.objects.create(user=admin_user, email="boss@example.com", mobile_number="9998887776")
+        self.client.force_login(admin_user)
+
         response = self.client.post(
             reverse("dashboard-auth-staff-register"),
             {

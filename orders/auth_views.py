@@ -109,6 +109,10 @@ def _safe_next_url(request, default):
     return default
 
 
+def _is_active_admin(user):
+    return bool(user and user.is_authenticated and user.is_active and user.is_staff and user.is_superuser)
+
+
 def _dashboard_session_expiry_seconds():
     from django.conf import settings
 
@@ -187,8 +191,10 @@ class DashboardAccessPortalView(View):
     template_name = "orders/admin_auth_portal.html"
 
     def get(self, request):
+        allowed_slugs = ("admin-register", "admin-login", "staff-login")
         cards = []
-        for slug, item in PORTAL_CARD_CONFIG.items():
+        for slug in allowed_slugs:
+            item = PORTAL_CARD_CONFIG[slug]
             cards.append(
                 {
                     "slug": slug,
@@ -223,6 +229,21 @@ class DashboardAuthFormView(View):
 
     def _context(self, request, form, status_code=200):
         config = self._page_config()
+        blocked = (request.GET.get("blocked") or "").strip()
+        blocked_message = ""
+        if blocked == "staff-register":
+            blocked_message = "Staff registration is Admin-only. Login as Admin to continue."
+
+        support_card = None
+        if self.page_key == "admin-login":
+            support_card = {
+                "title": "Staff Registration",
+                "description": "After Admin login, open this to create Staff credentials.",
+                "cta_label": "Open Staff Registration",
+                "cta_url": reverse("dashboard-auth-staff-register"),
+                "locked": not _is_active_admin(request.user),
+            }
+
         return {
             "page_title": config["title"],
             "page_eyebrow": config["eyebrow"],
@@ -233,15 +254,26 @@ class DashboardAuthFormView(View):
             "next_url": request.POST.get("next") or request.GET.get("next", ""),
             "portal_url": reverse("dashboard-auth-portal"),
             "status_code": status_code,
+            "blocked_message": blocked_message,
+            "support_card": support_card,
         }
 
     def get(self, request):
         config = self._page_config()
+        if self.page_key == "staff-register" and not _is_active_admin(request.user):
+            staff_register_url = reverse("dashboard-auth-staff-register")
+            admin_login_url = reverse("dashboard-auth-admin-login")
+            return redirect(f"{admin_login_url}?next={staff_register_url}&blocked=staff-register")
+
         form = self._form_instance()
         return render(request, self.template_name, self._context(request, form))
 
     def post(self, request):
         config = self._page_config()
+        if self.page_key == "staff-register" and not _is_active_admin(request.user):
+            staff_register_url = reverse("dashboard-auth-staff-register")
+            admin_login_url = reverse("dashboard-auth-admin-login")
+            return redirect(f"{admin_login_url}?next={staff_register_url}&blocked=staff-register")
 
         form = self._form_instance(data=request.POST)
         if not form.is_valid():
