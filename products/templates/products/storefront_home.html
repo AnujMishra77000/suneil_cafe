@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260307-homepro1" />
+    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260307-homepro2" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260304-brand17" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260304-menu14" />
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260305-fx3" />
@@ -40,190 +40,139 @@
         </div>
     </div>
 
-    <header class="hero">
-        <nav class="topbar container scroll-reveal">
-            <div class="site-lockup site-lockup--hero">
-                <img class="site-logo site-logo--hero" src="{% static 'products/images/thathwamasi-logo.png' %}" alt="Thathwamasi Bakery Cafe logo" />
-                <div class="site-copy">
-                    <h1 class="site-title">Thathwamasi Bakery Cafe</h1>
-                </div>
-            </div>
-        </nav>
-
-        <section class="home-search-strip container scroll-reveal">
-            <form class="home-search" id="homeSearchForm" action="/bakery/" method="get">
-                <span class="home-search-icon" aria-hidden="true">⌕</span>
-                <label class="sr-only" for="homeSearchInput">Search for cakes, breads and snacks</label>
-                <input
-                    id="homeSearchInput"
-                    type="search"
-                    name="q"
-                    placeholder="Search for cakes, breads, and treats..."
-                    autocomplete="off"
-                />
-                <button type="submit">Search</button>
-            </form>
-        </section>
-
-        <section class="home-promo-grid container scroll-reveal">
-            {% for ad in ads|slice:":2" %}
-            <article class="home-promo-card">
-                <img src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="eager" decoding="async" draggable="false" />
-                <div class="home-promo-overlay">
-                    <h3>{{ ad.title }}</h3>
-                    {% if ad.cta_url %}
-                    <a href="{{ ad.cta_url|default:'#' }}">{{ ad.cta_label|default:'Shop now' }}</a>
-                    {% endif %}
-                </div>
-            </article>
-            {% empty %}
-            <article class="home-promo-card home-promo-card--empty">
-                <div class="home-promo-overlay">
-                    <h3>Fresh bakery deals</h3>
-                </div>
-            </article>
-            <article class="home-promo-card home-promo-card--empty">
-                <div class="home-promo-overlay">
-                    <h3>Daily snack specials</h3>
-                </div>
-            </article>
-            {% endfor %}
-        </section>
-
-        <section class="carousel-wrap container scroll-reveal">
-            <div class="carousel" id="heroCarousel">
-                <div class="slide active">
-                    <img class="slide-bg" src="{% static 'products/images/hero/cr1.jpg' %}" alt="Fresh Bakery Every Morning" />
-                    <div class="overlay">
-                        <div class="overlay-copy">
-                            <span class="overlay-eyebrow">Freshly baked today</span>
-                            <h2>Fresh Bakery Every Morning</h2>
-                            <p>Handcrafted breads, cakes and warm bites delivered fast.</p>
-                            <a class="overlay-cta" href="/bakery/">Explore now</a>
-                        </div>
+    <div class="home-app-shell">
+        <header class="hero container">
+            <nav class="topbar scroll-reveal">
+                <div class="site-lockup site-lockup--hero">
+                    <img class="site-logo site-logo--hero" src="{% static 'products/images/thathwamasi-logo.png' %}" alt="Thathwamasi Bakery Cafe logo" />
+                    <div class="site-copy">
+                        <h1 class="site-title">Thathwamasi Bakery Cafe</h1>
                     </div>
                 </div>
-                <div class="slide">
-                    <img class="slide-bg" src="{% static 'products/images/hero/cr5.jpg' %}" alt="Hot Snacks, Fast Delivery" />
-                    <div class="overlay">
-                        <div class="overlay-copy">
-                            <span class="overlay-eyebrow">Quick delivery picks</span>
-                            <h2>Hot Snacks, Fast Delivery</h2>
-                            <p>Freshly packed snacks with consistent quality every time.</p>
-                            <a class="overlay-cta" href="/snacks/">Order snacks</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="slide">
-                    <img class="slide-bg" src="{% static 'products/images/hero/cr6.jpg' %}" alt="Daily Special Combos" />
-                    <div class="overlay">
-                        <div class="overlay-copy">
-                            <span class="overlay-eyebrow">Value combos</span>
-                            <h2>Daily Special Combos</h2>
-                            <p>Smart combos for family tea-time and office breaks.</p>
-                            <a class="overlay-cta" href="/bakery/">See combos</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="slide">
-                    <img class="slide-bg" src="{% static 'products/images/hero/cr4.jpg' %}" alt="Family Pack Offers" />
-                    <div class="overlay">
-                        <div class="overlay-copy">
-                            <span class="overlay-eyebrow">Family favourites</span>
-                            <h2>Family Pack Offers</h2>
-                            <p>Best value packs curated for your everyday cravings.</p>
-                            <a class="overlay-cta" href="/bakery/">View offers</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="slide">
-                    <img class="slide-bg" src="{% static 'products/images/hero/cr3.jpg' %}" alt="Premium Taste, Better Prices" />
-                    <div class="overlay">
-                        <div class="overlay-copy">
-                            <span class="overlay-eyebrow">Premium everyday taste</span>
-                            <h2>Premium Taste, Better Prices</h2>
-                            <p>Top-quality bakery and snacks at affordable prices.</p>
-                            <a class="overlay-cta" href="/bakery/">Start ordering</a>
-                        </div>
-                    </div>
-                </div>
-                <button type="button" class="carousel-nav prev" id="heroPrev" aria-label="Previous slide">‹</button>
-                <button type="button" class="carousel-nav next" id="heroNext" aria-label="Next slide">›</button>
-            </div>
-            <div class="dots" id="carouselDots"></div>
-        </section>
-    </header>
+                <span class="home-location-pill" aria-hidden="true">⌖</span>
+            </nav>
 
-    <main class="container">
-        <section class="category-spotlight scroll-reveal">
-            <div class="section-head">
-                <h2>Bakery Categories</h2>
-                <a id="homeCategorySeeAll" href="/bakery/">See all</a>
-            </div>
-            <div id="homeCategoryGrid" class="category-grid">
-                <article class="category-tile category-tile--placeholder">
-                    <span>Fresh category cards loading...</span>
-                </article>
-            </div>
-        </section>
+            <section class="home-search-strip scroll-reveal">
+                <form class="home-search" id="homeSearchForm" action="/bakery/" method="get">
+                    <span class="home-search-icon" aria-hidden="true">⌕</span>
+                    <label class="sr-only" for="homeSearchInput">Search for cakes, breads and snacks</label>
+                    <input
+                        id="homeSearchInput"
+                        type="search"
+                        name="q"
+                        placeholder="Search for cakes, breads, and treats..."
+                        autocomplete="off"
+                    />
+                    <button type="submit">Search</button>
+                </form>
+            </section>
 
-        <section class="sections scroll-reveal">
-            <a href="/bakery/" class="section-card bakery scroll-reveal">
-                <div>
-                    <h3>Bakery</h3>
-                    <p>Cakes, biscuits, breads, cookies and more.</p>
-                </div>
-                <span>Explore</span>
-            </a>
-            <a href="/snacks/" class="section-card snacks scroll-reveal">
-                <div>
-                    <h3>Snacks</h3>
-                    <p>Namkeen, chips, mixtures and tasty quick bites.</p>
-                </div>
-                <span>Explore</span>
-            </a>
-        </section>
-
-        <section class="ad-strip scroll-reveal">
-            <div class="ad-head scroll-reveal">
-                <h2>Offers & Highlights</h2>
-                <p>Fresh picks from Thathwamasi Bakery Cafe</p>
-            </div>
-            <div class="ad-grid">
-                {% for ad in ads %}
-                <article class="ad-card scroll-reveal">
-                    <div class="ad-media">
-                        <img class="ad-media-img" src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="eager" decoding="async" fetchpriority="high" draggable="false" />
+            <section class="home-section-switch scroll-reveal" aria-label="Main sections">
+                <a href="/bakery/" class="home-section-card home-section-card--bakery">
+                    <div class="home-section-card-copy">
+                        <h2>Bakery</h2>
+                        <p>Fresh breads, cakes and pastries</p>
                     </div>
-                    <div class="ad-overlay">
+                    <span>Open</span>
+                </a>
+                <a href="/snacks/" class="home-section-card home-section-card--snacks">
+                    <div class="home-section-card-copy">
+                        <h2>Snacks</h2>
+                        <p>Crispy bites and quick treats</p>
+                    </div>
+                    <span>Open</span>
+                </a>
+            </section>
+
+            <section class="home-promo-grid scroll-reveal">
+                {% for ad in ads|slice:":2" %}
+                <article class="home-promo-card">
+                    <img src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="eager" decoding="async" draggable="false" />
+                    <div class="home-promo-overlay">
                         <h3>{{ ad.title }}</h3>
-                        {% if ad.subtitle %}<p>{{ ad.subtitle }}</p>{% endif %}
                         {% if ad.cta_url %}
-                        <a href="{{ ad.cta_url|default:'#' }}">{{ ad.cta_label|default:'Explore' }}</a>
+                        <a href="{{ ad.cta_url|default:'#' }}">{{ ad.cta_label|default:'Shop now' }}</a>
                         {% endif %}
                     </div>
                 </article>
                 {% empty %}
-                <article class="ad-card ad-card--empty scroll-reveal">
-                    <div class="ad-overlay">
-                        <h3>New Deals Coming Soon</h3>
-                        <p>Add cards from Admin Dashboard -> Advertising.</p>
+                <article class="home-promo-card home-promo-card--empty">
+                    <div class="home-promo-overlay">
+                        <h3>Trending Bakery</h3>
+                        <a href="/bakery/">Shop now</a>
+                    </div>
+                </article>
+                <article class="home-promo-card home-promo-card--empty">
+                    <div class="home-promo-overlay">
+                        <h3>Flash Snacks</h3>
+                        <a href="/snacks/">Shop now</a>
                     </div>
                 </article>
                 {% endfor %}
-            </div>
-        </section>
+            </section>
+        </header>
 
-        <section id="homeHistory" class="history-home hidden scroll-reveal">
-            <div class="history-head">
-                <h2>Your Previous Orders</h2>
-                <p id="homeHistoryPhone"></p>
-            </div>
-            <div id="homeHistoryList" class="history-grid"></div>
-        </section>
-    </main>
+        <main class="home-content container">
+            <section class="category-spotlight scroll-reveal">
+                <div class="section-head">
+                    <h2>Bakery Categories</h2>
+                    <a id="homeCategorySeeAll" href="/bakery/">See all</a>
+                </div>
+                <div id="homeCategoryGrid" class="category-grid">
+                    <article class="category-tile category-tile--placeholder">
+                        <span>Fresh category cards loading...</span>
+                    </article>
+                </div>
+            </section>
+
+            <section class="ad-strip scroll-reveal">
+                <div class="ad-head">
+                    <h2>Offers & Highlights</h2>
+                    <p>Fresh picks from Thathwamasi Bakery Cafe</p>
+                </div>
+                <div class="ad-grid">
+                    {% for ad in ads %}
+                    <article class="ad-card scroll-reveal">
+                        <div class="ad-media">
+                            <img class="ad-media-img" src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="eager" decoding="async" fetchpriority="high" draggable="false" />
+                        </div>
+                        <div class="ad-overlay">
+                            <h3>{{ ad.title }}</h3>
+                            {% if ad.subtitle %}<p>{{ ad.subtitle }}</p>{% endif %}
+                            {% if ad.cta_url %}
+                            <a href="{{ ad.cta_url|default:'#' }}">{{ ad.cta_label|default:'Explore' }}</a>
+                            {% endif %}
+                        </div>
+                    </article>
+                    {% empty %}
+                    <article class="ad-card ad-card--empty scroll-reveal">
+                        <div class="ad-overlay">
+                            <h3>New Deals Coming Soon</h3>
+                            <p>Add cards from Admin Dashboard -> Advertising.</p>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section id="homeHistory" class="history-home hidden scroll-reveal">
+                <div class="history-head">
+                    <h2>Your Previous Orders</h2>
+                    <p id="homeHistoryPhone"></p>
+                </div>
+                <div id="homeHistoryList" class="history-grid"></div>
+            </section>
+        </main>
+    </div>
+
+    <nav class="home-bottom-dock" aria-label="Quick links">
+        <a class="active" href="/" aria-current="page">Home</a>
+        <a href="/bakery/">Search</a>
+        <a href="/order-details/">Orders</a>
+        <a href="/profile/">Profile</a>
+    </nav>
     <script defer src="{% static 'products/page_fx.js' %}?v=20260305-fx3"></script>
-    <script src="{% static 'products/home.js' %}?v=20260307-homepro1"></script>
+    <script src="{% static 'products/home.js' %}?v=20260307-homepro2"></script>
     <script src="{% static 'products/customer_menu.js' %}?v=20260304-menu14"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260304-bell17"></script>
     <script>
