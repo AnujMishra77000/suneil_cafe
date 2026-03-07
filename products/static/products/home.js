@@ -6,6 +6,8 @@ const heroCarousel = document.getElementById("heroCarousel");
 const homeHistoryEl = document.getElementById("homeHistory");
 const homeHistoryListEl = document.getElementById("homeHistoryList");
 const homeHistoryPhoneEl = document.getElementById("homeHistoryPhone");
+const homeCategoryGridEl = document.getElementById("homeCategoryGrid");
+const homeCategorySeeAllEl = document.getElementById("homeCategorySeeAll");
 let current = 0;
 let autoplayId = null;
 let touchStartX = 0;
@@ -213,6 +215,71 @@ async function apiGet(url) {
     return data;
 }
 
+function normalizeSectionName(section) {
+    const value = String(section || "").trim().toLowerCase();
+    if (value === "backery") return "bakery";
+    if (value === "snack") return "snacks";
+    return value || "bakery";
+}
+
+function buildCategoryCardMarkup(item) {
+    const id = Number(item?.id || 0);
+    const name = String(item?.name || "Category").trim();
+    const section = normalizeSectionName(item?.section);
+    const image = String(item?.image || "").trim();
+    const safeName = name.replace(/[&<>"']/g, (token) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;",
+    })[token]);
+    const href = `/${section}/category/${id}/`;
+    const bgStyle = image ? ` style="background-image:url('${image}');"` : "";
+    return `
+        <a class="category-tile scroll-reveal" href="${href}" aria-label="Open ${safeName} category"${bgStyle}>
+            <span>${safeName}</span>
+        </a>
+    `;
+}
+
+async function loadCategoryHighlights() {
+    if (!homeCategoryGridEl) return;
+
+    try {
+        const [bakery, snacks] = await Promise.all([
+            apiGet("/api/products/category-cards/?section=bakery").catch(() => []),
+            apiGet("/api/products/category-cards/?section=snacks").catch(() => []),
+        ]);
+
+        const bakeryCards = Array.isArray(bakery) ? bakery : [];
+        const snacksCards = Array.isArray(snacks) ? snacks : [];
+        const cards = [...bakeryCards, ...snacksCards].slice(0, 4);
+        if (!cards.length) {
+            homeCategoryGridEl.innerHTML = `
+                <article class="category-tile category-tile--placeholder">
+                    <span>Fresh handmade categories coming soon.</span>
+                </article>
+            `;
+            return;
+        }
+
+        homeCategoryGridEl.innerHTML = cards.map(buildCategoryCardMarkup).join("");
+        registerScrollReveal(homeCategoryGridEl.querySelectorAll(".category-tile.scroll-reveal"));
+
+        const firstSection = normalizeSectionName(cards[0]?.section || "bakery");
+        if (homeCategorySeeAllEl) {
+            homeCategorySeeAllEl.setAttribute("href", `/${firstSection}/`);
+        }
+    } catch (err) {
+        homeCategoryGridEl.innerHTML = `
+            <article class="category-tile category-tile--placeholder">
+                <span>Fresh handmade categories coming soon.</span>
+            </article>
+        `;
+    }
+}
+
 function renderHomeHistory(phone, orders) {
     if (!orders.length) {
         homeHistoryEl.classList.add("hidden");
@@ -250,6 +317,7 @@ async function loadHomeHistory() {
 }
 
 loadHomeHistory();
+loadCategoryHighlights();
 
 let revealObserver = null;
 let revealIndex = 0;
