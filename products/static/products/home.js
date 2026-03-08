@@ -3,6 +3,12 @@ const dotsWrap = document.getElementById("carouselDots");
 const prevBtn = document.getElementById("heroPrev");
 const nextBtn = document.getElementById("heroNext");
 const heroCarousel = document.getElementById("heroCarousel");
+const offersSwiperRoot = document.querySelector("[data-offers-swiper]");
+const offersViewport = offersSwiperRoot?.querySelector("[data-offers-viewport]");
+const offersTrack = offersSwiperRoot?.querySelector("[data-offers-track]");
+const offersPrevBtn = offersSwiperRoot?.querySelector("[data-offers-prev]");
+const offersNextBtn = offersSwiperRoot?.querySelector("[data-offers-next]");
+const offersDotsWrap = offersSwiperRoot?.querySelector("[data-offers-dots]");
 const homeHistoryEl = document.getElementById("homeHistory");
 const homeHistoryListEl = document.getElementById("homeHistoryList");
 const homeHistoryPhoneEl = document.getElementById("homeHistoryPhone");
@@ -15,6 +21,8 @@ let trackingSwipe = false;
 let mouseSwipePointerId = null;
 const AUTOPLAY_MS = 4200;
 const SWIPE_THRESHOLD = 42;
+const OFFERS_AUTOPLAY_MS = 3600;
+const OFFERS_SWIPE_THRESHOLD = 36;
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function isInteractiveCarouselTarget(target) {
@@ -199,6 +207,128 @@ if (slides.length) {
     wireMouseSwipe();
     wireKeyboardNavigation();
 }
+
+function initOffersSwiper() {
+    if (!offersSwiperRoot || !offersViewport || !offersTrack) return;
+
+    const offerSlides = Array.from(offersTrack.querySelectorAll(".offer-slide"));
+    if (!offerSlides.length) return;
+
+    let offerIndex = 0;
+    let offerAutoplayId = null;
+    let offerTouchStartX = 0;
+    let offerTouchDeltaX = 0;
+    let offerTrackingSwipe = false;
+    const hasMultipleSlides = offerSlides.length > 1;
+
+    offersSwiperRoot.classList.toggle("is-single", !hasMultipleSlides);
+
+    function renderOfferDots() {
+        if (!offersDotsWrap) return;
+        offersDotsWrap.innerHTML = "";
+        if (!hasMultipleSlides) return;
+        offerSlides.forEach((_, index) => {
+            const dot = document.createElement("button");
+            dot.type = "button";
+            dot.ariaLabel = `Go to offer ${index + 1}`;
+            if (index === offerIndex) dot.classList.add("active");
+            dot.addEventListener("click", () => goToOffer(index));
+            offersDotsWrap.appendChild(dot);
+        });
+    }
+
+    function renderOffers() {
+        offersTrack.style.transform = `translate3d(-${offerIndex * 100}%, 0, 0)`;
+        renderOfferDots();
+    }
+
+    function stopOfferAutoplay() {
+        if (!offerAutoplayId) return;
+        clearInterval(offerAutoplayId);
+        offerAutoplayId = null;
+    }
+
+    function startOfferAutoplay() {
+        stopOfferAutoplay();
+        if (!hasMultipleSlides || prefersReducedMotion) return;
+        offerAutoplayId = setInterval(() => {
+            offerIndex = (offerIndex + 1) % offerSlides.length;
+            renderOffers();
+        }, OFFERS_AUTOPLAY_MS);
+    }
+
+    function goToOffer(index) {
+        if (!hasMultipleSlides) return;
+        offerIndex = (index + offerSlides.length) % offerSlides.length;
+        renderOffers();
+        startOfferAutoplay();
+    }
+
+    function onOfferSwipeStart(point) {
+        offerTouchStartX = point.clientX;
+        offerTouchDeltaX = 0;
+        offerTrackingSwipe = true;
+        stopOfferAutoplay();
+    }
+
+    function onOfferSwipeMove(point) {
+        if (!offerTrackingSwipe) return;
+        offerTouchDeltaX = point.clientX - offerTouchStartX;
+    }
+
+    function onOfferSwipeEnd() {
+        if (!offerTrackingSwipe) return;
+        if (Math.abs(offerTouchDeltaX) >= OFFERS_SWIPE_THRESHOLD) {
+            if (offerTouchDeltaX < 0) {
+                goToOffer(offerIndex + 1);
+            } else {
+                goToOffer(offerIndex - 1);
+            }
+        } else {
+            startOfferAutoplay();
+        }
+        offerTrackingSwipe = false;
+        offerTouchStartX = 0;
+        offerTouchDeltaX = 0;
+    }
+
+    offersPrevBtn?.addEventListener("click", () => goToOffer(offerIndex - 1));
+    offersNextBtn?.addEventListener("click", () => goToOffer(offerIndex + 1));
+
+    if (hasMultipleSlides) {
+        offersSwiperRoot.addEventListener("mouseenter", stopOfferAutoplay);
+        offersSwiperRoot.addEventListener("mouseleave", startOfferAutoplay);
+
+        offersViewport.addEventListener("touchstart", (event) => {
+            if (!event.touches.length) return;
+            onOfferSwipeStart(event.touches[0]);
+        }, { passive: true });
+
+        offersViewport.addEventListener("touchmove", (event) => {
+            if (!event.touches.length) return;
+            onOfferSwipeMove(event.touches[0]);
+        }, { passive: true });
+
+        offersViewport.addEventListener("touchend", onOfferSwipeEnd);
+        offersViewport.addEventListener("touchcancel", () => {
+            offerTrackingSwipe = false;
+            startOfferAutoplay();
+        });
+    }
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            stopOfferAutoplay();
+        } else {
+            startOfferAutoplay();
+        }
+    });
+
+    renderOffers();
+    startOfferAutoplay();
+}
+
+initOffersSwiper();
 
 async function apiGet(url) {
     const res = await fetch(url);

@@ -458,9 +458,19 @@ body {
     box-shadow: var(--shadow-md);
     position: relative;
     overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     transform: translateY(10px);
     opacity: 0;
     animation: fade-up 500ms ease forwards;
+}
+
+.section-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(16, 10, 7, 0.68) 0%, rgba(16, 10, 7, 0.3) 56%, rgba(16, 10, 7, 0.12) 100%);
 }
 
 .section-card::after {
@@ -474,6 +484,12 @@ body {
     background: rgba(255, 255, 255, 0.25);
 }
 
+.section-card > div,
+.section-card > span {
+    position: relative;
+    z-index: 1;
+}
+
 .section-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 18px 34px rgba(56, 27, 12, 0.18);
@@ -483,16 +499,19 @@ body {
     margin: 0;
     font-size: 34px;
     font-family: "Fraunces", serif;
+    color: #fff8f0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
 
 .section-card p {
     margin: 10px 0 0;
-    color: #664f41;
+    color: rgba(255, 243, 233, 0.95);
+    text-shadow: 0 1px 7px rgba(0, 0, 0, 0.32);
 }
 
 .section-card span {
-    background: var(--brand-700);
-    color: #fff;
+    background: rgba(255, 246, 236, 0.94);
+    color: #5a2e16;
     padding: 9px 15px;
     border-radius: 999px;
     font-weight: 700;
@@ -501,11 +520,15 @@ body {
 }
 
 .bakery {
-    background: linear-gradient(160deg, #fff9f2, #ffe7d4 60%, #ffdabb);
+    background-image:
+        linear-gradient(160deg, rgba(15, 10, 7, 0.6), rgba(15, 10, 7, 0.24) 62%, rgba(15, 10, 7, 0.12)),
+        url("/static/products/images/sections/bakery-card.jpg");
 }
 
 .snacks {
-    background: linear-gradient(160deg, #fff6ed, #f8dcc5 58%, #f4cba9);
+    background-image:
+        linear-gradient(160deg, rgba(15, 10, 7, 0.6), rgba(15, 10, 7, 0.24) 62%, rgba(15, 10, 7, 0.12)),
+        url("/static/products/images/sections/snacks-card.jpg");
 }
 
 .hidden {
@@ -1231,10 +1254,11 @@ body {
 .has-customer-menu .topbar {
     justify-content: flex-start;
     align-items: center;
+    flex-wrap: nowrap;
     min-height: 120px;
     padding-left: 0;
     padding-right: 74px;
-    gap: 0;
+    gap: 12px;
 }
 
 .topbar .site-lockup--hero {
@@ -1242,87 +1266,681 @@ body {
     max-width: min(620px, calc(100vw - 120px));
 }
 
+.home-brand-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1 1 auto;
+    max-width: none;
+}
+
 .topbar .site-copy {
     gap: 6px;
     max-width: min(520px, calc(100vw - 170px));
 }
 
+.home-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding-left: 12px;
+    margin-left: 0;
+    border-left: 1px solid rgba(101, 72, 48, 0.2);
+    min-width: 190px;
+    max-width: 340px;
+    flex: 0 1 340px;
+}
+
+.home-location-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #885126;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(111, 60, 31, 0.2);
+    box-shadow: 0 4px 12px rgba(50, 27, 14, 0.08);
+    flex: 0 0 auto;
+}
+
+.home-location-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.home-location-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.05;
+}
+
+.home-location-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #8d6a52;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.home-location-value {
+    font-size: 1.03rem;
+    font-weight: 700;
+    color: #2f1c13;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-search {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 1 clamp(230px, 30vw, 380px);
+    min-width: 190px;
+    height: 52px;
+    padding: 0 14px;
+    border: 1px solid rgba(95, 53, 29, 0.2);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 10px 24px rgba(62, 31, 16, 0.08);
+    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.home-search-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+.home-search input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    border-radius: 999px;
+    padding: 0 4px;
+    font: 500 1rem/1.2 "Sora", sans-serif;
+    color: #472b1d;
+    background: transparent;
+}
+
+.home-search input::placeholder {
+    color: #9b7a62;
+}
+
+.home-search input:focus {
+    outline: none;
+}
+
+.home-search:focus-within {
+    border-color: rgba(111, 60, 31, 0.44);
+    box-shadow: 0 12px 28px rgba(62, 31, 16, 0.13);
+    background: #fffdfb;
+}
+
+.home-search-submit {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    border: none;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: #6f3c1f;
+    background: rgba(247, 233, 219, 0.65);
+    border: 1px solid rgba(111, 60, 31, 0.16);
+    cursor: pointer;
+}
+
+.home-search-submit svg {
+    width: 18px;
+    height: 18px;
+}
+
+.home-search-submit:hover {
+    background: rgba(243, 221, 198, 0.9);
+}
+
 @media (max-width: 860px) {
-    .topbar {
-        align-items: flex-start;
+    .topbar,
+    .has-customer-menu .topbar {
+        min-height: 108px;
+        gap: 10px;
+        padding-right: 70px;
+    }
+
+    .topbar .site-copy {
+        max-width: min(250px, 34vw);
+    }
+
+    .home-brand-row {
+        gap: 9px;
+    }
+
+    .home-location {
+        min-width: 165px;
+        max-width: 250px;
+        padding-left: 10px;
+    }
+
+    .home-search {
+        flex: 0 1 clamp(200px, 30vw, 320px);
+        min-width: 170px;
+        height: 48px;
+    }
+
+    .home-search input {
+        font-size: 0.92rem;
     }
 }
 
 @media (max-width: 760px) {
     .topbar,
     .has-customer-menu .topbar {
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(130px, 36vw);
+        grid-template-areas:
+            "brand brand"
+            "location search";
         align-items: center;
-        min-height: 94px;
-        padding-top: 0;
-        padding-left: 0;
-        padding-right: 66px;
-        gap: 0;
+        min-height: auto;
+        padding: 10px 66px 10px 10px;
+        gap: 8px;
+        border-radius: 16px;
+        border: 1px solid rgba(140, 106, 80, 0.18);
+        background: rgba(255, 252, 248, 0.72);
+        box-shadow: 0 10px 24px rgba(62, 31, 16, 0.09);
+        backdrop-filter: blur(8px);
+    }
+
+    .home-brand-row {
+        display: contents;
     }
 
     .topbar .site-lockup--hero {
-        gap: 12px;
-        max-width: calc(100vw - 92px);
+        grid-area: brand;
+        gap: 8px;
+        max-width: none;
+    }
+
+    .topbar .site-logo--hero {
+        width: 70px;
+        height: 70px;
     }
 
     .topbar .site-copy {
-        max-width: calc(100vw - 150px);
+        max-width: min(170px, 28vw);
+    }
+
+    .home-location {
+        grid-area: location;
+        width: fit-content;
+        min-width: 0;
+        max-width: min(100%, 240px);
+        padding-left: 0;
+        margin-left: 0;
+        border-left: none;
+        background: rgba(255, 246, 236, 0.85);
+        border: 1px solid rgba(204, 168, 139, 0.32);
+        border-radius: 10px;
+        padding: 6px 8px;
+        gap: 5px;
+        justify-self: start;
+        align-self: center;
+    }
+
+    .home-location-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .home-location-icon svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .home-location-label {
+        font-size: 0.62rem;
+    }
+
+    .home-location-value {
+        font-size: 0.78rem;
     }
 
     .topbar .site-title {
-        font-size: clamp(1.24rem, 4.6vw, 1.8rem);
+        font-size: clamp(1rem, 2.8vw, 1.24rem);
+        line-height: 1.02;
+    }
+
+    .home-search {
+        grid-area: search;
+        flex: 0 1 clamp(172px, 31vw, 246px);
+        min-width: 130px;
+        margin-left: 0;
+        height: 46px;
+        padding: 0 9px;
+        gap: 6px;
+        align-self: center;
+        justify-self: end;
+    }
+
+    .home-search-submit {
+        width: 24px;
+        height: 24px;
+    }
+
+    .home-search-submit svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .home-search input {
+        font-size: 0.82rem;
+        padding: 0 2px;
     }
 }
 
 @media (max-width: 480px) {
     .topbar,
     .has-customer-menu .topbar {
-        min-height: 84px;
-        padding-top: 0;
-        padding-left: 0;
-        padding-right: 60px;
-        gap: 0;
+        grid-template-columns: minmax(0, 1fr) minmax(112px, 42vw);
+        grid-template-areas:
+            "brand brand"
+            "location search";
+        min-height: auto;
+        padding: 8px 58px 8px 8px;
+        gap: 7px;
+        border-radius: 14px;
     }
 
     .topbar .site-lockup--hero {
-        gap: 8px;
+        gap: 6px;
         align-items: center;
-        max-width: calc(100vw - 74px);
+        max-width: none;
+    }
+
+    .topbar .site-logo--hero {
+        width: 58px;
+        height: 58px;
     }
 
     .topbar .site-copy {
-        max-width: calc(100vw - 130px);
+        max-width: 120px;
+    }
+
+    .home-location {
+        grid-area: location;
+        width: fit-content;
+        min-width: 0;
+        max-width: min(100%, 220px);
+        padding-left: 0;
+        border-left: none;
+        padding: 5px 7px;
+        gap: 4px;
+        justify-self: start;
+    }
+
+    .home-location-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .home-location-icon svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .home-location-label {
+        font-size: 0.54rem;
+    }
+
+    .home-location-value {
+        font-size: 0.7rem;
     }
 
     .topbar .site-title {
-        font-size: clamp(1.08rem, 5vw, 1.32rem);
+        font-size: clamp(0.84rem, 3.5vw, 0.98rem);
         line-height: 1.06;
+    }
+
+    .home-search {
+        grid-area: search;
+        justify-self: end;
+        width: auto;
+        flex: 0 1 auto;
+        min-width: 112px;
+        height: 42px;
+        padding: 0 8px;
+        gap: 5px;
+    }
+
+    .home-search-submit {
+        width: 20px;
+        height: 20px;
+    }
+
+    .home-search-submit svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .home-search input {
+        font-size: 0.76rem;
     }
 }
 
 @media (max-width: 380px) {
     .topbar,
     .has-customer-menu .topbar {
-        min-height: 80px;
-        padding-top: 0;
-        padding-right: 56px;
+        min-height: auto;
+        grid-template-columns: minmax(0, 1fr) minmax(96px, 41vw);
+        padding-right: 54px;
     }
 
     .topbar .site-lockup--hero {
-        max-width: calc(100vw - 68px);
+        max-width: none;
+    }
+
+    .topbar .site-logo--hero {
+        width: 52px;
+        height: 52px;
     }
 
     .topbar .site-copy {
-        max-width: calc(100vw - 118px);
+        max-width: 104px;
     }
 
     .topbar .site-title {
-        font-size: clamp(0.98rem, 4.8vw, 1.14rem);
+        font-size: clamp(0.78rem, 3.6vw, 0.9rem);
+    }
+
+    .home-location {
+        grid-area: location;
+        width: fit-content;
+        min-width: 0;
+        max-width: min(100%, 200px);
+        padding-left: 0;
+        border-left: none;
+        justify-self: start;
+    }
+
+    .home-location-label {
+        font-size: 0.5rem;
+    }
+
+    .home-location-value {
+        font-size: 0.64rem;
+    }
+
+    .home-search {
+        grid-area: search;
+        width: auto;
+        min-width: 96px;
+        height: 40px;
+    }
+
+    .home-search input {
+        font-size: 0.68rem;
+    }
+
+    .home-search-submit {
+        width: 18px;
+        height: 18px;
+    }
+
+    .home-search-submit svg {
+        width: 11px;
+        height: 11px;
+    }
+}
+
+/* Keep Bakery/Snacks cards side-by-side on small screens */
+@media (max-width: 760px) {
+    .sections {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin: 22px auto 34px;
+    }
+
+    .section-card {
+        min-height: 148px;
+        padding: 14px;
+        border-radius: 16px;
+    }
+
+    .section-card::after {
+        width: 92px;
+        height: 92px;
+        right: -18px;
+        top: -18px;
+    }
+
+    .section-card h3 {
+        font-size: clamp(1.16rem, 4.3vw, 1.5rem);
+    }
+
+    .section-card span {
+        padding: 7px 11px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .sections {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin: 20px auto 28px;
+    }
+
+    .section-card {
+        min-height: 132px;
+        padding: 12px;
+    }
+
+    .section-card h3 {
+        font-size: clamp(1rem, 4.5vw, 1.2rem);
+    }
+
+    .section-card span {
+        padding: 6px 9px;
+        font-size: 0.74rem;
+    }
+}
+
+/* Offers swiper */
+.offers-swiper {
+    position: relative;
+}
+
+.offers-viewport {
+    overflow: hidden;
+    border-radius: 18px;
+}
+
+.offers-track {
+    display: flex;
+    transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+}
+
+.offer-slide {
+    min-width: 100%;
+    padding: 0;
+}
+
+.offer-card {
+    position: relative;
+    min-height: clamp(200px, 27vw, 280px);
+    border-radius: 18px;
+    overflow: hidden;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    background: #5a2e16;
+    box-shadow: 0 18px 32px rgba(43, 22, 12, 0.2);
+}
+
+.offer-media,
+.offer-media-img {
+    width: 100%;
+    height: 100%;
+}
+
+.offer-media-img {
+    object-fit: cover;
+    display: block;
+    transition: transform 420ms ease;
+}
+
+.offer-overlay {
+    position: absolute;
+    inset: 0;
+    padding: clamp(14px, 2.2vw, 20px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 8px;
+    color: #fff;
+    background: linear-gradient(180deg, rgba(22, 10, 6, 0.06) 0%, rgba(22, 10, 6, 0.78) 76%);
+}
+
+.offer-overlay h3 {
+    margin: 0;
+    font-size: clamp(1.1rem, 2.3vw, 1.58rem);
+    line-height: 1.08;
+}
+
+.offer-overlay p {
+    margin: 0;
+    font-size: clamp(0.78rem, 1.3vw, 0.95rem);
+    opacity: 0.96;
+}
+
+.offer-chip {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 11px;
+    border-radius: 999px;
+    background: rgba(255, 250, 244, 0.96);
+    color: #4a2413;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.offer-card--empty {
+    background: linear-gradient(160deg, #6d3b20, #b06b3c 56%, #d99f75);
+}
+
+.offers-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 247, 237, 0.94);
+    color: #5a2e16;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 10px 16px rgba(43, 22, 12, 0.2);
+}
+
+.offers-nav--prev {
+    left: 10px;
+}
+
+.offers-nav--next {
+    right: 10px;
+}
+
+.offers-dots {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.offers-dots button {
+    width: 8px;
+    height: 8px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(90, 46, 22, 0.24);
+    cursor: pointer;
+    transition: width 180ms ease, background-color 180ms ease;
+}
+
+.offers-dots button.active {
+    width: 24px;
+    background: #6f3c1f;
+}
+
+.offers-swiper.is-single .offers-nav,
+.offers-swiper.is-single .offers-dots {
+    display: none;
+}
+
+.offer-card:hover .offer-media-img,
+.offer-card:focus-visible .offer-media-img {
+    transform: scale(1.04);
+}
+
+@media (max-width: 760px) {
+    .offer-card {
+        min-height: 210px;
+        border-radius: 16px;
+    }
+
+    .offers-nav {
+        width: 32px;
+        height: 32px;
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .offer-card {
+        min-height: 194px;
+    }
+
+    .offer-overlay {
+        padding: 12px;
+    }
+
+    .offer-overlay h3 {
+        font-size: 1.04rem;
+    }
+
+    .offer-overlay p {
+        font-size: 0.78rem;
+    }
+
+    .offers-nav {
+        width: 30px;
+        height: 30px;
+        font-size: 18px;
     }
 }
 

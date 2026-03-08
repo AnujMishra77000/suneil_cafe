@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snacks Coming Soon | Thathwamasi Bakery Cafe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'products/snacks_coming_soon.css' %}?v=20260308-snacks1" />
+</head>
+<body class="snacks-coming-page">
+    <div class="snacks-bg" aria-hidden="true"></div>
+    <div class="snacks-overlay" aria-hidden="true"></div>
+
+    <header class="coming-topbar">
+        <a href="/" class="brand-link" aria-label="Go to home">
+            <img src="{% static 'products/images/thathwamasi-logo.png' %}" alt="Thathwamasi Bakery Cafe logo" />
+            <span>Thathwamasi Bakery Cafe</span>
+        </a>
+        <a href="/" class="home-btn">Home</a>
+    </header>
+
+    <main class="coming-stage">
+        <section class="coming-card">
+            <p class="kicker">Snacks Section Update</p>
+            <h1 class="floating-title">Tawa Is Getting Ready</h1>
+            <p class="subtitle">Fresh South Indian snacks will be live in a few days. We are seasoning the menu for the perfect launch.</p>
+            <div class="cta-row">
+                <a href="/" class="cta cta-primary">Continue Shopping</a>
+                <a href="/bakery/" class="cta cta-secondary">Explore Bakery</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

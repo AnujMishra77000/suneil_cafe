@@ -51,6 +51,7 @@ from products.views import (
     StorefrontHomeView,
     StorefrontSectionView,
     StorefrontCategoryView,
+    SnacksComingSoonView,
     BillingPageView,
     CustomerProfilePageView,
     CustomerOrderDetailsPageView,
@@ -149,6 +150,7 @@ urlpatterns = [
         {'section_name': 'bakery'},
         name='storefront-backery-category'
     ),
+    path('snacks/', SnacksComingSoonView.as_view(), name='snacks-coming-soon'),
     path('<str:section_name>/category/<int:category_id>/', StorefrontCategoryView.as_view(), name='storefront-category'),
     path('backery/', StorefrontSectionView.as_view(), {'section_name': 'bakery'}, name='storefront-backery'),
     path('<str:section_name>/', StorefrontSectionView.as_view(), name='storefront-section'),

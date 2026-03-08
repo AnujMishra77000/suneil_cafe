@@ -132,6 +132,10 @@ class StorefrontCategoryView(TemplateView):
         return context
 
 
+class SnacksComingSoonView(TemplateView):
+    template_name = "products/snacks_coming_soon.html"
+
+
 class BillingPageView(TemplateView):
     template_name = "products/billing.html"
 
