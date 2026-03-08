@@ -215,30 +215,50 @@ function initOffersSwiper() {
     if (!offerSlides.length) return;
 
     let offerIndex = 0;
+    let offerMaxIndex = 0;
+    let offerStep = 0;
     let offerAutoplayId = null;
     let offerTouchStartX = 0;
     let offerTouchDeltaX = 0;
     let offerTrackingSwipe = false;
-    const hasMultipleSlides = offerSlides.length > 1;
-
-    offersSwiperRoot.classList.toggle("is-single", !hasMultipleSlides);
+    let hasMultipleSteps = false;
 
     function renderOfferDots() {
         if (!offersDotsWrap) return;
         offersDotsWrap.innerHTML = "";
-        if (!hasMultipleSlides) return;
-        offerSlides.forEach((_, index) => {
+        if (!hasMultipleSteps) return;
+        for (let index = 0; index <= offerMaxIndex; index += 1) {
             const dot = document.createElement("button");
             dot.type = "button";
             dot.ariaLabel = `Go to offer ${index + 1}`;
             if (index === offerIndex) dot.classList.add("active");
             dot.addEventListener("click", () => goToOffer(index));
             offersDotsWrap.appendChild(dot);
-        });
+        }
+    }
+
+    function computeOfferMetrics() {
+        const firstSlide = offerSlides[0];
+        if (!firstSlide) return;
+        const slideRect = firstSlide.getBoundingClientRect();
+        const trackStyles = window.getComputedStyle(offersTrack);
+        const gap = Number.parseFloat(trackStyles.columnGap || trackStyles.gap || "0") || 0;
+        const viewportWidth = offersViewport.getBoundingClientRect().width;
+
+        offerStep = slideRect.width + gap;
+        const visibleCount = offerStep > 0 ? Math.max(1, Math.floor((viewportWidth + gap) / offerStep)) : 1;
+        offerMaxIndex = Math.max(0, offerSlides.length - visibleCount);
+        hasMultipleSteps = offerMaxIndex > 0;
+        offersSwiperRoot.classList.toggle("is-single", !hasMultipleSteps);
+
+        if (offerIndex > offerMaxIndex) {
+            offerIndex = offerMaxIndex;
+        }
     }
 
     function renderOffers() {
-        offersTrack.style.transform = `translate3d(-${offerIndex * 100}%, 0, 0)`;
+        const translateX = offerStep > 0 ? offerIndex * offerStep : 0;
+        offersTrack.style.transform = `translate3d(-${translateX}px, 0, 0)`;
         renderOfferDots();
     }
 
@@ -250,16 +270,22 @@ function initOffersSwiper() {
 
     function startOfferAutoplay() {
         stopOfferAutoplay();
-        if (!hasMultipleSlides || prefersReducedMotion) return;
+        if (!hasMultipleSteps || prefersReducedMotion) return;
         offerAutoplayId = setInterval(() => {
-            offerIndex = (offerIndex + 1) % offerSlides.length;
+            offerIndex = offerIndex >= offerMaxIndex ? 0 : offerIndex + 1;
             renderOffers();
         }, OFFERS_AUTOPLAY_MS);
     }
 
     function goToOffer(index) {
-        if (!hasMultipleSlides) return;
-        offerIndex = (index + offerSlides.length) % offerSlides.length;
+        if (!hasMultipleSteps) return;
+        if (index > offerMaxIndex) {
+            offerIndex = 0;
+        } else if (index < 0) {
+            offerIndex = offerMaxIndex;
+        } else {
+            offerIndex = index;
+        }
         renderOffers();
         startOfferAutoplay();
     }
@@ -295,25 +321,36 @@ function initOffersSwiper() {
     offersPrevBtn?.addEventListener("click", () => goToOffer(offerIndex - 1));
     offersNextBtn?.addEventListener("click", () => goToOffer(offerIndex + 1));
 
-    if (hasMultipleSlides) {
-        offersSwiperRoot.addEventListener("mouseenter", stopOfferAutoplay);
-        offersSwiperRoot.addEventListener("mouseleave", startOfferAutoplay);
+    offersSwiperRoot.addEventListener("mouseenter", stopOfferAutoplay);
+    offersSwiperRoot.addEventListener("mouseleave", startOfferAutoplay);
 
-        offersViewport.addEventListener("touchstart", (event) => {
-            if (!event.touches.length) return;
-            onOfferSwipeStart(event.touches[0]);
-        }, { passive: true });
+    offersViewport.addEventListener("touchstart", (event) => {
+        if (!hasMultipleSteps || !event.touches.length) return;
+        onOfferSwipeStart(event.touches[0]);
+    }, { passive: true });
 
-        offersViewport.addEventListener("touchmove", (event) => {
-            if (!event.touches.length) return;
-            onOfferSwipeMove(event.touches[0]);
-        }, { passive: true });
+    offersViewport.addEventListener("touchmove", (event) => {
+        if (!hasMultipleSteps || !event.touches.length) return;
+        onOfferSwipeMove(event.touches[0]);
+    }, { passive: true });
 
-        offersViewport.addEventListener("touchend", onOfferSwipeEnd);
-        offersViewport.addEventListener("touchcancel", () => {
-            offerTrackingSwipe = false;
-            startOfferAutoplay();
-        });
+    offersViewport.addEventListener("touchend", onOfferSwipeEnd);
+    offersViewport.addEventListener("touchcancel", () => {
+        offerTrackingSwipe = false;
+        startOfferAutoplay();
+    });
+
+    const reflowOffers = () => {
+        computeOfferMetrics();
+        renderOffers();
+        startOfferAutoplay();
+    };
+
+    if ("ResizeObserver" in window) {
+        const resizeObserver = new ResizeObserver(reflowOffers);
+        resizeObserver.observe(offersViewport);
+    } else {
+        window.addEventListener("resize", reflowOffers);
     }
 
     document.addEventListener("visibilitychange", () => {
@@ -324,6 +361,7 @@ function initOffersSwiper() {
         }
     });
 
+    computeOfferMetrics();
     renderOffers();
     startOfferAutoplay();
 }

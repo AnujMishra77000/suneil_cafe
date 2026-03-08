@@ -1452,7 +1452,7 @@ body {
     .topbar,
     .has-customer-menu .topbar {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(130px, 36vw);
+        grid-template-columns: minmax(0, 1fr) minmax(128px, 154px);
         grid-template-areas:
             "brand brand"
             "location search";
@@ -1488,9 +1488,9 @@ body {
 
     .home-location {
         grid-area: location;
-        width: fit-content;
+        width: 100%;
         min-width: 0;
-        max-width: min(100%, 240px);
+        max-width: 100%;
         padding-left: 0;
         margin-left: 0;
         border-left: none;
@@ -1499,7 +1499,7 @@ body {
         border-radius: 10px;
         padding: 6px 8px;
         gap: 5px;
-        justify-self: start;
+        justify-self: stretch;
         align-self: center;
     }
 
@@ -1528,14 +1528,15 @@ body {
 
     .home-search {
         grid-area: search;
-        flex: 0 1 clamp(172px, 31vw, 246px);
-        min-width: 130px;
+        width: 100%;
+        min-width: 0;
+        flex: 1 1 auto;
         margin-left: 0;
         height: 46px;
         padding: 0 9px;
         gap: 6px;
         align-self: center;
-        justify-self: end;
+        justify-self: stretch;
     }
 
     .home-search-submit {
@@ -1557,7 +1558,7 @@ body {
 @media (max-width: 480px) {
     .topbar,
     .has-customer-menu .topbar {
-        grid-template-columns: minmax(0, 1fr) minmax(112px, 42vw);
+        grid-template-columns: minmax(0, 1fr) minmax(112px, 132px);
         grid-template-areas:
             "brand brand"
             "location search";
@@ -1584,14 +1585,14 @@ body {
 
     .home-location {
         grid-area: location;
-        width: fit-content;
+        width: 100%;
         min-width: 0;
-        max-width: min(100%, 220px);
+        max-width: 100%;
         padding-left: 0;
         border-left: none;
         padding: 5px 7px;
         gap: 4px;
-        justify-self: start;
+        justify-self: stretch;
     }
 
     .home-location-icon {
@@ -1619,10 +1620,10 @@ body {
 
     .home-search {
         grid-area: search;
-        justify-self: end;
-        width: auto;
-        flex: 0 1 auto;
-        min-width: 112px;
+        justify-self: stretch;
+        width: 100%;
+        flex: 1 1 auto;
+        min-width: 0;
         height: 42px;
         padding: 0 8px;
         gap: 5px;
@@ -1647,7 +1648,7 @@ body {
     .topbar,
     .has-customer-menu .topbar {
         min-height: auto;
-        grid-template-columns: minmax(0, 1fr) minmax(96px, 41vw);
+        grid-template-columns: minmax(0, 1fr) minmax(104px, 118px);
         padding-right: 54px;
     }
 
@@ -1670,12 +1671,12 @@ body {
 
     .home-location {
         grid-area: location;
-        width: fit-content;
+        width: 100%;
         min-width: 0;
-        max-width: min(100%, 200px);
+        max-width: 100%;
         padding-left: 0;
         border-left: none;
-        justify-self: start;
+        justify-self: stretch;
     }
 
     .home-location-label {
@@ -1688,8 +1689,8 @@ body {
 
     .home-search {
         grid-area: search;
-        width: auto;
-        min-width: 96px;
+        width: 100%;
+        min-width: 0;
         height: 40px;
     }
 
@@ -1764,6 +1765,8 @@ body {
 /* Offers swiper */
 .offers-swiper {
     position: relative;
+    --offers-gap: 10px;
+    --offers-columns: 3;
 }
 
 .offers-viewport {
@@ -1773,18 +1776,20 @@ body {
 
 .offers-track {
     display: flex;
+    gap: var(--offers-gap);
     transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform;
 }
 
 .offer-slide {
-    min-width: 100%;
+    flex: 0 0 calc((100% - (var(--offers-gap) * (var(--offers-columns) - 1))) / var(--offers-columns));
+    min-width: 0;
     padding: 0;
 }
 
 .offer-card {
     position: relative;
-    min-height: clamp(200px, 27vw, 280px);
+    min-height: 168px;
     border-radius: 18px;
     overflow: hidden;
     display: block;
@@ -1814,20 +1819,20 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 6px;
     color: #fff;
     background: linear-gradient(180deg, rgba(22, 10, 6, 0.06) 0%, rgba(22, 10, 6, 0.78) 76%);
 }
 
 .offer-overlay h3 {
     margin: 0;
-    font-size: clamp(1.1rem, 2.3vw, 1.58rem);
+    font-size: clamp(0.9rem, 1.3vw, 1.05rem);
     line-height: 1.08;
 }
 
 .offer-overlay p {
     margin: 0;
-    font-size: clamp(0.78rem, 1.3vw, 0.95rem);
+    font-size: clamp(0.7rem, 1vw, 0.82rem);
     opacity: 0.96;
 }
 
@@ -1836,12 +1841,12 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 30px;
-    padding: 0 11px;
+    min-height: 26px;
+    padding: 0 9px;
     border-radius: 999px;
     background: rgba(255, 250, 244, 0.96);
     color: #4a2413;
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 800;
 }
 
@@ -1908,8 +1913,13 @@ body {
 }
 
 @media (max-width: 760px) {
+    .offers-swiper {
+        --offers-columns: 2;
+        --offers-gap: 10px;
+    }
+
     .offer-card {
-        min-height: 210px;
+        min-height: 148px;
         border-radius: 16px;
     }
 
@@ -1921,20 +1931,25 @@ body {
 }
 
 @media (max-width: 480px) {
+    .offers-swiper {
+        --offers-columns: 2;
+        --offers-gap: 8px;
+    }
+
     .offer-card {
-        min-height: 194px;
+        min-height: 136px;
     }
 
     .offer-overlay {
-        padding: 12px;
+        padding: 10px;
     }
 
     .offer-overlay h3 {
-        font-size: 1.04rem;
+        font-size: 0.88rem;
     }
 
     .offer-overlay p {
-        font-size: 0.78rem;
+        font-size: 0.66rem;
     }
 
     .offers-nav {
