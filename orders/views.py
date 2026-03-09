@@ -1862,7 +1862,7 @@ def _build_admin_thermal_receipt_pdf(bill):
     push(f"Printed: {timezone.localtime().strftime('%Y-%m-%d %H:%M:%S')}", size=7)
     push("This is a computer-generated bill.", size=7)
 
-    header_block_height = 16
+    header_block_height = 22
     if logo_image:
         header_block_height += int(logo_draw_height + 6)
 
@@ -1885,9 +1885,13 @@ def _build_admin_thermal_receipt_pdf(bill):
         commands.append("ET")
 
     def text_center(y_pos, txt, size=9, bold=True, gray=0.0):
-        approx_width = len(str(txt or "")) * size * 0.52
-        x = max(left_margin + 2, (page_width - approx_width) / 2)
-        text(x, y_pos, txt, size=size, bold=bold, gray=gray)
+        label = str(txt or "")
+        width_factor = 0.56 if bold else 0.50
+        approx_width = len(label) * size * width_factor
+        box_x = left_margin + 3
+        box_width = content_width - 6
+        x = box_x + max((box_width - approx_width) / 2, 0)
+        text(x, y_pos, label, size=size, bold=bold, gray=gray)
 
     y = page_height - top_margin
     commands.append("0.85 0.85 0.85 RG")
@@ -1897,7 +1901,7 @@ def _build_admin_thermal_receipt_pdf(bill):
     )
 
     if logo_image:
-        logo_x = (page_width - logo_draw_width) / 2
+        logo_x = left_margin + ((content_width - logo_draw_width) / 2)
         logo_bottom = y - logo_draw_height
         commands.append("q")
         commands.append(f"{logo_draw_width:.2f} 0 0 {logo_draw_height:.2f} {logo_x:.2f} {logo_bottom:.2f} cm")
@@ -1905,8 +1909,10 @@ def _build_admin_thermal_receipt_pdf(bill):
         commands.append("Q")
         y = logo_bottom - 5
 
-    text_center(y, "THATHWAMASI BAKERY CAFE", size=9, bold=True)
-    y -= 11
+    text_center(y, "THATHWAMASI", size=9, bold=True)
+    y -= 10
+    text_center(y, "BAKERY CAFE", size=8, bold=True)
+    y -= 10
 
     for row in rows:
         text(left_margin + 3, y, row["text"], size=row["size"], bold=row["bold"])
