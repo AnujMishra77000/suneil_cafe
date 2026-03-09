@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260309-homehdr22" />
+    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260309-homehdr24" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260309-brand20" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260309-menu15" />
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260305-fx3" />
@@ -158,6 +158,40 @@
                 </div>
                 <span>Explore</span>
             </a>
+        </section>
+
+        <section class="top-choice-strip scroll-reveal">
+            <div class="top-choice-head scroll-reveal">
+                <h2>Top Customer's Choice in Bakery</h2>
+                <a href="/bakery/" class="top-choice-see-all">See All</a>
+            </div>
+            <div class="top-choice-grid">
+                {% for product in top_bakery_choices %}
+                <a href="{{ product.buy_url }}" class="top-choice-card scroll-reveal" aria-label="Open {{ product.name }} product page">
+                    <span class="top-choice-media" aria-hidden="true">
+                        {% if product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" />
+                        {% else %}
+                        <span class="top-choice-fallback">{{ product.name|slice:":1"|upper }}</span>
+                        {% endif %}
+                    </span>
+                    <span class="top-choice-content">
+                        <strong>{{ product.name }}</strong>
+                    </span>
+                </a>
+                {% empty %}
+                {% for _ in "1234"|make_list %}
+                <a href="/bakery/" class="top-choice-card top-choice-card--fallback scroll-reveal" aria-label="Open bakery products">
+                    <span class="top-choice-media" aria-hidden="true">
+                        <span class="top-choice-fallback">B</span>
+                    </span>
+                    <span class="top-choice-content">
+                        <strong>Bakery Product</strong>
+                    </span>
+                </a>
+                {% endfor %}
+                {% endfor %}
+            </div>
         </section>
 
         <section class="ad-strip scroll-reveal">
