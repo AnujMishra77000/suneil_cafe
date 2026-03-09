@@ -56,6 +56,11 @@ class CouponFlowTests(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["subtotal_price"], "100.00")
+        self.assertEqual(response.data["coupon_code"], "RMC10")
+        self.assertEqual(response.data["discount_percent"], 10)
+        self.assertEqual(response.data["discount_amount"], "10.00")
+        self.assertEqual(response.data["total_price"], "90.00")
 
         order = Order.objects.get(id=response.data["order_id"])
         self.assertEqual(order.coupon_code, "RMC10")
@@ -126,6 +131,9 @@ class CouponFlowTests(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["subtotal_price"], "50.00")
+        self.assertEqual(response.data["discount_amount"], "0.00")
+        self.assertEqual(response.data["total_price"], "60.00")
 
         order = Order.objects.get(id=response.data["order_id"])
         self.assertEqual(order.subtotal_price, Decimal("50.00"))

@@ -11,6 +11,7 @@ const state = {
         code: "",
         discount_percent: 0,
         subtotal: "0.00",
+        total_after_discount: "0.00",
         discount_amount: "0.00",
         delivery_charge: "0.00",
         total: "0.00"
@@ -41,6 +42,7 @@ const statusMsgEl = document.getElementById("statusMsg");
 const previewItemsEl = document.getElementById("previewItems");
 const totalItemsEl = document.getElementById("totalItems");
 const summarySubtotalEl = document.getElementById("summarySubtotal");
+const summaryTotalEl = document.getElementById("summaryTotal");
 const couponSummaryRowEl = document.getElementById("couponSummaryRow");
 const couponSummaryLabelEl = document.getElementById("couponSummaryLabel");
 const couponDiscountAmountEl = document.getElementById("couponDiscountAmount");
@@ -347,6 +349,7 @@ function resetCouponState({ clearInput = false } = {}) {
     state.coupon.discount_amount = "0.00";
     state.coupon.delivery_charge = "0.00";
     state.coupon.subtotal = "0.00";
+    state.coupon.total_after_discount = "0.00";
     state.coupon.total = String(state.cart.total_amount || "0.00");
     persistCoupon();
     if (clearInput && couponInputEl) {
@@ -360,9 +363,11 @@ function recalcCouponSummary() {
     if (state.coupon.code && state.coupon.discount_percent > 0) {
         discountAmount = subtotal * (state.coupon.discount_percent / 100);
     }
+    const totalAfterDiscount = Math.max(subtotal - discountAmount, 0);
     const deliveryCharge = deliveryChargeForSubtotal(subtotal);
-    const total = Math.max(subtotal - discountAmount, 0) + deliveryCharge;
+    const total = totalAfterDiscount + deliveryCharge;
     state.coupon.subtotal = subtotal.toFixed(2);
+    state.coupon.total_after_discount = totalAfterDiscount.toFixed(2);
     state.coupon.discount_amount = discountAmount.toFixed(2);
     state.coupon.delivery_charge = deliveryCharge.toFixed(2);
     state.coupon.total = total.toFixed(2);
@@ -384,6 +389,9 @@ function renderCouponSummary() {
     }
     if (deliveryChargeNoticeEl) {
         deliveryChargeNoticeEl.hidden = !hasDeliveryCharge;
+    }
+    if (summaryTotalEl) {
+        summaryTotalEl.textContent = `Rs ${state.coupon.total_after_discount}`;
     }
     totalAmountEl.textContent = `Rs ${state.coupon.total}`;
 }
@@ -538,7 +546,8 @@ async function submitOrder(event) {
             coupon_code: state.coupon.code,
             idempotency_key: state.idempotency_key
         });
-        setStatus(`Order placed successfully. Order ID: ${result.order_id}`, "ok");
+        const totalNote = result.total_price ? ` | Grand Total: Rs ${result.total_price}` : "";
+        setStatus(`Order placed successfully. Order ID: ${result.order_id}${totalNote}`, "ok");
         localStorage.setItem("thathwamasi_checkout_phone", state.profile.phone);
         if (state.cart_phone !== state.profile.phone) {
             localStorage.setItem("thathwamasi_cart_phone", state.profile.phone);

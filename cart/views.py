@@ -247,7 +247,12 @@ class PlaceOrderAPIView(PublicAPIView):
                 clear_cached_cart(source_phone)
             return Response({
                 "message": "Order placed successfully",
-                "order_id": order.id
+                "order_id": order.id,
+                "subtotal_price": str(order.subtotal_price),
+                "coupon_code": order.coupon_code,
+                "discount_percent": int(order.discount_percent or 0),
+                "discount_amount": str(order.discount_amount),
+                "total_price": str(order.total_price),
             })
         except Exception as e:
             return Response({"error": str(e)}, status=400)
