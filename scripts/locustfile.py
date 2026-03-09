@@ -31,7 +31,7 @@ from typing import Dict, List
 from locust import HttpUser, LoadTestShape, between, task
 
 
-CATEGORY_SECTIONS = ("snacks", "bakery")
+CATEGORY_SECTIONS = ("bakery")
 DEFAULT_STAGE_JSON = json.dumps(
     [
         {"duration": 300, "users": 300, "spawn_rate": 60},
@@ -164,8 +164,25 @@ class SharedCatalog:
                     rows = []
                 for row in rows:
                     pid = row.get("id")
-                    is_available = bool(row.get("is_available", True))
-                    stock_qty = int(row.get("stock_qty") or 0)
+                    # Public product payloads may omit stock fields. For load tests,
+                    # treat missing values as sellable to keep buyer flow active.
+                    is_available_raw = row.get("is_available")
+                    if isinstance(is_available_raw, bool):
+                        is_available = is_available_raw
+                    elif is_available_raw in (None, ""):
+                        is_available = True
+                    else:
+                        is_available = str(is_available_raw).strip().lower() not in {"0", "false", "no", "off"}
+
+                    stock_raw = row.get("stock_qty")
+                    if stock_raw in (None, ""):
+                        stock_qty = 1
+                    else:
+                        try:
+                            stock_qty = int(stock_raw)
+                        except (TypeError, ValueError):
+                            stock_qty = 1
+
                     if isinstance(pid, int) and is_available and stock_qty > 0:
                         product_ids.append(pid)
 
