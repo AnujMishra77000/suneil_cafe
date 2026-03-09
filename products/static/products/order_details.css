@@ -2,10 +2,10 @@
     --bg: #f8f2ea;
     --surface: #fff9f2;
     --border: #e7d3c2;
-    --brand-700: #5a2e16;
-    --brand-500: #8d4b25;
-    --text: #2f1f15;
-    --muted: #746052;
+    --brand-700: #1f5b54;
+    --brand-500: #1f5b54;
+    --text: #1f5b54;
+    --muted: #5f817b;
 }
 
 * {
@@ -149,7 +149,7 @@ body {
 
 .items-row.head {
     background: #fff3e7;
-    color: #5f4130;
+    color: var(--brand-700);
     font-weight: 700;
 }
 
@@ -163,7 +163,7 @@ body {
 }
 
 .feedback-stars {
-    color: #b86a2c;
+    color: var(--brand-700);
     letter-spacing: 1px;
     font-size: 13px;
     font-weight: 700;

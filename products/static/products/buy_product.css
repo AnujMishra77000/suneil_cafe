@@ -1,10 +1,10 @@
 :root {
     --bg: #f7f3ec;
     --card: #ffffff;
-    --text: #2b1a12;
-    --muted: #806452;
-    --brand: #8b4513;
-    --brand-dark: #6e350f;
+    --text: #1f5b54;
+    --muted: #5f817b;
+    --brand: #1f5b54;
+    --brand-dark: #1f5b54;
     --line: #eadfce;
 }
 
@@ -82,7 +82,7 @@ body {
     margin: 0 0 6px;
     font-size: clamp(1.5rem, 3vw, 2rem);
     font-family: "Fraunces", serif;
-    color: #4d2916;
+    color: var(--brand);
 }
 
 .meta {
@@ -101,7 +101,7 @@ body {
 
 .product p {
     margin: 0;
-    color: #6b5547;
+    color: var(--brand);
     line-height: 1.65;
 }
 
@@ -146,10 +146,10 @@ body {
     padding: 13px 18px;
     font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 16px 28px rgba(110, 53, 15, 0.18);
+    box-shadow: 0 16px 28px rgba(31, 91, 84, 0.18);
 }
 
-.proceed-btn:hover { background: linear-gradient(120deg, #9a521a, var(--brand-dark)); }
+.proceed-btn:hover { background: linear-gradient(120deg, var(--brand), var(--brand-dark)); }
 .proceed-btn:disabled { opacity: 0.65; cursor: wait; }
 
 .out {

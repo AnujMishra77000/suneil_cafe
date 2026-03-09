@@ -211,54 +211,97 @@ if (slides.length) {
 function initOffersSwiper() {
     if (!offersSwiperRoot || !offersViewport || !offersTrack) return;
 
-    const offerSlides = Array.from(offersTrack.querySelectorAll(".offer-slide"));
-    if (!offerSlides.length) return;
+    const baseSlides = Array.from(offersTrack.querySelectorAll(".offer-slide"));
+    if (!baseSlides.length) return;
 
     let offerIndex = 0;
-    let offerMaxIndex = 0;
+    let logicalOfferIndex = 0;
+    let cloneCount = 1;
     let offerStep = 0;
     let offerAutoplayId = null;
     let offerTouchStartX = 0;
     let offerTouchDeltaX = 0;
     let offerTrackingSwipe = false;
-    let hasMultipleSteps = false;
+    let hasMultipleSlides = baseSlides.length > 1;
+
+    function normalizeOfferIndex(index) {
+        if (!baseSlides.length) return 0;
+        return ((index % baseSlides.length) + baseSlides.length) % baseSlides.length;
+    }
 
     function renderOfferDots() {
         if (!offersDotsWrap) return;
         offersDotsWrap.innerHTML = "";
-        if (!hasMultipleSteps) return;
-        for (let index = 0; index <= offerMaxIndex; index += 1) {
+        if (!hasMultipleSlides) return;
+        const activeDotIndex = normalizeOfferIndex(logicalOfferIndex);
+        for (let index = 0; index < baseSlides.length; index += 1) {
             const dot = document.createElement("button");
             dot.type = "button";
             dot.ariaLabel = `Go to offer ${index + 1}`;
-            if (index === offerIndex) dot.classList.add("active");
+            if (index === activeDotIndex) dot.classList.add("active");
             dot.addEventListener("click", () => goToOffer(index));
             offersDotsWrap.appendChild(dot);
         }
     }
 
+    function applyOfferTransform(animate = true) {
+        if (animate) {
+            offersTrack.style.transition = "";
+        } else {
+            offersTrack.style.transition = "none";
+        }
+        const translateX = offerStep > 0 ? offerIndex * offerStep : 0;
+        offersTrack.style.transform = `translate3d(-${translateX}px, 0, 0)`;
+        if (!animate) {
+            offersTrack.getBoundingClientRect();
+            offersTrack.style.transition = "";
+        }
+    }
+
     function computeOfferMetrics() {
-        const firstSlide = offerSlides[0];
+        offersTrack.innerHTML = "";
+        baseSlides.forEach((slide) => offersTrack.appendChild(slide));
+
+        const firstSlide = baseSlides[0];
         if (!firstSlide) return;
+
         const slideRect = firstSlide.getBoundingClientRect();
         const trackStyles = window.getComputedStyle(offersTrack);
         const gap = Number.parseFloat(trackStyles.columnGap || trackStyles.gap || "0") || 0;
         const viewportWidth = offersViewport.getBoundingClientRect().width;
-
         offerStep = slideRect.width + gap;
-        const visibleCount = offerStep > 0 ? Math.max(1, Math.floor((viewportWidth + gap) / offerStep)) : 1;
-        offerMaxIndex = Math.max(0, offerSlides.length - visibleCount);
-        hasMultipleSteps = offerMaxIndex > 0;
-        offersSwiperRoot.classList.toggle("is-single", !hasMultipleSteps);
 
-        if (offerIndex > offerMaxIndex) {
-            offerIndex = offerMaxIndex;
+        const visibleCount = offerStep > 0
+            ? Math.max(1, Math.floor((viewportWidth + gap) / offerStep))
+            : 1;
+        cloneCount = Math.max(1, Math.min(baseSlides.length, visibleCount));
+        hasMultipleSlides = baseSlides.length > 1;
+        logicalOfferIndex = normalizeOfferIndex(logicalOfferIndex);
+
+        if (!hasMultipleSlides) {
+            offerIndex = 0;
+            offersSwiperRoot.classList.add("is-single");
+            renderOfferDots();
+            applyOfferTransform(false);
+            return;
         }
+
+        const headClones = baseSlides.slice(-cloneCount).map((slide) => slide.cloneNode(true));
+        const tailClones = baseSlides.slice(0, cloneCount).map((slide) => slide.cloneNode(true));
+
+        offersTrack.innerHTML = "";
+        headClones.forEach((slide) => offersTrack.appendChild(slide));
+        baseSlides.forEach((slide) => offersTrack.appendChild(slide));
+        tailClones.forEach((slide) => offersTrack.appendChild(slide));
+
+        offerIndex = cloneCount + logicalOfferIndex;
+        offersSwiperRoot.classList.remove("is-single");
+        renderOfferDots();
+        applyOfferTransform(false);
     }
 
-    function renderOffers() {
-        const translateX = offerStep > 0 ? offerIndex * offerStep : 0;
-        offersTrack.style.transform = `translate3d(-${translateX}px, 0, 0)`;
+    function renderOffers(animate = true) {
+        applyOfferTransform(animate);
         renderOfferDots();
     }
 
@@ -270,22 +313,18 @@ function initOffersSwiper() {
 
     function startOfferAutoplay() {
         stopOfferAutoplay();
-        if (!hasMultipleSteps || prefersReducedMotion) return;
+        if (!hasMultipleSlides || prefersReducedMotion) return;
         offerAutoplayId = setInterval(() => {
-            offerIndex = offerIndex >= offerMaxIndex ? 0 : offerIndex + 1;
+            offerIndex += 1;
+            logicalOfferIndex = normalizeOfferIndex(logicalOfferIndex + 1);
             renderOffers();
         }, OFFERS_AUTOPLAY_MS);
     }
 
     function goToOffer(index) {
-        if (!hasMultipleSteps) return;
-        if (index > offerMaxIndex) {
-            offerIndex = 0;
-        } else if (index < 0) {
-            offerIndex = offerMaxIndex;
-        } else {
-            offerIndex = index;
-        }
+        if (!hasMultipleSlides) return;
+        logicalOfferIndex = normalizeOfferIndex(index);
+        offerIndex = cloneCount + logicalOfferIndex;
         renderOffers();
         startOfferAutoplay();
     }
@@ -306,10 +345,14 @@ function initOffersSwiper() {
         if (!offerTrackingSwipe) return;
         if (Math.abs(offerTouchDeltaX) >= OFFERS_SWIPE_THRESHOLD) {
             if (offerTouchDeltaX < 0) {
-                goToOffer(offerIndex + 1);
+                offerIndex += 1;
+                logicalOfferIndex = normalizeOfferIndex(logicalOfferIndex + 1);
             } else {
-                goToOffer(offerIndex - 1);
+                offerIndex -= 1;
+                logicalOfferIndex = normalizeOfferIndex(logicalOfferIndex - 1);
             }
+            renderOffers();
+            startOfferAutoplay();
         } else {
             startOfferAutoplay();
         }
@@ -318,19 +361,31 @@ function initOffersSwiper() {
         offerTouchDeltaX = 0;
     }
 
-    offersPrevBtn?.addEventListener("click", () => goToOffer(offerIndex - 1));
-    offersNextBtn?.addEventListener("click", () => goToOffer(offerIndex + 1));
+    offersPrevBtn?.addEventListener("click", () => {
+        if (!hasMultipleSlides) return;
+        offerIndex -= 1;
+        logicalOfferIndex = normalizeOfferIndex(logicalOfferIndex - 1);
+        renderOffers();
+        startOfferAutoplay();
+    });
+    offersNextBtn?.addEventListener("click", () => {
+        if (!hasMultipleSlides) return;
+        offerIndex += 1;
+        logicalOfferIndex = normalizeOfferIndex(logicalOfferIndex + 1);
+        renderOffers();
+        startOfferAutoplay();
+    });
 
     offersSwiperRoot.addEventListener("mouseenter", stopOfferAutoplay);
     offersSwiperRoot.addEventListener("mouseleave", startOfferAutoplay);
 
     offersViewport.addEventListener("touchstart", (event) => {
-        if (!hasMultipleSteps || !event.touches.length) return;
+        if (!hasMultipleSlides || !event.touches.length) return;
         onOfferSwipeStart(event.touches[0]);
     }, { passive: true });
 
     offersViewport.addEventListener("touchmove", (event) => {
-        if (!hasMultipleSteps || !event.touches.length) return;
+        if (!hasMultipleSlides || !event.touches.length) return;
         onOfferSwipeMove(event.touches[0]);
     }, { passive: true });
 
@@ -342,9 +397,24 @@ function initOffersSwiper() {
 
     const reflowOffers = () => {
         computeOfferMetrics();
-        renderOffers();
         startOfferAutoplay();
     };
+
+    offersTrack.addEventListener("transitionend", (event) => {
+        if (event.target !== offersTrack || event.propertyName !== "transform" || !hasMultipleSlides) {
+            return;
+        }
+        const upperBoundary = cloneCount + baseSlides.length;
+        if (offerIndex >= upperBoundary) {
+            offerIndex -= baseSlides.length;
+            renderOffers(false);
+            return;
+        }
+        if (offerIndex < cloneCount) {
+            offerIndex += baseSlides.length;
+            renderOffers(false);
+        }
+    });
 
     if ("ResizeObserver" in window) {
         const resizeObserver = new ResizeObserver(reflowOffers);
@@ -362,7 +432,6 @@ function initOffersSwiper() {
     });
 
     computeOfferMetrics();
-    renderOffers();
     startOfferAutoplay();
 }
 

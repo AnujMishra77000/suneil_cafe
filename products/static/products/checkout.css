@@ -2,11 +2,11 @@
     --bg: #f8f2ea;
     --surface: #fff9f3;
     --surface-strong: #fffdf9;
-    --brand-700: #5a2e16;
-    --muted: #7a6152;
+    --brand-700: #1f5b54;
+    --muted: #5f817b;
     --line: #ead8c7;
     --line-strong: #e2c4aa;
-    --shadow: 0 18px 34px rgba(90, 46, 22, 0.1);
+    --shadow: 0 18px 34px rgba(31, 91, 84, 0.1);
 }
 
 * { box-sizing: border-box; }
@@ -101,7 +101,7 @@ body {
 
 .checkout-note-copy {
     margin: 0;
-    color: #6b4d3c;
+    color: var(--brand-700);
     font-size: 13px;
     font-weight: 700;
     line-height: 1.45;
@@ -112,7 +112,7 @@ label {
     gap: 8px;
     font-size: 13px;
     font-weight: 700;
-    color: #533628;
+    color: var(--brand-700);
 }
 
 label small {
@@ -215,7 +215,7 @@ textarea {
     width: 100%;
     border: none;
     border-radius: 14px;
-    background: linear-gradient(120deg, var(--brand-700), #7a3d1e);
+    background: linear-gradient(120deg, var(--brand-700), var(--brand-700));
     color: #fff;
     padding: 14px 18px;
     font-weight: 800;
@@ -354,7 +354,7 @@ textarea {
 }
 
 .row span {
-    color: #64493b;
+    color: var(--brand-700);
     font-size: 13px;
     font-weight: 600;
 }
@@ -369,7 +369,7 @@ textarea {
 .row-muted {
     background: #fff6ee;
     border-color: #e9cfb6;
-    color: #6b4d3c;
+    color: var(--brand-700);
 }
 
 .total {
@@ -380,7 +380,7 @@ textarea {
 .pincode-list {
     min-height: 18px;
     font-size: 12px;
-    color: #5b4638;
+    color: var(--brand-700);
     line-height: 1.5;
 }
 

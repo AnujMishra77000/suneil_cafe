@@ -1,15 +1,15 @@
 :root {
-    --brand-900: #2f160c;
-    --brand-800: #4a2413;
-    --brand-700: #5a2e16;
-    --brand-500: #9f5f35;
-    --brand-300: #e7b48a;
+    --brand-900: #173f39;
+    --brand-800: #1b4d46;
+    --brand-700: #1f5b54;
+    --brand-500: #1f5b54;
+    --brand-300: #9dcac3;
     --cream-50: #fffaf4;
     --cream-100: #fff1e4;
-    --ink: #2b1d15;
+    --ink: #1f5b54;
     --glass: rgba(255, 255, 255, 0.7);
-    --shadow-lg: 0 20px 45px rgba(54, 26, 12, 0.18);
-    --shadow-md: 0 14px 28px rgba(54, 26, 12, 0.12);
+    --shadow-lg: 0 20px 45px rgba(31, 91, 84, 0.18);
+    --shadow-md: 0 14px 28px rgba(31, 91, 84, 0.12);
 }
 
 * { box-sizing: border-box; }
@@ -90,13 +90,13 @@ body {
     font-family: "Fraunces", serif;
     font-size: clamp(1.7rem, 3.5vw, 2.4rem);
     letter-spacing: 0.2px;
-    color: var(--brand-700);
+    color: var(--logo-forest-700, #1f5b54);
     margin: 0;
 }
 
 .topbar p {
     margin: 0;
-    color: #7a5f4f;
+    color: #1f5b54;
     font-size: 14px;
 }
 
@@ -257,7 +257,7 @@ body {
 
 .dots button.active {
     width: 24px;
-    background: #6f3c1f;
+    background: #1f5b54;
 }
 
 .carousel-nav {
@@ -268,18 +268,18 @@ body {
     height: 40px;
     border-radius: 999px;
     border: none;
-    background: rgba(111, 60, 31, 0.96);
+    background: transparent;
     color: #fffaf4;
     font-size: 24px;
     line-height: 1;
     cursor: pointer;
     z-index: 5;
     pointer-events: auto;
-    box-shadow: 0 10px 18px rgba(72, 37, 18, 0.22);
+    box-shadow: none;
 }
 
 .carousel-nav:hover {
-    background: #5b2e16;
+    background: transparent;
 }
 
 .carousel-nav:active {
@@ -311,7 +311,7 @@ body {
 
 .ad-head p {
     margin: 0;
-    color: #6f5646;
+    color: #1f5b54;
     font-size: 13px;
 }
 
@@ -367,7 +367,7 @@ body {
     width: fit-content;
     text-decoration: none;
     background: #fff;
-    color: #4a2413;
+    color: #1f5b54;
     font-size: 12px;
     font-weight: 700;
     padding: 6px 10px;
@@ -375,7 +375,7 @@ body {
 }
 
 .ad-card--empty {
-    background: linear-gradient(160deg, #6d3b20, #b06b3c 56%, #d99f75);
+    background: linear-gradient(160deg, #1f5b54, #3d7c72 56%, #9dcac3);
 }
 
 .history-home {
@@ -406,7 +406,7 @@ body {
 
 .history-head p {
     margin: 0;
-    color: #6f5646;
+    color: #1f5b54;
     font-size: 13px;
 }
 
@@ -434,7 +434,7 @@ body {
 
 .history-order p {
     margin: 6px 0 0;
-    color: #715849;
+    color: #1f5b54;
     font-size: 12px;
 }
 
@@ -511,7 +511,7 @@ body {
 
 .section-card span {
     background: rgba(255, 246, 236, 0.94);
-    color: #5a2e16;
+    color: #1f5b54;
     padding: 9px 15px;
     border-radius: 999px;
     font-weight: 700;
@@ -1026,7 +1026,7 @@ body {
     position: absolute;
     inset: 0;
     z-index: 0;
-    background-color: #b27a54;
+    background-color: #1f5b54;
     background-image: var(--ad-image);
     background-position: center;
     background-repeat: no-repeat;
@@ -1056,7 +1056,7 @@ body {
 
 /* Final mobile-first offers override: real image node inside a stable media wrapper. */
 .ad-card {
-    background: #a46a43;
+    background: #1f5b54;
 }
 
 .ad-media {
@@ -1064,7 +1064,7 @@ body {
     inset: 0;
     z-index: 0;
     overflow: hidden;
-    background: linear-gradient(160deg, #a46a43, #d7a27b);
+    background: linear-gradient(160deg, #1f5b54, #9dcac3);
 }
 
 .ad-media-img {
@@ -1299,7 +1299,7 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #885126;
+    color: #1f5b54;
     background: rgba(255, 255, 255, 0.75);
     border: 1px solid rgba(111, 60, 31, 0.2);
     box-shadow: 0 4px 12px rgba(50, 27, 14, 0.08);
@@ -1321,7 +1321,7 @@ body {
 .home-location-label {
     font-size: 0.75rem;
     font-weight: 500;
-    color: #8d6a52;
+    color: #1f5b54;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
@@ -1329,7 +1329,7 @@ body {
 .home-location-value {
     font-size: 1.03rem;
     font-weight: 700;
-    color: #2f1c13;
+    color: #1f5b54;
     letter-spacing: 0.01em;
     white-space: nowrap;
     overflow: hidden;
@@ -1372,12 +1372,12 @@ body {
     border-radius: 999px;
     padding: 0 4px;
     font: 500 1rem/1.2 "Sora", sans-serif;
-    color: #472b1d;
+    color: #1f5b54;
     background: transparent;
 }
 
 .home-search input::placeholder {
-    color: #9b7a62;
+    color: #1f5b54;
 }
 
 .home-search input:focus {
@@ -1400,9 +1400,9 @@ body {
     align-items: center;
     justify-content: center;
     padding: 0;
-    color: #6f3c1f;
-    background: rgba(247, 233, 219, 0.65);
-    border: 1px solid rgba(111, 60, 31, 0.16);
+    color: #1f5b54;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(31, 91, 84, 0.26);
     cursor: pointer;
 }
 
@@ -1412,7 +1412,7 @@ body {
 }
 
 .home-search-submit:hover {
-    background: rgba(243, 221, 198, 0.9);
+    background: rgba(245, 252, 250, 0.98);
 }
 
 @media (max-width: 860px) {
@@ -1452,7 +1452,7 @@ body {
     .topbar,
     .has-customer-menu .topbar {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(128px, 154px);
+        grid-template-columns: fit-content(46%) minmax(0, 1fr);
         grid-template-areas:
             "brand brand"
             "location search";
@@ -1488,7 +1488,7 @@ body {
 
     .home-location {
         grid-area: location;
-        width: 100%;
+        width: auto;
         min-width: 0;
         max-width: 100%;
         padding-left: 0;
@@ -1499,7 +1499,7 @@ body {
         border-radius: 10px;
         padding: 6px 8px;
         gap: 5px;
-        justify-self: stretch;
+        justify-self: start;
         align-self: center;
     }
 
@@ -1558,7 +1558,7 @@ body {
 @media (max-width: 480px) {
     .topbar,
     .has-customer-menu .topbar {
-        grid-template-columns: minmax(0, 1fr) minmax(112px, 132px);
+        grid-template-columns: fit-content(48%) minmax(0, 1fr);
         grid-template-areas:
             "brand brand"
             "location search";
@@ -1585,14 +1585,14 @@ body {
 
     .home-location {
         grid-area: location;
-        width: 100%;
+        width: auto;
         min-width: 0;
         max-width: 100%;
         padding-left: 0;
         border-left: none;
         padding: 5px 7px;
         gap: 4px;
-        justify-self: stretch;
+        justify-self: start;
     }
 
     .home-location-icon {
@@ -1648,7 +1648,7 @@ body {
     .topbar,
     .has-customer-menu .topbar {
         min-height: auto;
-        grid-template-columns: minmax(0, 1fr) minmax(104px, 118px);
+        grid-template-columns: fit-content(52%) minmax(0, 1fr);
         padding-right: 54px;
     }
 
@@ -1671,12 +1671,12 @@ body {
 
     .home-location {
         grid-area: location;
-        width: 100%;
+        width: auto;
         min-width: 0;
         max-width: 100%;
         padding-left: 0;
         border-left: none;
-        justify-self: stretch;
+        justify-self: start;
     }
 
     .home-location-label {
@@ -1785,18 +1785,21 @@ body {
     flex: 0 0 calc((100% - (var(--offers-gap) * (var(--offers-columns) - 1))) / var(--offers-columns));
     min-width: 0;
     padding: 0;
+    display: flex;
 }
 
 .offer-card {
     position: relative;
-    min-height: 168px;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 9;
     border-radius: 18px;
     overflow: hidden;
     display: block;
     text-decoration: none;
     color: inherit;
     border: 1px solid rgba(255, 255, 255, 0.34);
-    background: #5a2e16;
+    background: #1f5b54;
     box-shadow: 0 18px 32px rgba(43, 22, 12, 0.2);
 }
 
@@ -1845,13 +1848,13 @@ body {
     padding: 0 9px;
     border-radius: 999px;
     background: rgba(255, 250, 244, 0.96);
-    color: #4a2413;
+    color: #1f5b54;
     font-size: 0.72rem;
     font-weight: 800;
 }
 
 .offer-card--empty {
-    background: linear-gradient(160deg, #6d3b20, #b06b3c 56%, #d99f75);
+    background: linear-gradient(160deg, #1f5b54, #3d7c72 56%, #9dcac3);
 }
 
 .offers-nav {
@@ -1863,8 +1866,8 @@ body {
     height: 36px;
     border: none;
     border-radius: 50%;
-    background: rgba(255, 247, 237, 0.94);
-    color: #5a2e16;
+    background: #1f5b54;
+    color: #ffffff;
     font-size: 24px;
     line-height: 1;
     cursor: pointer;
@@ -1899,7 +1902,7 @@ body {
 
 .offers-dots button.active {
     width: 24px;
-    background: #6f3c1f;
+    background: #1f5b54;
 }
 
 .offers-swiper.is-single .offers-nav,
@@ -1919,7 +1922,6 @@ body {
     }
 
     .offer-card {
-        min-height: 148px;
         border-radius: 16px;
     }
 
@@ -1934,10 +1936,6 @@ body {
     .offers-swiper {
         --offers-columns: 2;
         --offers-gap: 8px;
-    }
-
-    .offer-card {
-        min-height: 136px;
     }
 
     .offer-overlay {
@@ -1993,7 +1991,7 @@ body.launch-lock {
 .launch-splash-text {
     margin: 0;
     font-family: "Fraunces", serif;
-    color: #5a2e16;
+    color: #1f5b54;
     font-size: clamp(1.7rem, 4.2vw, 3.1rem);
     letter-spacing: 0.02em;
     animation: launch-fade 360ms ease both;

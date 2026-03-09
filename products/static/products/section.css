@@ -2,14 +2,14 @@
     --bg: #f8efe4;
     --surface: #fff9f2;
     --surface-2: #fffdf9;
-    --brand-900: #3a1d10;
-    --brand-700: #5a2e16;
-    --brand-500: #95542d;
-    --brand-300: #e0ab82;
-    --text: #2f1f15;
-    --muted: #7a6152;
+    --brand-900: #173f39;
+    --brand-700: #1f5b54;
+    --brand-500: #1f5b54;
+    --brand-300: #9dcac3;
+    --text: #1f5b54;
+    --muted: #5f817b;
     --line: #e8d3c2;
-    --shadow: 0 14px 32px rgba(90, 46, 22, 0.14);
+    --shadow: 0 14px 32px rgba(31, 91, 84, 0.14);
 }
 
 * { box-sizing: border-box; }
@@ -111,7 +111,7 @@ body {
 
 .search-wrap button {
     border: none;
-    background: linear-gradient(120deg, #5a2e16, #7f4524);
+    background: linear-gradient(120deg, var(--brand-700), var(--brand-700));
     color: #fff;
     border-radius: 12px;
     padding: 0 18px;
@@ -359,7 +359,7 @@ body {
 }
 
 .buy-btn {
-    background: linear-gradient(120deg, #5a2e16, #7f4524);
+    background: linear-gradient(120deg, var(--brand-700), var(--brand-700));
     color: #fff;
 }
 

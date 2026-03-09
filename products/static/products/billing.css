@@ -2,13 +2,13 @@
     --bg: #f8f2ea;
     --surface: #fff9f3;
     --surface-strong: #fffdf9;
-    --brand-700: #5a2e16;
-    --brand-500: #8d4b25;
-    --text: #2f1f15;
-    --muted: #7a6152;
+    --brand-700: #1f5b54;
+    --brand-500: #1f5b54;
+    --text: #1f5b54;
+    --muted: #5f817b;
     --line: #ecd8c6;
     --line-strong: #e5ccb7;
-    --shadow: 0 18px 34px rgba(90, 46, 22, 0.1);
+    --shadow: 0 18px 34px rgba(31, 91, 84, 0.1);
 }
 
 * { box-sizing: border-box; }
@@ -231,7 +231,7 @@ body {
 }
 
 .row span {
-    color: #64493b;
+    color: var(--brand-700);
     font-size: 13px;
     font-weight: 600;
 }
@@ -252,7 +252,7 @@ body {
     width: 100%;
     border: none;
     border-radius: 14px;
-    background: linear-gradient(120deg, var(--brand-700), #7a3d1e);
+    background: linear-gradient(120deg, var(--brand-700), var(--brand-700));
     color: #fff;
     font-weight: 800;
     padding: 14px 18px;

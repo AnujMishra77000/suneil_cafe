@@ -12,21 +12,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(90, 46, 22, 0.12);
+    border: 1px solid rgba(31, 91, 84, 0.18);
     border-radius: 16px;
     width: 58px;
     height: 46px;
     cursor: pointer;
-    color: #5a2e16;
+    color: #1f5b54;
     background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(255, 237, 221, 0.96));
-    box-shadow: 0 16px 26px rgba(90, 46, 22, 0.16);
+    box-shadow: 0 16px 26px rgba(31, 91, 84, 0.16);
     transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
 .customer-menu-toggle:hover,
 .customer-menu-toggle:focus-visible {
     transform: translateY(-1px);
-    box-shadow: 0 18px 30px rgba(90, 46, 22, 0.2);
+    box-shadow: 0 18px 30px rgba(31, 91, 84, 0.2);
     outline: none;
 }
 
@@ -94,7 +94,7 @@
     text-decoration: none;
     border-radius: 14px;
     padding: 12px 14px;
-    color: #3b2a20;
+    color: #1f5b54;
     font-family: "Sora", sans-serif;
     font-size: 13px;
     font-weight: 700;
@@ -113,7 +113,7 @@ button.customer-menu-item {
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: 0;
-    color: #3b2a20;
+    color: #1f5b54;
     text-align: left;
 }
 
@@ -135,7 +135,7 @@ button.customer-menu-item {
 
 .customer-menu-item.active {
     background: #fff2e4;
-    color: #5a2e16;
+    color: #1f5b54;
     border-color: rgba(214, 180, 152, 0.95);
 }
 
