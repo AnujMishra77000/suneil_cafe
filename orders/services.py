@@ -176,13 +176,16 @@ def create_order(validated_data):
 @transaction.atomic
 def create_order_from_cart(user, cart):
     subtotal = cart.get_total_price()
+    pricing = calculate_coupon_breakdown(subtotal, "")
     order = Order.objects.create(
         customer=user,
         customer_name=getattr(user, "name", "") or "",
         phone=getattr(user, "phone", "") or "",
         shipping_address=getattr(user, "address", "") or "",
-        subtotal_price=subtotal,
-        total_price=subtotal,
+        subtotal_price=pricing["subtotal"],
+        discount_percent=0,
+        discount_amount=pricing["discount_amount"],
+        total_price=pricing["total"],
         status="Placed",
     )
 

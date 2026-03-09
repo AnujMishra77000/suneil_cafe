@@ -462,11 +462,13 @@ class AdminBillDetailView(TemplateView):
             }
             for item in bill.items.all()
         ]
+        delivery_charge = _derive_bill_delivery_charge(bill)
         return {
             "bill": bill,
             "item_rows": item_rows,
             "is_cancelled": _is_cancelled_status(bill.order.status),
             "total_quantity": sum(row["quantity"] for row in item_rows),
+            "delivery_charge": delivery_charge,
         }
 
     def get_context_data(self, **kwargs):
@@ -489,6 +491,17 @@ class AdminBillThermalPrintView(APIView):
         response = HttpResponse(pdf_data, content_type="application/pdf")
         response["Content-Disposition"] = f'inline; filename="{filename}"'
         return response
+
+
+def _derive_bill_delivery_charge(bill):
+    subtotal = Decimal(str(getattr(bill, "subtotal_amount", "0.00") or "0.00"))
+    discount = Decimal(str(getattr(bill, "discount_amount", "0.00") or "0.00"))
+    total = Decimal(str(getattr(bill, "total_amount", "0.00") or "0.00"))
+    subtotal_after_discount = max(subtotal - discount, Decimal("0.00"))
+    delivery = total - subtotal_after_discount
+    if delivery <= Decimal("0.00"):
+        return Decimal("0.00")
+    return delivery.quantize(Decimal("0.01"))
 
 
 def _is_cancelled_status(status_value):
@@ -1657,7 +1670,15 @@ def _build_user_receipt_pdf(bill, delivery_contact):
     table_header_height = 18
     rows_height = sum(row["height"] for row in item_rows)
 
-    discount_rows_height = 26 if getattr(bill, "discount_amount", Decimal("0.00")) > 0 else 0
+    delivery_charge = _derive_bill_delivery_charge(bill)
+    has_discount = getattr(bill, "discount_amount", Decimal("0.00")) > 0
+    has_delivery_charge = delivery_charge > 0
+    show_breakdown_rows = has_discount or has_delivery_charge
+    breakdown_rows_height = (
+        13 * (1 + int(has_discount) + int(has_delivery_charge))
+        if show_breakdown_rows
+        else 0
+    )
 
     rendered_height = (
         header_height
@@ -1667,7 +1688,7 @@ def _build_user_receipt_pdf(bill, delivery_contact):
         + rows_height
         + 2
         + 14
-        + discount_rows_height
+        + breakdown_rows_height
         + 16
     )
     page_height = int(max(190, top_margin + bottom_margin + rendered_height + 6))
@@ -1756,13 +1777,18 @@ def _build_user_receipt_pdf(bill, delivery_contact):
     commands.append(f"{x - 2:.2f} {y:.2f} {content_width - 20:.2f} 0 re S")
     y -= 14
 
-    if getattr(bill, "discount_amount", Decimal("0.00")) > 0:
+    if show_breakdown_rows:
         text(x + 350, y, "Subtotal", size=9, bold=True)
         text(x + 448, y, f"Rs {_money_str(bill.subtotal_amount)}", size=9, bold=True)
         y -= 13
-        text(x + 300, y, f"Coupon ({bill.coupon_code} - {bill.discount_percent}%)", size=9, bold=True)
-        text(x + 448, y, f"-Rs {_money_str(bill.discount_amount)}", size=9, bold=True)
-        y -= 13
+        if has_discount:
+            text(x + 300, y, f"Coupon ({bill.coupon_code} - {bill.discount_percent}%)", size=9, bold=True)
+            text(x + 448, y, f"-Rs {_money_str(bill.discount_amount)}", size=9, bold=True)
+            y -= 13
+        if has_delivery_charge:
+            text(x + 330, y, "Delivery Charge", size=9, bold=True)
+            text(x + 448, y, f"Rs {_money_str(delivery_charge)}", size=9, bold=True)
+            y -= 13
 
     text(x + 350, y, "Grand Total", size=10, bold=True)
     text(x + 448, y, f"Rs {_money_str(bill.total_amount)}", size=11, bold=True)
@@ -1821,6 +1847,7 @@ def _build_admin_thermal_receipt_pdf(bill):
         )
 
     push(separator, size=8)
+    delivery_charge = _derive_bill_delivery_charge(bill)
     push(f"Subtotal: Rs {_money_str(bill.subtotal_amount)}", size=8, bold=True)
     if getattr(bill, "discount_amount", Decimal("0.00")) > 0:
         push(
@@ -1828,6 +1855,8 @@ def _build_admin_thermal_receipt_pdf(bill):
             size=8,
             bold=True,
         )
+    if delivery_charge > 0:
+        push(f"Delivery Charge: Rs {_money_str(delivery_charge)}", size=8, bold=True)
     push(f"Grand Total: Rs {_money_str(bill.total_amount)}", size=9, bold=True)
     push(separator, size=8)
     push(f"Printed: {timezone.localtime().strftime('%Y-%m-%d %H:%M:%S')}", size=7)
@@ -1948,10 +1977,13 @@ class AdminBillPDFDownloadView(APIView):
                 f"- {item.product_name} | Rs {item.unit_price} x {item.quantity} = Rs {item.unit_price * Decimal(item.quantity)}"
             )
         lines.append("")
+        delivery_charge = _derive_bill_delivery_charge(bill)
         if getattr(bill, "discount_amount", Decimal("0.00")) > 0:
             lines.append(f"Subtotal: Rs {bill.subtotal_amount}")
             lines.append(f"Coupon: {bill.coupon_code} (-{bill.discount_percent}%)")
             lines.append(f"Discount: Rs {bill.discount_amount}")
+        if delivery_charge > 0:
+            lines.append(f"Delivery Charge: Rs {delivery_charge}")
         lines.append(f"Total Price: Rs {bill.total_amount}")
 
         pdf_data = _build_simple_pdf(lines)

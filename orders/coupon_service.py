@@ -4,29 +4,47 @@ from .coupon_rules import extract_discount_percent, normalize_coupon_code
 
 
 MONEY_STEP = Decimal("0.01")
+DELIVERY_CHARGE_THRESHOLD = Decimal("100.00")
+DELIVERY_CHARGE_AMOUNT = Decimal("10.00")
 
 
 def _to_money(value):
     return Decimal(str(value or 0)).quantize(MONEY_STEP, rounding=ROUND_HALF_UP)
 
 
+def _delivery_charge_for_subtotal(subtotal):
+    subtotal_value = _to_money(subtotal)
+    if subtotal_value <= Decimal("0.00"):
+        return Decimal("0.00")
+    if subtotal_value < DELIVERY_CHARGE_THRESHOLD:
+        return DELIVERY_CHARGE_AMOUNT
+    return Decimal("0.00")
+
+
 def _discount_breakdown(subtotal, coupon_code, discount_percent):
     subtotal_value = _to_money(subtotal)
+    delivery_charge = _delivery_charge_for_subtotal(subtotal_value)
     percent = int(discount_percent or 0)
     if not coupon_code or percent <= 0:
+        total = (subtotal_value + delivery_charge).quantize(MONEY_STEP, rounding=ROUND_HALF_UP)
         return {
             "subtotal": subtotal_value,
             "coupon_code": "",
             "discount_percent": 0,
             "discount_amount": Decimal("0.00"),
-            "total": subtotal_value,
+            "delivery_charge": delivery_charge,
+            "total": total,
         }
 
     discount_amount = (subtotal_value * Decimal(percent) / Decimal("100")).quantize(
         MONEY_STEP,
         rounding=ROUND_HALF_UP,
     )
-    total = max(subtotal_value - discount_amount, Decimal("0.00")).quantize(
+    discounted_total = max(subtotal_value - discount_amount, Decimal("0.00")).quantize(
+        MONEY_STEP,
+        rounding=ROUND_HALF_UP,
+    )
+    total = (discounted_total + delivery_charge).quantize(
         MONEY_STEP,
         rounding=ROUND_HALF_UP,
     )
@@ -35,6 +53,7 @@ def _discount_breakdown(subtotal, coupon_code, discount_percent):
         "coupon_code": coupon_code,
         "discount_percent": percent,
         "discount_amount": discount_amount,
+        "delivery_charge": delivery_charge,
         "total": total,
     }
 

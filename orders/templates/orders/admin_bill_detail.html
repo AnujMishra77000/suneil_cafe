@@ -133,6 +133,12 @@
                     <strong>-Rs {{ bill.discount_amount }}</strong>
                 </div>
                 {% endif %}
+                {% if delivery_charge > 0 %}
+                <div class="total-row total-row--discount">
+                    <span>Delivery Charge</span>
+                    <strong>Rs {{ delivery_charge }}</strong>
+                </div>
+                {% endif %}
                 <div class="total-row total-row--grand">
                     <span>Total Price</span>
                     <strong>Rs {{ bill.total_amount }}</strong>

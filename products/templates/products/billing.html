@@ -21,7 +21,7 @@
     </script>
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260305-fx3" />
     <script defer src="{% static 'products/page_fx.js' %}?v=20260305-fx3"></script>
-    <link rel="stylesheet" href="{% static 'products/billing.css' %}?v=20260309-billing7" />
+    <link rel="stylesheet" href="{% static 'products/billing.css' %}?v=20260309-billing8" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260309-brand20" />
     <link rel="stylesheet" href="{% static 'notifications/notification_bell.css' %}?v=20260309-bell18" />
 </head>
@@ -60,6 +60,10 @@
                 </div>
                 <div class="row"><span>Items</span><strong id="summaryItems">0</strong></div>
                 <div class="row"><span>Subtotal</span><strong id="summarySubtotal">Rs 0.00</strong></div>
+                <div class="row row-muted" id="deliverySummaryRow" hidden>
+                    <span>Delivery Charge</span>
+                    <strong id="deliverySummaryAmount">Rs 10.00</strong>
+                </div>
                 <div class="row total"><span>Total</span><strong id="summaryTotal">Rs 0.00</strong></div>
                 <button id="placeOrderBtn" class="place-btn">Proceed to Checkout</button>
                 <p class="note">Bills are generated for both customer and admin after order placement.</p>
@@ -67,7 +71,7 @@
             </aside>
         </section>
     </main>
-    <script src="{% static 'products/billing.js' %}?v=20260304-profile1"></script>
+    <script src="{% static 'products/billing.js' %}?v=20260309-delivery1"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260302-bell15"></script>
     <script>
         if (window.ThathwamasiNotifications) {

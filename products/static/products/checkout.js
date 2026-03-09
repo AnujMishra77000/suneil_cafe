@@ -12,6 +12,7 @@ const state = {
         discount_percent: 0,
         subtotal: "0.00",
         discount_amount: "0.00",
+        delivery_charge: "0.00",
         total: "0.00"
     },
     cart: {
@@ -21,6 +22,10 @@ const state = {
     },
     serviceablePincodes: []
 };
+
+const DELIVERY_CHARGE_THRESHOLD = 100;
+const DELIVERY_CHARGE_AMOUNT = 10;
+const DELIVERY_CHARGE_MESSAGE = "Order less than 100 rupee apply 10 rs delivery charges.";
 
 const formEl = document.getElementById("checkoutForm");
 const nameInputEl = document.getElementById("nameInput");
@@ -39,7 +44,10 @@ const summarySubtotalEl = document.getElementById("summarySubtotal");
 const couponSummaryRowEl = document.getElementById("couponSummaryRow");
 const couponSummaryLabelEl = document.getElementById("couponSummaryLabel");
 const couponDiscountAmountEl = document.getElementById("couponDiscountAmount");
+const deliverySummaryRowEl = document.getElementById("deliverySummaryRow");
+const deliverySummaryAmountEl = document.getElementById("deliverySummaryAmount");
 const totalAmountEl = document.getElementById("totalAmount");
+const deliveryChargeNoticeEl = document.getElementById("deliveryChargeNotice");
 const pincodeListEl = document.getElementById("pincodeList");
 const profileBtnEl = document.getElementById("profileBtn");
 const cartCountEl = document.getElementById("cartCount");
@@ -316,6 +324,13 @@ function toAmount(value) {
     return Number.isFinite(numeric) ? numeric : 0;
 }
 
+function deliveryChargeForSubtotal(subtotal) {
+    if (subtotal > 0 && subtotal < DELIVERY_CHARGE_THRESHOLD) {
+        return DELIVERY_CHARGE_AMOUNT;
+    }
+    return 0;
+}
+
 function lineTotal(item) {
     const numeric = Number(item.line_total);
     if (Number.isFinite(numeric)) {
@@ -330,6 +345,7 @@ function resetCouponState({ clearInput = false } = {}) {
     state.coupon.code = "";
     state.coupon.discount_percent = 0;
     state.coupon.discount_amount = "0.00";
+    state.coupon.delivery_charge = "0.00";
     state.coupon.subtotal = "0.00";
     state.coupon.total = String(state.cart.total_amount || "0.00");
     persistCoupon();
@@ -344,9 +360,11 @@ function recalcCouponSummary() {
     if (state.coupon.code && state.coupon.discount_percent > 0) {
         discountAmount = subtotal * (state.coupon.discount_percent / 100);
     }
-    const total = Math.max(subtotal - discountAmount, 0);
+    const deliveryCharge = deliveryChargeForSubtotal(subtotal);
+    const total = Math.max(subtotal - discountAmount, 0) + deliveryCharge;
     state.coupon.subtotal = subtotal.toFixed(2);
     state.coupon.discount_amount = discountAmount.toFixed(2);
+    state.coupon.delivery_charge = deliveryCharge.toFixed(2);
     state.coupon.total = total.toFixed(2);
 }
 
@@ -358,6 +376,14 @@ function renderCouponSummary() {
     if (hasCoupon) {
         couponSummaryLabelEl.textContent = `${state.coupon.code} (-${state.coupon.discount_percent}%)`;
         couponDiscountAmountEl.textContent = `-Rs ${state.coupon.discount_amount}`;
+    }
+    const hasDeliveryCharge = toAmount(state.coupon.delivery_charge) > 0;
+    if (deliverySummaryRowEl && deliverySummaryAmountEl) {
+        deliverySummaryRowEl.hidden = !hasDeliveryCharge;
+        deliverySummaryAmountEl.textContent = `Rs ${state.coupon.delivery_charge}`;
+    }
+    if (deliveryChargeNoticeEl) {
+        deliveryChargeNoticeEl.hidden = !hasDeliveryCharge;
     }
     totalAmountEl.textContent = `Rs ${state.coupon.total}`;
 }
@@ -489,6 +515,12 @@ async function submitOrder(event) {
     if (!state.cart.items.length) {
         setStatus("Cart is empty.", "error");
         return;
+    }
+    if (toAmount(state.coupon.delivery_charge) > 0) {
+        const proceed = window.confirm(`${DELIVERY_CHARGE_MESSAGE}\n\nPress OK to place order.`);
+        if (!proceed) {
+            return;
+        }
     }
 
     submitBtnEl.disabled = true;

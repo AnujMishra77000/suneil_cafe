@@ -97,3 +97,33 @@ class CouponFlowTests(TestCase):
         self.assertEqual(order.discount_percent, 15)
         self.assertEqual(order.discount_amount, Decimal("15.00"))
         self.assertEqual(order.total_price, Decimal("85.00"))
+
+    def test_cart_checkout_adds_delivery_charge_for_order_below_100(self):
+        cart_phone = "9000000011"
+        set_cached_cart(cart_phone, {str(self.product.id): 1})
+
+        response = self.client.post(
+            "/api/cart/place/",
+            {
+                "phone": "9000000099",
+                "customer_name": "Delivery Charge User",
+                "whatsapp_no": "9000000099",
+                "address": "Charge Lane 400001",
+                "pincode": "400001",
+                "cart_phone": cart_phone,
+                "coupon_code": "",
+                "idempotency_key": str(uuid4()),
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        order = Order.objects.get(id=response.data["order_id"])
+        self.assertEqual(order.subtotal_price, Decimal("50.00"))
+        self.assertEqual(order.discount_amount, Decimal("0.00"))
+        self.assertEqual(order.total_price, Decimal("60.00"))
+
+        admin_bill = order.bills.get(recipient_type="ADMIN")
+        self.assertEqual(admin_bill.subtotal_amount, Decimal("50.00"))
+        self.assertEqual(admin_bill.discount_amount, Decimal("0.00"))
+        self.assertEqual(admin_bill.total_amount, Decimal("60.00"))

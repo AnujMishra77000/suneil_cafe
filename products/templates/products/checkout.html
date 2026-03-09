@@ -54,6 +54,10 @@
                     <strong class="checkout-note-title">Payment Method</strong>
                     <p class="checkout-note-copy">Cash on delivery is available for this order.</p>
                 </div>
+                <div class="checkout-note checkout-note--delivery" id="deliveryChargeNotice" hidden>
+                    <strong class="checkout-note-title">Delivery Charge Notice</strong>
+                    <p class="checkout-note-copy">Order less than 100 rupee apply 10 rs delivery charges.</p>
+                </div>
                 <label>
                     Full Name
                     <input id="nameInput" name="name" required />
@@ -106,11 +110,15 @@
                     <span id="couponSummaryLabel">Coupon Discount</span>
                     <strong id="couponDiscountAmount">-Rs 0.00</strong>
                 </div>
+                <div class="row row-muted" id="deliverySummaryRow" hidden>
+                    <span>Delivery Charge</span>
+                    <strong id="deliverySummaryAmount">Rs 10.00</strong>
+                </div>
                 <div class="row total"><span>Total Amount</span><strong id="totalAmount">Rs 0.00</strong></div>
             </aside>
         </section>
     </main>
-    <script src="{% static 'products/checkout.js' %}?v=20260304-profile1"></script>
+    <script src="{% static 'products/checkout.js' %}?v=20260309-delivery1"></script>
     <script src="{% static 'notifications/notification_bell.js' %}?v=20260302-bell15"></script>
     <script>
         if (window.ThathwamasiNotifications) {

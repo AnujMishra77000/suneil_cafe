@@ -248,6 +248,11 @@ body {
     background: linear-gradient(180deg, #fff4e9 0%, #fff8f2 100%);
 }
 
+.row-muted {
+    background: #fff6ee;
+    border-color: #e9cfb6;
+}
+
 .place-btn {
     width: 100%;
     border: none;

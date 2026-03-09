@@ -8,12 +8,18 @@ const state = {
     history_orders: []
 };
 
+const DELIVERY_CHARGE_THRESHOLD = 100;
+const DELIVERY_CHARGE_AMOUNT = 10;
+const DELIVERY_CHARGE_MESSAGE = "Order less than 100 rupee apply 10 rs delivery charges.";
+
 const profileBtnEl = document.getElementById("profileBtn");
 const cartCountEl = document.getElementById("cartCount");
 const cartListEl = document.getElementById("cartList");
 const itemCountEl = document.getElementById("itemCount");
 const summaryItemsEl = document.getElementById("summaryItems");
 const summarySubtotalEl = document.getElementById("summarySubtotal");
+const deliverySummaryRowEl = document.getElementById("deliverySummaryRow");
+const deliverySummaryAmountEl = document.getElementById("deliverySummaryAmount");
 const summaryTotalEl = document.getElementById("summaryTotal");
 const placeOrderBtnEl = document.getElementById("placeOrderBtn");
 const statusMsgEl = document.getElementById("statusMsg");
@@ -159,6 +165,14 @@ function toAmount(value) {
     return Number.isFinite(n) ? n : 0;
 }
 
+function billingDeliveryCharge() {
+    const subtotal = toAmount(state.cart.total_amount);
+    if (subtotal > 0 && subtotal < DELIVERY_CHARGE_THRESHOLD) {
+        return DELIVERY_CHARGE_AMOUNT;
+    }
+    return 0;
+}
+
 function escapeHtml(value) {
     return String(value || "")
         .replace(/&/g, "&amp;")
@@ -204,10 +218,18 @@ function applyLocalRemove(productId) {
 }
 
 function renderSummary() {
+    const subtotal = toAmount(state.cart.total_amount);
+    const deliveryCharge = billingDeliveryCharge();
+    const total = subtotal + deliveryCharge;
+
     itemCountEl.textContent = `${state.cart.total_items || 0} items`;
     summaryItemsEl.textContent = String(state.cart.total_items || 0);
-    summarySubtotalEl.textContent = `Rs ${state.cart.total_amount || "0.00"}`;
-    summaryTotalEl.textContent = `Rs ${state.cart.total_amount || "0.00"}`;
+    summarySubtotalEl.textContent = `Rs ${subtotal.toFixed(2)}`;
+    if (deliverySummaryRowEl && deliverySummaryAmountEl) {
+        deliverySummaryRowEl.hidden = deliveryCharge <= 0;
+        deliverySummaryAmountEl.textContent = `Rs ${deliveryCharge.toFixed(2)}`;
+    }
+    summaryTotalEl.textContent = `Rs ${total.toFixed(2)}`;
     updateCartIconCount(state.cart.total_items || 0);
 }
 
@@ -392,6 +414,13 @@ async function proceedToCheckout() {
     if (!state.cart.items.length) {
         statusMsgEl.textContent = "Your cart is empty.";
         return;
+    }
+    if (billingDeliveryCharge() > 0) {
+        const proceed = window.confirm(`${DELIVERY_CHARGE_MESSAGE}\n\nPress OK to continue.`);
+        if (!proceed) {
+            return;
+        }
+        statusMsgEl.textContent = DELIVERY_CHARGE_MESSAGE;
     }
     window.location.href = "/checkout/";
 }
