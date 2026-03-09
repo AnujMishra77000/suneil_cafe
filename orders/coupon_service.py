@@ -1,11 +1,13 @@
 from decimal import Decimal, ROUND_HALF_UP
 
+from .coupon_catalog import DEFAULT_COUPON_CODES
 from .coupon_rules import extract_discount_percent, normalize_coupon_code
 
 
 MONEY_STEP = Decimal("0.01")
 DELIVERY_CHARGE_THRESHOLD = Decimal("100.00")
 DELIVERY_CHARGE_AMOUNT = Decimal("10.00")
+ALLOWED_COUPON_CODES = frozenset(DEFAULT_COUPON_CODES)
 
 
 def _to_money(value):
@@ -64,6 +66,8 @@ def get_active_coupon(code):
     normalized = normalize_coupon_code(code)
     if not normalized:
         raise ValueError("Enter a coupon code.")
+    if normalized not in ALLOWED_COUPON_CODES:
+        raise ValueError("Coupon code is invalid or inactive.")
 
     coupon = CouponCode.objects.filter(code=normalized, is_active=True).first()
     if not coupon:

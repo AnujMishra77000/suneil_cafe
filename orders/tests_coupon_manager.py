@@ -26,11 +26,13 @@ class CouponManagerTests(TestCase):
         self.client.force_login(self.admin_user)
 
     def test_coupon_manager_preloads_default_coupon_catalog(self):
+        CouponCode.objects.update_or_create(code="RESIDENT10", defaults={"is_active": True})
         response = self.client.get(reverse("admin-coupon-manage"))
         self.assertEqual(response.status_code, 200)
 
         codes_in_db = set(CouponCode.objects.values_list("code", flat=True))
         self.assertTrue(set(DEFAULT_COUPON_CODES).issubset(codes_in_db))
+        self.assertNotIn("RESIDENT10", codes_in_db)
         self.assertContains(response, "SPCL10")
         self.assertContains(response, "DWLI30")
         self.assertContains(response, "NEY25")
@@ -51,4 +53,3 @@ class CouponManagerTests(TestCase):
         self.assertTrue(CouponCode.objects.get(code="DWLI30").is_active)
         self.assertFalse(CouponCode.objects.get(code="SPCL15").is_active)
         self.assertFalse(CouponCode.objects.get(code="RMC10").is_active)
-

@@ -23,18 +23,18 @@ class CouponFlowTests(TestCase):
             image=SimpleUploadedFile("bread.jpg", b"image-bytes", content_type="image/jpeg"),
         )
         ServiceablePincode.objects.create(code="400001", area_name="Test Area", is_active=True)
-        CouponCode.objects.update_or_create(code="RESIDENT10", defaults={"is_active": True})
+        CouponCode.objects.update_or_create(code="SPCL10", defaults={"is_active": True})
         CouponCode.objects.update_or_create(code="RMC10", defaults={"is_active": True})
-        CouponCode.objects.update_or_create(code="QUICK15", defaults={"is_active": True})
+        CouponCode.objects.update_or_create(code="FSTVL15", defaults={"is_active": True})
 
     def test_coupon_validation_endpoint_returns_discount_percent(self):
         response = self.client.post(
             "/api/orders/coupons/validate/",
-            {"coupon_code": "resident10"},
+            {"coupon_code": "spcl10"},
             format="json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["coupon_code"], "RESIDENT10")
+        self.assertEqual(response.data["coupon_code"], "SPCL10")
         self.assertEqual(response.data["discount_percent"], 10)
 
     def test_cart_checkout_applies_coupon_discount(self):
@@ -78,7 +78,7 @@ class CouponFlowTests(TestCase):
                 "whatsapp_no": "9998887776",
                 "address": "Quick Lane 400001",
                 "pincode": "400001",
-                "coupon_code": "QUICK15",
+                "coupon_code": "FSTVL15",
                 "idempotency_key": str(uuid4()),
                 "items": [
                     {
@@ -92,11 +92,20 @@ class CouponFlowTests(TestCase):
         self.assertEqual(response.status_code, 201)
 
         order = Order.objects.get(id=response.data["order_id"])
-        self.assertEqual(order.coupon_code, "QUICK15")
+        self.assertEqual(order.coupon_code, "FSTVL15")
         self.assertEqual(order.subtotal_price, Decimal("100.00"))
         self.assertEqual(order.discount_percent, 15)
         self.assertEqual(order.discount_amount, Decimal("15.00"))
         self.assertEqual(order.total_price, Decimal("85.00"))
+
+    def test_coupon_validation_rejects_non_catalog_coupon_even_if_present(self):
+        CouponCode.objects.update_or_create(code="RESIDENT10", defaults={"is_active": True})
+        response = self.client.post(
+            "/api/orders/coupons/validate/",
+            {"coupon_code": "resident10"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
 
     def test_cart_checkout_adds_delivery_charge_for_order_below_100(self):
         cart_phone = "9000000011"

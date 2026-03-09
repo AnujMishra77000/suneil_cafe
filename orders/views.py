@@ -368,6 +368,7 @@ class AdminCouponManageView(TemplateView):
 
     @staticmethod
     def _sync_default_coupon_catalog():
+        CouponCode.objects.exclude(code__in=DEFAULT_COUPON_CODES).delete()
         existing_codes = set(CouponCode.objects.values_list("code", flat=True))
         missing = [CouponCode(code=code, is_active=False) for code in DEFAULT_COUPON_CODES if code not in existing_codes]
         if missing:
@@ -408,7 +409,7 @@ class AdminCouponManageView(TemplateView):
         if action == "toggle":
             code = normalize_coupon_code(request.POST.get("code") or "")
             target = (request.POST.get("target") or "").strip()
-            if not code or target not in {"0", "1"}:
+            if not code or code not in DEFAULT_COUPON_CODES or target not in {"0", "1"}:
                 context = self.get_context_data(error="Invalid coupon status update request.")
                 return self.render_to_response(context, status=400)
 
@@ -423,6 +424,9 @@ class AdminCouponManageView(TemplateView):
         is_active = (request.POST.get("is_active") or "").strip().lower() in {"1", "true", "on", "yes"}
         if not code:
             context = self.get_context_data(error="Enter a coupon code.")
+            return self.render_to_response(context, status=400)
+        if code not in DEFAULT_COUPON_CODES:
+            context = self.get_context_data(error="Coupon code is not part of configured coupon list.")
             return self.render_to_response(context, status=400)
 
         coupon = CouponCode.objects.filter(code=code).first() or CouponCode(code=code)
