@@ -1633,12 +1633,12 @@ body {
     }
 
     .topbar .site-logo--hero {
-        width: 70px;
-        height: 70px;
+        width: 78px;
+        height: 78px;
     }
 
     .topbar .site-copy {
-        max-width: min(170px, 28vw);
+        max-width: min(220px, 42vw);
     }
 
     .home-location {
@@ -1677,8 +1677,8 @@ body {
     }
 
     .topbar .site-title {
-        font-size: clamp(1rem, 2.8vw, 1.24rem);
-        line-height: 1.02;
+        font-size: clamp(1.12rem, 3.4vw, 1.38rem);
+        line-height: 1.04;
     }
 
     .home-search {
@@ -1730,12 +1730,12 @@ body {
     }
 
     .topbar .site-logo--hero {
-        width: 58px;
-        height: 58px;
+        width: 66px;
+        height: 66px;
     }
 
     .topbar .site-copy {
-        max-width: 120px;
+        max-width: 154px;
     }
 
     .home-location {
@@ -1769,7 +1769,7 @@ body {
     }
 
     .topbar .site-title {
-        font-size: clamp(0.84rem, 3.5vw, 0.98rem);
+        font-size: clamp(1rem, 4.6vw, 1.16rem);
         line-height: 1.06;
     }
 
@@ -1812,16 +1812,16 @@ body {
     }
 
     .topbar .site-logo--hero {
-        width: 52px;
-        height: 52px;
+        width: 60px;
+        height: 60px;
     }
 
     .topbar .site-copy {
-        max-width: 104px;
+        max-width: 132px;
     }
 
     .topbar .site-title {
-        font-size: clamp(0.78rem, 3.6vw, 0.9rem);
+        font-size: clamp(0.9rem, 4.2vw, 1.04rem);
     }
 
     .home-location {
