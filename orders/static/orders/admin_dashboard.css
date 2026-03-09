@@ -392,6 +392,17 @@ body {
     --card-tag-border: rgba(52, 105, 166, 0.32);
 }
 
+.quick-link--coupon {
+    --card-from: #fff1da;
+    --card-to: #ffe0af;
+    --card-border: rgba(177, 111, 32, 0.34);
+    --card-shadow: rgba(161, 98, 23, 0.2);
+    --card-text: #5f3608;
+    --card-muted: #715027;
+    --card-cta: #7b4604;
+    --card-tag-border: rgba(166, 100, 26, 0.34);
+}
+
 .quick-link--staff-register {
     --card-from: #e7e5ff;
     --card-to: #d4ceff;
@@ -414,6 +425,7 @@ body {
 .quick-cards .quick-link:nth-child(9) { animation-delay: 480ms; }
 .quick-cards .quick-link:nth-child(10) { animation-delay: 535ms; }
 .quick-cards .quick-link:nth-child(11) { animation-delay: 590ms; }
+.quick-cards .quick-link:nth-child(12) { animation-delay: 645ms; }
 
 @keyframes dashCardIn {
     from {

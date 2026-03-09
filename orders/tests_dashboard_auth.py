@@ -133,6 +133,7 @@ class DashboardAuthTests(TestCase):
         response = self.client.get(reverse("admin-dashboard"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, reverse("dashboard-auth-staff-register"))
+        self.assertContains(response, reverse("admin-coupon-manage"))
 
         self.client.logout()
 
@@ -152,3 +153,21 @@ class DashboardAuthTests(TestCase):
         response = self.client.get(reverse("admin-dashboard"))
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, reverse("dashboard-auth-staff-register"))
+        self.assertNotContains(response, reverse("admin-coupon-manage"))
+
+    def test_staff_cannot_open_coupon_manager(self):
+        staff_user = User.objects.create_user(
+            username="staffcoupon",
+            email="staffcoupon@example.com",
+            password="StaffPass12345",
+            is_staff=True,
+            is_superuser=False,
+        )
+        DashboardAccountProfile.objects.create(
+            user=staff_user,
+            email="staffcoupon@example.com",
+            mobile_number="9033333333",
+        )
+        self.client.force_login(staff_user)
+        response = self.client.get(reverse("admin-coupon-manage"))
+        self.assertEqual(response.status_code, 403)

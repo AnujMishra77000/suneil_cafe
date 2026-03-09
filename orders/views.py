@@ -36,6 +36,7 @@ from .admin_services import AdminAnalyticsService
 from .analytics import sales_summary, category_sales, top_products, unavailable_product_demand
 from .models import Bill
 from .models import BillItem, CouponCode, Order, OrderFeedback, OrderItem, SalesRecord, ServiceablePincode
+from .coupon_catalog import DEFAULT_COUPON_CODES
 from .coupon_rules import normalize_coupon_code
 from .coupon_service import apply_stored_coupon_breakdown, validate_coupon_payload
 from .delivery_contact import get_delivery_contact_number, get_or_create_delivery_contact_setting
@@ -361,19 +362,48 @@ class AdminDeliveryContactManageView(TemplateView):
         return redirect("/admin-dashboard/delivery-contact/?saved=1")
 
 
-@method_decorator(staff_member_required, name="dispatch")
+@method_decorator(dashboard_admin_required, name="dispatch")
 class AdminCouponManageView(TemplateView):
     template_name = "orders/admin_coupon_manage.html"
 
+    @staticmethod
+    def _sync_default_coupon_catalog():
+        existing_codes = set(CouponCode.objects.values_list("code", flat=True))
+        missing = [CouponCode(code=code, is_active=False) for code in DEFAULT_COUPON_CODES if code not in existing_codes]
+        if missing:
+            CouponCode.objects.bulk_create(missing, ignore_conflicts=True)
+
+    @staticmethod
+    def _ordered_rows():
+        order_map = {code: index for index, code in enumerate(DEFAULT_COUPON_CODES)}
+        rows = list(CouponCode.objects.filter(code__in=DEFAULT_COUPON_CODES).order_by("code"))
+        rows.sort(key=lambda row: order_map.get(row.code, 9999))
+        return rows
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["rows"] = CouponCode.objects.order_by("code")
+        self._sync_default_coupon_catalog()
+        context["rows"] = self._ordered_rows()
         context["saved"] = self.request.GET.get("saved", "")
         context["error"] = kwargs.get("error") or self.request.GET.get("error") or ""
         return context
 
     def post(self, request, *args, **kwargs):
-        action = (request.POST.get("action") or "add").strip().lower()
+        self._sync_default_coupon_catalog()
+        action = (request.POST.get("action") or "bulk_set").strip().lower()
+
+        if action == "bulk_set":
+            allowed = {normalize_coupon_code(code) for code in DEFAULT_COUPON_CODES}
+            selected = {
+                normalize_coupon_code(code)
+                for code in request.POST.getlist("active_codes")
+                if normalize_coupon_code(code)
+            }
+            selected = selected & allowed
+            CouponCode.objects.filter(code__in=allowed).update(is_active=False)
+            if selected:
+                CouponCode.objects.filter(code__in=selected).update(is_active=True)
+            return redirect("/admin-dashboard/coupons/?saved=bulk")
 
         if action == "toggle":
             code = normalize_coupon_code(request.POST.get("code") or "")
