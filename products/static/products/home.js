@@ -451,6 +451,7 @@ async function apiGet(url) {
 }
 
 function renderHomeHistory(phone, orders) {
+    if (!homeHistoryEl || !homeHistoryListEl || !homeHistoryPhoneEl) return;
     if (!orders.length) {
         homeHistoryEl.classList.add("hidden");
         return;
@@ -470,6 +471,7 @@ function renderHomeHistory(phone, orders) {
 }
 
 async function loadHomeHistory() {
+    if (!homeHistoryEl || !homeHistoryListEl || !homeHistoryPhoneEl) return;
     const phone = (localStorage.getItem("thathwamasi_checkout_phone") || "").trim();
     if (!phone) return;
 
