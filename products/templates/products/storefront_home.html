@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260309-homehdr26" />
+    <link rel="stylesheet" href="{% static 'products/home.css' %}?v=20260310-homecontact4" />
     <link rel="stylesheet" href="{% static 'products/brand.css' %}?v=20260309-brand20" />
     <link rel="stylesheet" href="{% static 'products/customer_menu.css' %}?v=20260309-menu15" />
     <link rel="stylesheet" href="{% static 'products/page_fx.css' %}?v=20260305-fx3" />
@@ -282,6 +282,140 @@
                 <p id="homeHistoryPhone"></p>
             </div>
             <div id="homeHistoryList" class="history-grid"></div>
+        </section>
+
+        <section class="about-us-section scroll-reveal" aria-labelledby="aboutUsHeading">
+            <div class="about-us-card">
+                <h2 id="aboutUsHeading">About Us</h2>
+                <div class="about-us-copy">
+                    <p>
+                        At our bakery, every product is handmade with care using fresh, natural ingredients.
+                    </p>
+                    <p>
+                        We strongly believe that good food should be pure and honest, which is why we never use preservatives, artificial additives, or harmful chemicals in anything we bake.
+                    </p>
+                    <p>
+                        Each bread, cake, pastry, and cookie is freshly prepared by hand to bring you the authentic taste of real baking.
+                    </p>
+                    <p>
+                        Our commitment is simple - fresh, preservative-free bakery products made with passion, quality, and love, so you can enjoy every bite with complete trust.
+                    </p>
+                </div>
+                <div class="about-us-purity" aria-label="100 percent purity">
+                    <span class="about-us-purity-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                            <circle cx="12" cy="12" r="9" fill="currentColor"></circle>
+                            <path d="M8 12.4L10.7 15L16 9.8" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </span>
+                    <span>100% Purity</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="contact-premium-section scroll-reveal" aria-labelledby="contactUsHeading">
+            <div class="contact-premium-grid">
+                <div class="contact-premium-brand">
+                    <img src="{% static 'products/images/thathwamasi-logo.png' %}" alt="Thathwamasi Bakery Cafe logo" />
+                    <p>Trusted source for fresh, preservative-free bakery products crafted daily.</p>
+                </div>
+
+                <div class="contact-premium-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="/bakery/">Bakery</a></li>
+                        <li><a href="/billing/">Cart</a></li>
+                        <li><a href="/order-details/">Order Details</a></li>
+                        <li><a href="/profile/">Profile</a></li>
+                    </ul>
+                </div>
+
+                <div class="contact-premium-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li class="contact-icon-row">
+                            <span class="contact-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M3.5 7.5h10l2 2h5v6h-2a2.5 2.5 0 1 1-5 0h-4a2.5 2.5 0 1 1-5 0h-1V7.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </span>
+                            <span>In 30 Minutes</span>
+                        </li>
+                        <li class="contact-icon-row">
+                            <span class="contact-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"></circle>
+                                    <path d="M12 7.5v4.8l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </span>
+                            <span>on time</span>
+                        </li>
+                        <li class="contact-icon-row">
+                            <span class="contact-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M4 10.5 12 4l8 6.5V20H4v-9.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+                                    <path d="M9.5 20v-5h5v5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+                                </svg>
+                            </span>
+                            <span>8am to 10pm</span>
+                        </li>
+                        <li class="contact-icon-row">
+                            <span class="contact-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M12 3.5 5.5 6v5.5c0 4.2 2.8 7.9 6.5 9 3.7-1.1 6.5-4.8 6.5-9V6L12 3.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+                                    <path d="m9.2 12.2 1.9 1.9 3.7-3.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </span>
+                            <span>100% pure product</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="contact-premium-column">
+                    <h3>Contact</h3>
+                    <ul class="contact-premium-contact-list">
+                        <li class="contact-icon-row">
+                            <span class="contact-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M12 21s6.8-6 6.8-11.2A6.8 6.8 0 1 0 5.2 9.8C5.2 15 12 21 12 21Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    <circle cx="12" cy="9.8" r="2.2" stroke="currentColor" stroke-width="1.8"></circle>
+                                </svg>
+                            </span>
+                            <span>Runwal GardenCity Dombivli east</span>
+                        </li>
+                        <li class="contact-icon-row">
+                            <span class="contact-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M20 11.5A8.5 8.5 0 0 1 7.8 19L4 20l1.2-3.4A8.5 8.5 0 1 1 20 11.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    <path d="M9 8.9h1.5l1 2.2-.9.7c.7 1.2 1.7 2.2 2.9 2.9l.7-.9 2.2 1v1.5c0 .6-.5 1.1-1.1 1.1-4-.2-7.2-3.4-7.4-7.4 0-.6.5-1.1 1.1-1.1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </span>
+                            <a href="https://wa.me/918879712120" target="_blank" rel="noopener">8879712120</a>
+                        </li>
+                        <li class="contact-icon-row">
+                            <span class="contact-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <path d="M5 4h3l2 5-2 1.5a15.5 15.5 0 0 0 5.5 5.5L15 14l5 2v3a2 2 0 0 1-2 2C10.82 21 3 13.18 3 6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </span>
+                            <a href="tel:9867616095">9867616095</a>
+                        </li>
+                        <li class="contact-icon-row">
+                            <span class="contact-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                                    <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"></circle>
+                                    <path d="M3.5 12h17M12 3.5a13.6 13.6 0 0 1 0 17M12 3.5a13.6 13.6 0 0 0 0 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                                </svg>
+                            </span>
+                            <a href="https://www.thathwamsibakery.com" target="_blank" rel="noopener">www.thathwamsibakery.com</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="contact-premium-bottom">
+                © {% now "Y" %} Thathwamasi Bakery Cafe. All rights reserved.
+            </div>
         </section>
     </main>
     <script defer src="{% static 'products/page_fx.js' %}?v=20260305-fx3"></script>

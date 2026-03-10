@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.db.models import Q, Count, Sum
 from django.db import transaction
+from django.db.utils import OperationalError, ProgrammingError
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
@@ -202,9 +203,19 @@ class StorefrontHomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        support_phone = ""
+        try:
+            support_phone = get_delivery_contact_number()
+        except (OperationalError, ProgrammingError):
+            support_phone = ""
+        support_phone_href = re.sub(r"[^0-9+]", "", support_phone)
+        support_email = (settings.ADMIN_EMAIL or "support@thathwamasibakery.com").strip()
         context["ads"] = self._active_ads_by_slot()
         context["top_bakery_choices"] = self._top_customer_choices_bakery()
         context["top_snacks_choices"] = self._top_customer_choices_snacks()
+        context["support_phone"] = support_phone
+        context["support_phone_href"] = f"tel:{support_phone_href}" if support_phone_href else ""
+        context["support_email"] = support_email
         return context
 
 
