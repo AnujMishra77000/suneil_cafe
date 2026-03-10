@@ -238,6 +238,44 @@
             </div>
         </section>
 
+        <section class="top-choice-strip scroll-reveal">
+            <div class="top-choice-head scroll-reveal">
+                <h2>Top Choices in Snacks</h2>
+                <a href="/snacks/" class="top-choice-see-all">See All</a>
+            </div>
+            <div class="top-choice-frame">
+                <div class="top-choice-grid">
+                    {% for product in top_snacks_choices %}
+                    <a href="{{ product.buy_url }}" class="top-choice-card scroll-reveal" aria-label="Open snacks page for {{ product.name }}">
+                        <span class="top-choice-media" aria-hidden="true">
+                            {% if product.image_url %}
+                            <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" />
+                            {% else %}
+                            <span class="top-choice-fallback">{{ product.name|slice:":1"|upper }}</span>
+                            {% endif %}
+                        </span>
+                        <span class="top-choice-overlay">
+                            <h3>{{ product.name }}</h3>
+                            <span class="top-choice-chip">Explore</span>
+                        </span>
+                    </a>
+                    {% empty %}
+                    {% for _ in "1234"|make_list %}
+                    <a href="/snacks/" class="top-choice-card top-choice-card--fallback scroll-reveal" aria-label="Open snacks coming soon page">
+                        <span class="top-choice-media" aria-hidden="true">
+                            <span class="top-choice-fallback">S</span>
+                        </span>
+                        <span class="top-choice-overlay">
+                            <h3>Snacks Special</h3>
+                            <span class="top-choice-chip">Explore</span>
+                        </span>
+                    </a>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
         <section id="homeHistory" class="history-home hidden scroll-reveal">
             <div class="history-head">
                 <h2>Your Previous Orders</h2>

@@ -130,6 +130,7 @@ class SharedCatalog:
 
             category_ids: List[int] = []
             product_ids: List[int] = []
+            product_id_fallbacks: List[int] = []
             pincode_codes: List[str] = []
 
             for section in CATEGORY_SECTIONS:
@@ -144,7 +145,15 @@ class SharedCatalog:
                 except ValueError:
                     rows = []
                 for row in rows:
-                    cid = row.get("id")
+                    cid_raw = row.get("id")
+                    cid: int | None
+                    if isinstance(cid_raw, int):
+                        cid = cid_raw
+                    else:
+                        try:
+                            cid = int(str(cid_raw).strip())
+                        except (TypeError, ValueError):
+                            cid = None
                     if isinstance(cid, int):
                         category_ids.append(cid)
 
@@ -163,7 +172,17 @@ class SharedCatalog:
                 except ValueError:
                     rows = []
                 for row in rows:
-                    pid = row.get("id")
+                    pid_raw = row.get("id")
+                    pid: int | None
+                    if isinstance(pid_raw, int):
+                        pid = pid_raw
+                    else:
+                        try:
+                            pid = int(str(pid_raw).strip())
+                        except (TypeError, ValueError):
+                            pid = None
+                    if isinstance(pid, int):
+                        product_id_fallbacks.append(pid)
                     # Public product payloads may omit stock fields. For load tests,
                     # treat missing values as sellable to keep buyer flow active.
                     is_available_raw = row.get("is_available")
@@ -185,6 +204,9 @@ class SharedCatalog:
 
                     if isinstance(pid, int) and is_available and stock_qty > 0:
                         product_ids.append(pid)
+
+            if not product_ids and product_id_fallbacks:
+                product_ids = list(dict.fromkeys(product_id_fallbacks))
 
             pincode_resp = user.client.get(
                 "/api/orders/serviceable-pincodes/",

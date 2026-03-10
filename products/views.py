@@ -141,10 +141,70 @@ class StorefrontHomeView(TemplateView):
         cache.set(cache_key, payload, 300 if payload else 180)
         return payload
 
+    @classmethod
+    def _top_customer_choices_snacks(cls):
+        cache_key = catalog_cache_key("home_top_choices_snacks_v1")
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        snack_sections = ("Snacks", "Snack")
+        chosen_ids = []
+
+        ranked_rows = (
+            OrderItem.objects.filter(
+                product__category__section__name__in=snack_sections,
+                product__is_available=True,
+            )
+            .values("product_id")
+            .annotate(total_qty=Sum("quantity"), total_orders=Count("order_id", distinct=True))
+            .order_by("-total_qty", "-total_orders", "-product_id")[:4]
+        )
+        chosen_ids.extend([row["product_id"] for row in ranked_rows if row.get("product_id")])
+
+        if len(chosen_ids) < 4:
+            fallback_ids = list(
+                Product.objects.filter(
+                    category__section__name__in=snack_sections,
+                    is_available=True,
+                )
+                .exclude(id__in=chosen_ids)
+                .order_by("-created_at", "name")
+                .values_list("id", flat=True)[: 4 - len(chosen_ids)]
+            )
+            chosen_ids.extend(fallback_ids)
+
+        if not chosen_ids:
+            cache.set(cache_key, [], 180)
+            return []
+
+        product_map = Product.objects.select_related("category").in_bulk(chosen_ids)
+
+        payload = []
+        for product_id in chosen_ids:
+            product = product_map.get(product_id)
+            if not product:
+                continue
+            payload.append(
+                {
+                    "id": product.id,
+                    "name": product.name,
+                    "price": product.price,
+                    "image_url": product.image.url if product.image else "",
+                    "category_name": product.category.name if product.category_id else "",
+                    "buy_url": "/snacks/",
+                }
+            )
+
+        payload = payload[:4]
+        cache.set(cache_key, payload, 300 if payload else 180)
+        return payload
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["ads"] = self._active_ads_by_slot()
         context["top_bakery_choices"] = self._top_customer_choices_bakery()
+        context["top_snacks_choices"] = self._top_customer_choices_snacks()
         return context
 
 
