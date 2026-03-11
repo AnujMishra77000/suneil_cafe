@@ -43,6 +43,7 @@ from .coupon_catalog import DEFAULT_COUPON_CODES
 from .coupon_rules import normalize_coupon_code
 from .coupon_service import apply_stored_coupon_breakdown, validate_coupon_payload
 from .delivery_contact import get_delivery_contact_number, get_or_create_delivery_contact_setting
+from .escpos_usb import EscPosPrintError, print_bill_via_escpos_usb
 from .serializers import OrderSerializer, OrderFeedbackWriteSerializer, BillSerializer
 from .services import create_order, create_order_from_cart
 from products.cache_utils import invalidate_catalog_cache
@@ -603,6 +604,28 @@ class AdminBillDefaultPrinterPrintView(View):
         else:
             query["server_print"] = "error"
             query["error"] = payload[:180]
+
+        base_url = f"/admin-dashboard/billing/{bill.id}/print/2inch/"
+        return redirect(f"{base_url}?{urlencode(query)}")
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class AdminBillDirectUSBPrintView(View):
+    def post(self, request, bill_id):
+        bill = get_object_or_404(
+            Bill.objects.filter(recipient_type="ADMIN").select_related("order").prefetch_related("items"),
+            id=bill_id,
+        )
+
+        query = {"autoprint": "0"}
+        try:
+            printer_label = print_bill_via_escpos_usb(bill)
+        except EscPosPrintError as exc:
+            query["server_print"] = "error"
+            query["error"] = str(exc)[:180]
+        else:
+            query["server_print"] = "ok"
+            query["printer"] = printer_label
 
         base_url = f"/admin-dashboard/billing/{bill.id}/print/2inch/"
         return redirect(f"{base_url}?{urlencode(query)}")

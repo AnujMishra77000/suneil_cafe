@@ -13,3 +13,4 @@ Pillow==11.1.0
 matplotlib==3.10.0
 seaborn==0.13.2
 sentry-sdk[django,celery]==2.22.0
+pyusb==1.2.1
