@@ -40,6 +40,7 @@ from orders.views import (
     AdminBillingListView,
     AdminBillDetailView,
     AdminBillThermalPrintView,
+    AdminBillDefaultPrinterPrintView,
     AdminBillEditView,
     AdminSalesAnalyticsView,
     AdminCategorySalesDetailView,
@@ -94,6 +95,7 @@ urlpatterns = [
     path('admin-dashboard/billing/', AdminBillingListView.as_view(), name='admin-billing-list'),
     path('admin-dashboard/billing/<int:bill_id>/', AdminBillDetailView.as_view(), name='admin-bill-detail'),
     path('admin-dashboard/billing/<int:bill_id>/print/2inch/', AdminBillThermalPrintView.as_view(), name='admin-bill-thermal-print'),
+    path('admin-dashboard/billing/<int:bill_id>/print/default/', AdminBillDefaultPrinterPrintView.as_view(), name='admin-bill-default-printer-print'),
     path('admin-dashboard/billing/<int:bill_id>/print/3inch/', AdminBillThermalPrintView.as_view(), name='admin-bill-thermal-print-legacy'),
     path('admin-dashboard/billing/<int:bill_id>/edit/', AdminBillEditView.as_view(), name='admin-bill-edit'),
     path(

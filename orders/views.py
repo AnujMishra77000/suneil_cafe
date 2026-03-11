@@ -5,6 +5,9 @@ from urllib.parse import urlencode
 from pathlib import Path
 import json
 import csv
+import shutil
+import subprocess
+import tempfile
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -525,6 +528,84 @@ class AdminBillThermalPrintView(APIView):
         response = HttpResponse(pdf_data, content_type="application/pdf")
         response["Content-Disposition"] = f'inline; filename="{filename}"'
         return response
+
+
+def _detect_default_printer_name():
+    lpstat_cmd = shutil.which("lpstat")
+    if not lpstat_cmd:
+        return ""
+
+    result = subprocess.run(
+        [lpstat_cmd, "-d"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return ""
+
+    line = (result.stdout or result.stderr or "").strip()
+    marker = "system default destination:"
+    if marker in line.lower():
+        return line.split(":", 1)[-1].strip()
+    return ""
+
+
+def _send_pdf_to_default_printer(pdf_data, job_name):
+    printer_name = _detect_default_printer_name()
+    if not printer_name:
+        return False, "No default printer found. Configure a default printer first."
+
+    lp_cmd = shutil.which("lp")
+    if not lp_cmd:
+        return False, "Print command 'lp' is not available on this system."
+
+    temp_path = ""
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+            temp_file.write(pdf_data)
+            temp_path = temp_file.name
+
+        result = subprocess.run(
+            [lp_cmd, "-d", printer_name, "-t", job_name, temp_path],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            output = (result.stderr or result.stdout or "Failed to submit print job.").strip()
+            return False, output
+        return True, printer_name
+    finally:
+        if temp_path:
+            try:
+                Path(temp_path).unlink(missing_ok=True)
+            except OSError:
+                pass
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class AdminBillDefaultPrinterPrintView(View):
+    def post(self, request, bill_id):
+        bill = get_object_or_404(
+            Bill.objects.filter(recipient_type="ADMIN").select_related("order").prefetch_related("items"),
+            id=bill_id,
+        )
+
+        pdf_data = _build_admin_thermal_receipt_pdf(bill)
+        job_name = f"Thathwamasi-Bill-{bill.bill_number or bill.id}"
+        success, payload = _send_pdf_to_default_printer(pdf_data, job_name)
+
+        query = {"autoprint": "0"}
+        if success:
+            query["server_print"] = "ok"
+            query["printer"] = payload
+        else:
+            query["server_print"] = "error"
+            query["error"] = payload[:180]
+
+        base_url = f"/admin-dashboard/billing/{bill.id}/print/2inch/"
+        return redirect(f"{base_url}?{urlencode(query)}")
 
 
 def _derive_bill_delivery_charge(bill):
