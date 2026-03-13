@@ -567,8 +567,35 @@ def _send_pdf_to_default_printer(pdf_data, job_name):
             temp_file.write(pdf_data)
             temp_path = temp_file.name
 
+        # Force 2-inch thermal media and disable implicit scaling/margins.
+        print_args = [
+            lp_cmd,
+            "-d",
+            printer_name,
+            "-t",
+            job_name,
+            "-o",
+            "media=w147h2815",
+            "-o",
+            "PageSize=w147h2815",
+            "-o",
+            "Resolution=203dpi",
+            "-o",
+            "fit-to-page=false",
+            "-o",
+            "scaling=100",
+            "-o",
+            "page-left=0",
+            "-o",
+            "page-right=0",
+            "-o",
+            "page-top=0",
+            "-o",
+            "page-bottom=0",
+            temp_path,
+        ]
         result = subprocess.run(
-            [lp_cmd, "-d", printer_name, "-t", job_name, temp_path],
+            print_args,
             capture_output=True,
             text=True,
             check=False,
