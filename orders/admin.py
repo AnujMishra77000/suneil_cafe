@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (
     Bill,
+    BillPrintJob,
     CouponCode,
     DeliveryContactSetting,
     Order,
@@ -95,3 +96,11 @@ class CouponCodeAdmin(admin.ModelAdmin):
     search_fields = ("code",)
     list_filter = ("is_active",)
     ordering = ("code",)
+
+
+@admin.register(BillPrintJob)
+class BillPrintJobAdmin(admin.ModelAdmin):
+    list_display = ("id", "bill", "status", "agent_id", "attempts", "requested_by", "created_at", "completed_at")
+    search_fields = ("bill__bill_number", "bill__phone", "agent_id")
+    list_filter = ("status", "created_at", "completed_at")
+    ordering = ("-created_at",)

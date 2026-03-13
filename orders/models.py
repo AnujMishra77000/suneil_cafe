@@ -130,6 +130,47 @@ class BillItem(models.Model):
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
 
 
+class BillPrintJob(models.Model):
+    STATUS_PENDING = "PENDING"
+    STATUS_CLAIMED = "CLAIMED"
+    STATUS_PRINTED = "PRINTED"
+    STATUS_FAILED = "FAILED"
+    STATUS_CHOICES = (
+        (STATUS_PENDING, "Pending"),
+        (STATUS_CLAIMED, "Claimed"),
+        (STATUS_PRINTED, "Printed"),
+        (STATUS_FAILED, "Failed"),
+    )
+
+    bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name="print_jobs", db_index=True)
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="bill_print_jobs",
+        null=True,
+        blank=True,
+    )
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True)
+    agent_id = models.CharField(max_length=120, blank=True, default="", db_index=True)
+    attempts = models.PositiveIntegerField(default=0)
+    last_error = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    claimed_at = models.DateTimeField(blank=True, null=True, db_index=True)
+    completed_at = models.DateTimeField(blank=True, null=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+            models.Index(fields=["bill", "status"]),
+            models.Index(fields=["agent_id", "claimed_at"]),
+        ]
+
+    def __str__(self):
+        return f"PrintJob #{self.id} | Bill {self.bill_id} | {self.status}"
+
+
 class SalesRecord(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="sales_records", db_index=True)
     category = models.CharField(max_length=120)

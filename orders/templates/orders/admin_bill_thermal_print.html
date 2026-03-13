@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,6 +95,15 @@
 
         .center {
             text-align: center;
+        }
+
+        .brand-logo {
+            display: block;
+            width: 20mm;
+            max-width: 100%;
+            margin: 0 auto 3px;
+            height: auto;
+            object-fit: contain;
         }
 
         .brand {
@@ -235,11 +245,27 @@
     <div class="screen-toolbar">
         <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/">Back to Bill</a>
         <button class="btn btn-primary" type="button" onclick="window.print()">Print 2-inch</button>
+        <form class="toolbar-form" method="post" action="/admin-dashboard/billing/{{ bill.id }}/print/queue/">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="/admin-dashboard/billing/{{ bill.id }}/print/2inch/" />
+            <button class="btn" type="submit">Queue POS Print</button>
+        </form>
     </div>
+
+    {% if request.GET.print_job == "queued" %}
+    <p class="status status--ok">Queued for local POS print. Job #{{ request.GET.job_id }}</p>
+    {% elif request.GET.print_job == "exists" %}
+    <p class="status status--ok">A print job is already queued. Job #{{ request.GET.job_id }}</p>
+    {% endif %}
 
     <main class="page">
         <section class="receipt">
             <div class="center">
+                <img
+                    class="brand-logo"
+                    src="{% static 'products/images/thathwamasi-logo.png' %}"
+                    alt="Thathwamasi Bakery Cafe"
+                />
                 <p class="brand">Thathwamasi Bakery Cafe</p>
                 <p class="sub">Thermal Receipt (2-inch / 58mm)</p>
             </div>

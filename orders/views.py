@@ -1,6 +1,7 @@
 from io import BytesIO
 from decimal import Decimal
 from datetime import datetime, time, timedelta
+import base64
 from urllib.parse import urlencode
 from pathlib import Path
 import json
@@ -17,8 +18,10 @@ from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
+from django.utils.crypto import constant_time_compare
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 from django.views import View
 from core.dashboard_auth import (
@@ -38,12 +41,12 @@ from .admin_repositories import AdminRepository
 from .admin_services import AdminAnalyticsService
 from .analytics import sales_summary, category_sales, top_products, unavailable_product_demand
 from .models import Bill
-from .models import BillItem, CouponCode, Order, OrderFeedback, OrderItem, SalesRecord, ServiceablePincode
+from .models import BillItem, BillPrintJob, CouponCode, Order, OrderFeedback, OrderItem, SalesRecord, ServiceablePincode
 from .coupon_catalog import DEFAULT_COUPON_CODES
 from .coupon_rules import normalize_coupon_code
 from .coupon_service import apply_stored_coupon_breakdown, validate_coupon_payload
 from .delivery_contact import get_delivery_contact_number, get_or_create_delivery_contact_setting
-from .escpos_usb import EscPosPrintError, print_bill_via_escpos_usb
+from .escpos_usb import EscPosPrintError, print_bill_via_escpos_usb, _build_payload as build_escpos_payload
 from .serializers import OrderSerializer, OrderFeedbackWriteSerializer, BillSerializer
 from .services import create_order, create_order_from_cart
 from products.cache_utils import invalidate_catalog_cache
@@ -660,6 +663,220 @@ class AdminBillDirectUSBPrintView(View):
 
         base_url = f"/admin-dashboard/billing/{bill.id}/print/2inch/"
         return redirect(f"{base_url}?{urlencode(query)}")
+
+
+def _append_query_params(url, params):
+    query = urlencode(params)
+    if not query:
+        return url
+    return f"{url}&{query}" if "?" in url else f"{url}?{query}"
+
+
+def _print_agent_auth(request):
+    expected = (getattr(settings, "PRINT_AGENT_TOKEN", "") or "").strip()
+    if not expected:
+        return False, "PRINT_AGENT_TOKEN is not configured.", status.HTTP_503_SERVICE_UNAVAILABLE
+
+    auth_header = (request.headers.get("Authorization") or "").strip()
+    token_from_auth = ""
+    if auth_header.lower().startswith("bearer "):
+        token_from_auth = auth_header[7:].strip()
+    provided = (
+        request.headers.get("X-Print-Agent-Token")
+        or request.GET.get("token")
+        or token_from_auth
+        or ""
+    ).strip()
+    if not provided:
+        return False, "Print agent token is required.", status.HTTP_403_FORBIDDEN
+
+    if not constant_time_compare(provided, expected):
+        return False, "Invalid print agent token.", status.HTTP_403_FORBIDDEN
+
+    return True, "", status.HTTP_200_OK
+
+
+def _serialize_print_job(job):
+    bill = job.bill
+    items = []
+    for item in bill.items.all():
+        qty = Decimal(item.quantity)
+        line_total = (item.unit_price * qty).quantize(Decimal("0.01"))
+        items.append(
+            {
+                "product_name": item.product_name,
+                "quantity": int(item.quantity),
+                "unit_price": f"{Decimal(item.unit_price):.2f}",
+                "line_total": f"{line_total:.2f}",
+            }
+        )
+
+    escpos_payload_b64 = base64.b64encode(build_escpos_payload(bill)).decode("ascii")
+
+    return {
+        "id": job.id,
+        "bill_id": bill.id,
+        "bill_number": bill.bill_number,
+        "customer_name": bill.customer_name,
+        "phone": bill.phone,
+        "shipping_address": bill.shipping_address,
+        "order_status": bill.order.status,
+        "subtotal_amount": f"{Decimal(bill.subtotal_amount):.2f}",
+        "discount_amount": f"{Decimal(bill.discount_amount):.2f}",
+        "delivery_charge": f"{_derive_bill_delivery_charge(bill):.2f}",
+        "total_amount": f"{Decimal(bill.total_amount):.2f}",
+        "created_at": bill.created_at.isoformat(),
+        "items": items,
+        "escpos_payload_b64": escpos_payload_b64,
+    }
+
+
+@method_decorator(staff_member_required, name="dispatch")
+class AdminBillQueuePrintJobView(View):
+    def post(self, request, bill_id):
+        bill = get_object_or_404(
+            Bill.objects.filter(recipient_type="ADMIN").select_related("order").prefetch_related("items"),
+            id=bill_id,
+        )
+
+        redirect_to = (request.POST.get("next") or "").strip() or f"/admin-dashboard/billing/{bill.id}/print/2inch/"
+        user = request.user if getattr(request.user, "is_authenticated", False) else None
+
+        with transaction.atomic():
+            existing = (
+                BillPrintJob.objects.select_for_update()
+                .filter(
+                    bill_id=bill.id,
+                    status__in=[BillPrintJob.STATUS_PENDING, BillPrintJob.STATUS_CLAIMED],
+                )
+                .order_by("-created_at")
+                .first()
+            )
+            if existing:
+                return redirect(
+                    _append_query_params(
+                        redirect_to,
+                        {"autoprint": "0", "print_job": "exists", "job_id": existing.id},
+                    )
+                )
+
+            created = BillPrintJob.objects.create(
+                bill=bill,
+                requested_by=user,
+                status=BillPrintJob.STATUS_PENDING,
+            )
+
+        return redirect(
+            _append_query_params(
+                redirect_to,
+                {"autoprint": "0", "print_job": "queued", "job_id": created.id},
+            )
+        )
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class PrintAgentNextJobAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        is_allowed, message, code = _print_agent_auth(request)
+        if not is_allowed:
+            return Response({"detail": message}, status=code)
+
+        claim_ttl = int(getattr(settings, "PRINT_AGENT_CLAIM_TTL_SECONDS", 180) or 180)
+        if claim_ttl < 30:
+            claim_ttl = 30
+        stale_cutoff = timezone.now() - timedelta(seconds=claim_ttl)
+        agent_id = (request.headers.get("X-Print-Agent-Id") or request.GET.get("agent_id") or "").strip()[:120]
+
+        with transaction.atomic():
+            # Recover stuck jobs that were claimed by an offline agent.
+            BillPrintJob.objects.filter(
+                status=BillPrintJob.STATUS_CLAIMED,
+                claimed_at__lt=stale_cutoff,
+            ).update(
+                status=BillPrintJob.STATUS_PENDING,
+                agent_id="",
+            )
+
+            job = (
+                BillPrintJob.objects.select_for_update()
+                .select_related("bill__order")
+                .prefetch_related("bill__items")
+                .filter(status=BillPrintJob.STATUS_PENDING)
+                .order_by("created_at", "id")
+                .first()
+            )
+            if not job:
+                return Response({"job": None}, status=status.HTTP_200_OK)
+
+            job.status = BillPrintJob.STATUS_CLAIMED
+            job.claimed_at = timezone.now()
+            job.agent_id = agent_id
+            job.attempts = int(job.attempts or 0) + 1
+            job.save(update_fields=["status", "claimed_at", "agent_id", "attempts", "updated_at"])
+
+            payload = _serialize_print_job(job)
+
+        return Response({"job": payload}, status=status.HTTP_200_OK)
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class PrintAgentCompleteJobAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request, job_id):
+        is_allowed, message, code = _print_agent_auth(request)
+        if not is_allowed:
+            return Response({"detail": message}, status=code)
+
+        raw_success = request.data.get("success", None)
+        if raw_success is None:
+            return Response({"detail": "success field is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if isinstance(raw_success, bool):
+            success = raw_success
+        else:
+            normalized = str(raw_success).strip().lower()
+            if normalized in {"1", "true", "yes", "on"}:
+                success = True
+            elif normalized in {"0", "false", "no", "off"}:
+                success = False
+            else:
+                return Response(
+                    {"detail": "success must be a boolean value."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        error_text = str(request.data.get("error") or "").strip()
+        agent_id = (request.headers.get("X-Print-Agent-Id") or request.data.get("agent_id") or "").strip()[:120]
+
+        with transaction.atomic():
+            job = get_object_or_404(BillPrintJob.objects.select_for_update(), id=job_id)
+            if job.status == BillPrintJob.STATUS_PRINTED:
+                return Response({"detail": "Job already marked printed."}, status=status.HTTP_200_OK)
+
+            job.completed_at = timezone.now()
+            if agent_id:
+                job.agent_id = agent_id
+
+            if success:
+                job.status = BillPrintJob.STATUS_PRINTED
+                job.last_error = ""
+            else:
+                job.status = BillPrintJob.STATUS_FAILED
+                job.last_error = error_text[:1000] or "Unknown print error"
+
+            job.save(update_fields=["status", "agent_id", "completed_at", "last_error", "updated_at"])
+
+        return Response(
+            {
+                "detail": "Updated",
+                "job_id": job.id,
+                "status": job.status,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 def _derive_bill_delivery_charge(bill):

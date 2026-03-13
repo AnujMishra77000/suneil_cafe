@@ -19,6 +19,8 @@ from .views import (
     AdminBillCancelAPIView,
     AdminSalesAnalyticsExportAPIView,
     AdminCategorySalesExportAPIView,
+    PrintAgentNextJobAPIView,
+    PrintAgentCompleteJobAPIView,
 )
 
 urlpatterns = [
@@ -42,6 +44,8 @@ urlpatterns = [
     path('admin/dashboard/billing/', AdminBillingDataAPIView.as_view()),
     path('admin/dashboard/bills/<int:bill_id>/download/', AdminBillPDFDownloadView.as_view()),
     path('admin/dashboard/bills/<int:bill_id>/cancel/', AdminBillCancelAPIView.as_view()),
+    path('print-agent/jobs/next/', PrintAgentNextJobAPIView.as_view()),
+    path('print-agent/jobs/<int:job_id>/complete/', PrintAgentCompleteJobAPIView.as_view()),
     path('bills/<int:bill_id>/download/', UserBillPDFDownloadView.as_view()),
     path('bills/<int:order_id>/', BillsByOrderAPIView.as_view()),
 ]
