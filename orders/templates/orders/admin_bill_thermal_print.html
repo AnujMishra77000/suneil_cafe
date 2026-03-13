@@ -245,7 +245,6 @@
     <div class="screen-toolbar">
         <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/">Back to Bill</a>
         <button id="instant-pos-print-btn" class="btn btn-primary" type="button">Print Now</button>
-        <button class="btn" type="button" onclick="window.print()">Browser Print</button>
     </div>
 
     <p id="pos-print-status" class="status" style="display:none"></p>
@@ -313,6 +312,12 @@
             const printButton = document.getElementById("instant-pos-print-btn");
             const statusEl = document.getElementById("pos-print-status");
             const payloadUrl = "/admin-dashboard/billing/{{ bill.id }}/print/escpos-payload/";
+            const printerPreferenceKey = "thathwamasi.posPrinterDevice";
+            const minReprintIntervalMs = 2500;
+            const maxChunkSize = 48;
+            const chunkDelayMs = 8;
+            let printInProgress = false;
+            let lastPrintAt = 0;
 
             function setStatus(message, kind) {
                 if (!statusEl) return;
@@ -330,26 +335,98 @@
                 return bytes;
             }
 
+            function sleep(ms) {
+                return new Promise((resolve) => window.setTimeout(resolve, ms));
+            }
+
+            function readSavedPrinter() {
+                try {
+                    const raw = window.localStorage.getItem(printerPreferenceKey);
+                    if (!raw) return null;
+                    const parsed = JSON.parse(raw);
+                    if (!parsed || typeof parsed !== "object") return null;
+                    return parsed;
+                } catch (err) {
+                    return null;
+                }
+            }
+
+            function savePrinter(device) {
+                try {
+                    const payload = {
+                        vendorId: device.vendorId || 0,
+                        productId: device.productId || 0,
+                        serialNumber: device.serialNumber || "",
+                    };
+                    window.localStorage.setItem(printerPreferenceKey, JSON.stringify(payload));
+                } catch (err) {}
+            }
+
+            function pickPreferredDevice(devices) {
+                if (!devices || devices.length === 0) return null;
+
+                const saved = readSavedPrinter();
+                if (saved) {
+                    const matched = devices.find((device) => {
+                        if (saved.serialNumber && device.serialNumber) {
+                            return (
+                                device.serialNumber === saved.serialNumber &&
+                                Number(device.vendorId) === Number(saved.vendorId) &&
+                                Number(device.productId) === Number(saved.productId)
+                            );
+                        }
+                        return (
+                            Number(device.vendorId) === Number(saved.vendorId) &&
+                            Number(device.productId) === Number(saved.productId)
+                        );
+                    });
+                    if (matched) return matched;
+                }
+
+                return devices[0];
+            }
+
             function findOutEndpoint(device) {
                 const config = device.configuration;
                 if (!config || !Array.isArray(config.interfaces)) {
                     throw new Error("USB printer configuration is not available.");
                 }
+                let preferred = null;
+                let fallback = null;
+
                 for (const iface of config.interfaces) {
                     const alternates = iface.alternates || [];
                     for (const alt of alternates) {
                         const endpoints = alt.endpoints || [];
-                        const out = endpoints.find((ep) => ep.direction === "out");
-                        if (out) {
-                            return {
-                                interfaceNumber: iface.interfaceNumber,
-                                alternateSetting: alt.alternateSetting,
-                                endpointNumber: out.endpointNumber,
-                                packetSize: out.packetSize || 64,
-                            };
+                        const outBulk = endpoints.find(
+                            (ep) => ep.direction === "out" && ep.type === "bulk"
+                        );
+                        const outAny = endpoints.find((ep) => ep.direction === "out");
+
+                        if (!outAny) continue;
+
+                        const candidate = {
+                            interfaceNumber: iface.interfaceNumber,
+                            alternateSetting: alt.alternateSetting,
+                            endpointNumber: (outBulk || outAny).endpointNumber,
+                            packetSize: (outBulk || outAny).packetSize || 64,
+                            interfaceClass: Number(alt.interfaceClass || -1),
+                            isBulk: Boolean(outBulk),
+                        };
+
+                        if (candidate.isBulk && [7, 255].includes(candidate.interfaceClass)) {
+                            preferred = candidate;
+                            break;
+                        }
+                        if (!fallback) {
+                            fallback = candidate;
                         }
                     }
+                    if (preferred) break;
                 }
+
+                if (preferred) return preferred;
+                if (fallback) return fallback;
                 throw new Error("No writable OUT endpoint found on printer.");
             }
 
@@ -359,12 +436,18 @@
                 }
 
                 const alreadyAllowed = await navigator.usb.getDevices();
-                if (alreadyAllowed.length > 0) return alreadyAllowed[0];
+                const preferred = pickPreferredDevice(alreadyAllowed);
+                if (preferred) {
+                    savePrinter(preferred);
+                    return preferred;
+                }
 
                 // First-time connection requires user interaction.
-                return navigator.usb.requestDevice({
+                const selected = await navigator.usb.requestDevice({
                     filters: [{ classCode: 7 }, { classCode: 255 }],
                 });
+                savePrinter(selected);
+                return selected;
             }
 
             async function sendEscPosToPrinter(payloadBytes) {
@@ -374,8 +457,18 @@
                     if (!device.opened) {
                         await device.open();
                     }
+                    try {
+                        if (typeof device.reset === "function") {
+                            await device.reset();
+                        }
+                    } catch (err) {}
+
                     if (!device.configuration) {
-                        await device.selectConfiguration(1);
+                        const fallbackConfig =
+                            Array.isArray(device.configurations) && device.configurations.length > 0
+                                ? device.configurations[0].configurationValue
+                                : 1;
+                        await device.selectConfiguration(fallbackConfig);
                     }
 
                     endpointInfo = findOutEndpoint(device);
@@ -389,14 +482,23 @@
                         // Many printers are single alternate setting; safe to ignore.
                     }
 
-                    const packetSize = Math.max(32, Math.min(endpointInfo.packetSize, 512));
+                    // Reset printer state before payload to avoid garbled output on repeated prints.
+                    const initChunk = new Uint8Array([0x1b, 0x40]);
+                    await device.transferOut(endpointInfo.endpointNumber, initChunk);
+
+                    const packetSize = Math.max(16, Math.min(endpointInfo.packetSize || 64, maxChunkSize));
                     for (let idx = 0; idx < payloadBytes.length; idx += packetSize) {
                         const chunk = payloadBytes.slice(idx, idx + packetSize);
                         const result = await device.transferOut(endpointInfo.endpointNumber, chunk);
                         if (result && result.status && result.status !== "ok") {
                             throw new Error("Printer transfer failed with status: " + result.status);
                         }
+                        if (result && typeof result.bytesWritten === "number" && result.bytesWritten !== chunk.length) {
+                            throw new Error("Printer write was partial. Please retry.");
+                        }
+                        await sleep(chunkDelayMs);
                     }
+                    await sleep(180);
                 } finally {
                     try {
                         if (endpointInfo) {
@@ -412,6 +514,18 @@
             }
 
             async function instantPosPrint() {
+                if (printInProgress) {
+                    setStatus("Print is already in progress. Please wait...", "error");
+                    return;
+                }
+                const now = Date.now();
+                if (lastPrintAt && now - lastPrintAt < minReprintIntervalMs) {
+                    const waitSec = ((minReprintIntervalMs - (now - lastPrintAt)) / 1000).toFixed(1);
+                    setStatus("Printer is finishing previous bill. Retry in " + waitSec + "s.", "error");
+                    return;
+                }
+
+                printInProgress = true;
                 if (printButton) printButton.disabled = true;
                 setStatus("Preparing receipt for instant POS print...", "ok");
                 try {
@@ -427,14 +541,18 @@
 
                     const bytes = decodeBase64ToBytes(payloadB64);
                     await sendEscPosToPrinter(bytes);
+                    lastPrintAt = Date.now();
                     setStatus("Printed successfully on POS printer.", "ok");
                 } catch (error) {
                     setStatus(
-                        (error && error.message) || "Instant POS print failed. Use Browser Print as fallback.",
+                        (error && error.message) || "Instant POS print failed. Please retry Print Now.",
                         "error"
                     );
                 } finally {
-                    if (printButton) printButton.disabled = false;
+                    window.setTimeout(() => {
+                        if (printButton) printButton.disabled = false;
+                        printInProgress = false;
+                    }, minReprintIntervalMs);
                 }
             }
 
@@ -446,7 +564,7 @@
             if (params.get("instant") === "1") {
                 (async () => {
                     if (!("usb" in navigator)) {
-                        setStatus("WebUSB is not supported on this browser. Use Browser Print.", "error");
+                        setStatus("WebUSB is not supported in this browser. Use Chrome desktop for POS printing.", "error");
                         return;
                     }
                     const known = await navigator.usb.getDevices();
@@ -457,10 +575,6 @@
                     }
                 })();
                 return;
-            }
-
-            if (params.get("autoprint") === "1") {
-                window.setTimeout(() => window.print(), 260);
             }
         })();
     </script>

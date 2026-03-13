@@ -70,7 +70,8 @@ class AdminBillingThermalPrintTests(TestCase):
         response = self.client.get(reverse("admin-bill-thermal-print", kwargs={"bill_id": self.bill.id}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/html; charset=utf-8")
-        self.assertContains(response, "Browser Print")
+        self.assertContains(response, "Print Now")
+        self.assertNotContains(response, "Browser Print")
 
     def test_thermal_print_requires_staff_session(self):
         basic_user = User.objects.create_user(
