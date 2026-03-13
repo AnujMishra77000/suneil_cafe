@@ -62,7 +62,7 @@ class AdminBillingThermalPrintTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/html; charset=utf-8")
         self.assertContains(response, "Thermal Receipt (2-inch / 58mm)")
-        self.assertContains(response, "Queue POS Print")
+        self.assertContains(response, "Print Now")
 
     def test_thermal_print_page_is_accessible_for_admin(self):
         admin_user = self._create_dashboard_user("adminone", "adminone@example.com", True)
@@ -70,7 +70,7 @@ class AdminBillingThermalPrintTests(TestCase):
         response = self.client.get(reverse("admin-bill-thermal-print", kwargs={"bill_id": self.bill.id}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/html; charset=utf-8")
-        self.assertContains(response, "Print 2-inch")
+        self.assertContains(response, "Browser Print")
 
     def test_thermal_print_requires_staff_session(self):
         basic_user = User.objects.create_user(
@@ -95,3 +95,12 @@ class AdminBillingThermalPrintTests(TestCase):
         listing = self.client.get(reverse("admin-billing-list"))
         self.assertEqual(listing.status_code, 200)
         self.assertContains(listing, reverse("admin-bill-thermal-print", kwargs={"bill_id": self.bill.id}))
+
+    def test_escpos_payload_endpoint_is_accessible_for_staff(self):
+        staff_user = self._create_dashboard_user("staffpayload", "staffpayload@example.com", False)
+        self.client.force_login(staff_user)
+        response = self.client.get(reverse("admin-bill-escpos-payload", kwargs={"bill_id": self.bill.id}))
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["bill_id"], self.bill.id)
+        self.assertTrue(payload["escpos_payload_b64"])

@@ -10,7 +10,6 @@
         .wrap{max-width:980px;margin:20px auto;padding:0 16px}
         .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
         .toolbar-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-        .toolbar-actions form{margin:0}
         .btn{display:inline-block;text-decoration:none;padding:8px 12px;border-radius:8px;border:1px solid #d0d5dd;background:#fff;color:#1f2937;font-weight:600;cursor:pointer}
         .btn-primary{background:#5a2e16;border-color:#5a2e16;color:#fff}
         .btn-danger{background:#b42318;border-color:#b42318;color:#fff}
@@ -55,12 +54,7 @@
                     Cancel Bill
                 </button>
                 <a class="btn btn-primary" href="/api/orders/admin/dashboard/bills/{{ bill.id }}/download/">Download</a>
-                <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/print/2inch/" target="_blank" rel="noopener">Print 2-inch</a>
-                <form method="post" action="/admin-dashboard/billing/{{ bill.id }}/print/queue/">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="/admin-dashboard/billing/{{ bill.id }}/" />
-                    <button class="btn" type="submit">Queue POS Print</button>
-                </form>
+                <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/print/2inch/?instant=1" target="_blank" rel="noopener">Print 2-inch</a>
             </div>
         </div>
 

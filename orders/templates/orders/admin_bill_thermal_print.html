@@ -244,19 +244,11 @@
 <body>
     <div class="screen-toolbar">
         <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/">Back to Bill</a>
-        <button class="btn btn-primary" type="button" onclick="window.print()">Print 2-inch</button>
-        <form class="toolbar-form" method="post" action="/admin-dashboard/billing/{{ bill.id }}/print/queue/">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="/admin-dashboard/billing/{{ bill.id }}/print/2inch/" />
-            <button class="btn" type="submit">Queue POS Print</button>
-        </form>
+        <button id="instant-pos-print-btn" class="btn btn-primary" type="button">Print Now</button>
+        <button class="btn" type="button" onclick="window.print()">Browser Print</button>
     </div>
 
-    {% if request.GET.print_job == "queued" %}
-    <p class="status status--ok">Queued for local POS print. Job #{{ request.GET.job_id }}</p>
-    {% elif request.GET.print_job == "exists" %}
-    <p class="status status--ok">A print job is already queued. Job #{{ request.GET.job_id }}</p>
-    {% endif %}
+    <p id="pos-print-status" class="status" style="display:none"></p>
 
     <main class="page">
         <section class="receipt">
@@ -318,9 +310,158 @@
     <script>
         (function () {
             const params = new URLSearchParams(window.location.search);
-            // Safety: print only when explicitly requested.
-            if (params.get("autoprint") !== "1") return;
-            window.setTimeout(() => window.print(), 260);
+            const printButton = document.getElementById("instant-pos-print-btn");
+            const statusEl = document.getElementById("pos-print-status");
+            const payloadUrl = "/admin-dashboard/billing/{{ bill.id }}/print/escpos-payload/";
+
+            function setStatus(message, kind) {
+                if (!statusEl) return;
+                statusEl.textContent = message;
+                statusEl.className = "status " + (kind === "ok" ? "status--ok" : "status--error");
+                statusEl.style.display = "block";
+            }
+
+            function decodeBase64ToBytes(base64Text) {
+                const binary = window.atob(base64Text || "");
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i += 1) {
+                    bytes[i] = binary.charCodeAt(i) & 0xff;
+                }
+                return bytes;
+            }
+
+            function findOutEndpoint(device) {
+                const config = device.configuration;
+                if (!config || !Array.isArray(config.interfaces)) {
+                    throw new Error("USB printer configuration is not available.");
+                }
+                for (const iface of config.interfaces) {
+                    const alternates = iface.alternates || [];
+                    for (const alt of alternates) {
+                        const endpoints = alt.endpoints || [];
+                        const out = endpoints.find((ep) => ep.direction === "out");
+                        if (out) {
+                            return {
+                                interfaceNumber: iface.interfaceNumber,
+                                alternateSetting: alt.alternateSetting,
+                                endpointNumber: out.endpointNumber,
+                                packetSize: out.packetSize || 64,
+                            };
+                        }
+                    }
+                }
+                throw new Error("No writable OUT endpoint found on printer.");
+            }
+
+            async function connectPrinterDevice() {
+                if (!("usb" in navigator)) {
+                    throw new Error("WebUSB is not supported. Use Google Chrome on desktop.");
+                }
+
+                const alreadyAllowed = await navigator.usb.getDevices();
+                if (alreadyAllowed.length > 0) return alreadyAllowed[0];
+
+                // First-time connection requires user interaction.
+                return navigator.usb.requestDevice({
+                    filters: [{ classCode: 7 }, { classCode: 255 }],
+                });
+            }
+
+            async function sendEscPosToPrinter(payloadBytes) {
+                const device = await connectPrinterDevice();
+                let endpointInfo = null;
+                try {
+                    if (!device.opened) {
+                        await device.open();
+                    }
+                    if (!device.configuration) {
+                        await device.selectConfiguration(1);
+                    }
+
+                    endpointInfo = findOutEndpoint(device);
+                    await device.claimInterface(endpointInfo.interfaceNumber);
+                    try {
+                        await device.selectAlternateInterface(
+                            endpointInfo.interfaceNumber,
+                            endpointInfo.alternateSetting
+                        );
+                    } catch (err) {
+                        // Many printers are single alternate setting; safe to ignore.
+                    }
+
+                    const packetSize = Math.max(32, Math.min(endpointInfo.packetSize, 512));
+                    for (let idx = 0; idx < payloadBytes.length; idx += packetSize) {
+                        const chunk = payloadBytes.slice(idx, idx + packetSize);
+                        const result = await device.transferOut(endpointInfo.endpointNumber, chunk);
+                        if (result && result.status && result.status !== "ok") {
+                            throw new Error("Printer transfer failed with status: " + result.status);
+                        }
+                    }
+                } finally {
+                    try {
+                        if (endpointInfo) {
+                            await device.releaseInterface(endpointInfo.interfaceNumber);
+                        }
+                    } catch (err) {}
+                    try {
+                        if (device.opened) {
+                            await device.close();
+                        }
+                    } catch (err) {}
+                }
+            }
+
+            async function instantPosPrint() {
+                if (printButton) printButton.disabled = true;
+                setStatus("Preparing receipt for instant POS print...", "ok");
+                try {
+                    const response = await fetch(payloadUrl, { credentials: "same-origin" });
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch receipt data from server.");
+                    }
+                    const data = await response.json();
+                    const payloadB64 = (data && data.escpos_payload_b64) || "";
+                    if (!payloadB64) {
+                        throw new Error("Receipt payload is empty.");
+                    }
+
+                    const bytes = decodeBase64ToBytes(payloadB64);
+                    await sendEscPosToPrinter(bytes);
+                    setStatus("Printed successfully on POS printer.", "ok");
+                } catch (error) {
+                    setStatus(
+                        (error && error.message) || "Instant POS print failed. Use Browser Print as fallback.",
+                        "error"
+                    );
+                } finally {
+                    if (printButton) printButton.disabled = false;
+                }
+            }
+
+            if (printButton) {
+                printButton.addEventListener("click", instantPosPrint);
+            }
+
+            // If opened from billing list/detail with ?instant=1, try immediate print.
+            if (params.get("instant") === "1") {
+                (async () => {
+                    if (!("usb" in navigator)) {
+                        setStatus("WebUSB is not supported on this browser. Use Browser Print.", "error");
+                        return;
+                    }
+                    const known = await navigator.usb.getDevices();
+                    if (known.length > 0) {
+                        instantPosPrint();
+                    } else {
+                        setStatus("Click Print Now once to connect your printer, then printing will be instant.", "error");
+                    }
+                })();
+                return;
+            }
+
+            if (params.get("autoprint") === "1") {
+                window.setTimeout(() => window.print(), 260);
+            }
         })();
     </script>
 </body>

@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 from django.db import DatabaseError, transaction
 from django.db.models import Count, F, Sum, Value, DecimalField, ExpressionWrapper
 from django.db.models.functions import Coalesce
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.utils.crypto import constant_time_compare
@@ -531,6 +531,23 @@ class AdminBillThermalPrintView(TemplateView):
         return context
 
 
+@method_decorator(staff_member_required, name="dispatch")
+class AdminBillEscPosPayloadView(View):
+    def get(self, request, bill_id):
+        bill = get_object_or_404(
+            Bill.objects.filter(recipient_type="ADMIN").select_related("order").prefetch_related("items"),
+            id=bill_id,
+        )
+        payload_b64 = base64.b64encode(build_escpos_payload(bill)).decode("ascii")
+        return JsonResponse(
+            {
+                "bill_id": bill.id,
+                "bill_number": bill.bill_number,
+                "escpos_payload_b64": payload_b64,
+            }
+        )
+
+
 def _detect_default_printer_name():
     lpstat_cmd = shutil.which("lpstat")
     if not lpstat_cmd:
@@ -742,28 +759,40 @@ class AdminBillQueuePrintJobView(View):
         redirect_to = (request.POST.get("next") or "").strip() or f"/admin-dashboard/billing/{bill.id}/print/2inch/"
         user = request.user if getattr(request.user, "is_authenticated", False) else None
 
-        with transaction.atomic():
-            existing = (
-                BillPrintJob.objects.select_for_update()
-                .filter(
-                    bill_id=bill.id,
-                    status__in=[BillPrintJob.STATUS_PENDING, BillPrintJob.STATUS_CLAIMED],
-                )
-                .order_by("-created_at")
-                .first()
-            )
-            if existing:
-                return redirect(
-                    _append_query_params(
-                        redirect_to,
-                        {"autoprint": "0", "print_job": "exists", "job_id": existing.id},
+        try:
+            with transaction.atomic():
+                existing = (
+                    BillPrintJob.objects.select_for_update()
+                    .filter(
+                        bill_id=bill.id,
+                        status__in=[BillPrintJob.STATUS_PENDING, BillPrintJob.STATUS_CLAIMED],
                     )
+                    .order_by("-created_at")
+                    .first()
                 )
+                if existing:
+                    return redirect(
+                        _append_query_params(
+                            redirect_to,
+                            {"autoprint": "0", "print_job": "exists", "job_id": existing.id},
+                        )
+                    )
 
-            created = BillPrintJob.objects.create(
-                bill=bill,
-                requested_by=user,
-                status=BillPrintJob.STATUS_PENDING,
+                created = BillPrintJob.objects.create(
+                    bill=bill,
+                    requested_by=user,
+                    status=BillPrintJob.STATUS_PENDING,
+                )
+        except DatabaseError:
+            return redirect(
+                _append_query_params(
+                    redirect_to,
+                    {
+                        "autoprint": "0",
+                        "print_job": "error",
+                        "error": "Print queue unavailable. Please run latest migrations.",
+                    },
+                )
             )
 
         return redirect(
