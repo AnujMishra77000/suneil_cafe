@@ -162,9 +162,9 @@ class BillPrintJob(models.Model):
     class Meta:
         ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=["status", "created_at"]),
-            models.Index(fields=["bill", "status"]),
-            models.Index(fields=["agent_id", "claimed_at"]),
+            models.Index(fields=["status", "created_at"], name="ord_bp_status_created_idx"),
+            models.Index(fields=["bill", "status"], name="ord_bp_bill_status_idx"),
+            models.Index(fields=["agent_id", "claimed_at"], name="ord_bp_agent_claimed_idx"),
         ]
 
     def __str__(self):
@@ -314,8 +314,8 @@ class DashboardLoginActivity(models.Model):
     class Meta:
         ordering = ["-login_at"]
         indexes = [
-            models.Index(fields=["user", "login_at"]),
-            models.Index(fields=["logout_at", "login_at"]),
+            models.Index(fields=["user", "login_at"], name="orders_dash_user_id_050eab_idx"),
+            models.Index(fields=["logout_at", "login_at"], name="orders_dash_logout_111f10_idx"),
         ]
 
     def __str__(self):
