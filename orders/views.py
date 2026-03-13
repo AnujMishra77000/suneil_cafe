@@ -567,43 +567,50 @@ def _send_pdf_to_default_printer(pdf_data, job_name):
             temp_file.write(pdf_data)
             temp_path = temp_file.name
 
-        # Force 2-inch thermal media and disable implicit scaling/margins.
-        print_args = [
-            lp_cmd,
-            "-d",
-            printer_name,
-            "-t",
-            job_name,
-            "-o",
-            "media=w147h2815",
-            "-o",
-            "PageSize=w147h2815",
-            "-o",
-            "Resolution=203dpi",
-            "-o",
-            "fit-to-page=false",
-            "-o",
-            "scaling=100",
-            "-o",
-            "page-left=0",
-            "-o",
-            "page-right=0",
-            "-o",
-            "page-top=0",
-            "-o",
-            "page-bottom=0",
-            temp_path,
+        # Try Epson-compatible custom paper first, then fallback to YXWL naming.
+        media_profiles = [
+            ("Custom.163x565", "Custom.163x565"),
+            ("w147h2815", "w147h2815"),
         ]
-        result = subprocess.run(
-            print_args,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if result.returncode != 0:
-            output = (result.stderr or result.stdout or "Failed to submit print job.").strip()
-            return False, output
-        return True, printer_name
+        last_output = ""
+        for media_value, page_size_value in media_profiles:
+            print_args = [
+                lp_cmd,
+                "-d",
+                printer_name,
+                "-t",
+                job_name,
+                "-o",
+                f"media={media_value}",
+                "-o",
+                f"PageSize={page_size_value}",
+                "-o",
+                "Resolution=203dpi",
+                "-o",
+                "fit-to-page=false",
+                "-o",
+                "scaling=100",
+                "-o",
+                "page-left=0",
+                "-o",
+                "page-right=0",
+                "-o",
+                "page-top=0",
+                "-o",
+                "page-bottom=0",
+                temp_path,
+            ]
+            result = subprocess.run(
+                print_args,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if result.returncode == 0:
+                return True, printer_name
+            last_output = (result.stderr or result.stdout or "").strip()
+
+        return False, (last_output or "Failed to submit print job.")
     finally:
         if temp_path:
             try:
@@ -1966,8 +1973,8 @@ def _build_user_receipt_pdf(bill, delivery_contact):
 
 
 def _build_admin_thermal_receipt_pdf(bill):
-    # 58mm roll width (2-inch thermal printer) in PDF points.
-    page_width = int(round((58 / 25.4) * 72))
+    # Match common CUPS custom size used by 58mm printers for better alignment.
+    page_width = 163
     left_margin = 6
     right_margin = 6
     top_margin = 8
@@ -2059,11 +2066,6 @@ def _build_admin_thermal_receipt_pdf(bill):
         text(x, y_pos, label, size=size, bold=bold, gray=gray)
 
     y = page_height - top_margin
-    commands.append("0.85 0.85 0.85 RG")
-    commands.append("1 w")
-    commands.append(
-        f"{left_margin:.2f} {bottom_margin:.2f} {content_width:.2f} {page_height - top_margin - bottom_margin:.2f} re S"
-    )
 
     if logo_image:
         logo_x = left_margin + ((content_width - logo_draw_width) / 2)
