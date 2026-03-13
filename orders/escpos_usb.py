@@ -1,5 +1,7 @@
+from datetime import datetime
 from decimal import Decimal
 import os
+from pathlib import Path
 
 
 class EscPosPrintError(RuntimeError):
@@ -87,17 +89,157 @@ def _line(text, width=32):
     return parts
 
 
+def _resolve_logo_path_candidates():
+    configured_path = (os.getenv("ESC_POS_LOGO_PATH") or "").strip()
+    candidates = []
+    if configured_path:
+        candidates.append(Path(configured_path))
+
+    try:
+        from django.conf import settings
+
+        base_dir = Path(settings.BASE_DIR)
+        candidates.extend(
+            [
+                base_dir / "products" / "static" / "products" / "images" / "thathwamasi-logo.png",
+                base_dir / "products" / "static" / "products" / "images" / "thathwamasi-logo.jpg",
+                base_dir / "staticfiles" / "products" / "images" / "thathwamasi-logo.png",
+                base_dir / "staticfiles" / "products" / "images" / "thathwamasi-logo.jpg",
+            ]
+        )
+    except Exception:
+        # Safe fallback for non-Django script usage.
+        pass
+
+    return candidates
+
+
+def _logo_print_enabled():
+    return (os.getenv("ESC_POS_PRINT_LOGO", "true") or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _logo_max_width():
+    raw = (os.getenv("ESC_POS_LOGO_MAX_WIDTH", "192") or "").strip()
+    try:
+        value = int(raw)
+    except ValueError:
+        value = 192
+    return max(64, min(value, 384))
+
+
+def _build_raster_logo_command(path, max_width):
+    try:
+        from PIL import Image
+    except Exception:
+        return b""
+
+    try:
+        with Image.open(path) as image:
+            image = image.convert("L")
+            if image.width > max_width:
+                new_height = max(1, int(image.height * (max_width / float(image.width))))
+                image = image.resize((max_width, new_height))
+
+            width = image.width
+            if width % 8 != 0:
+                padded_width = ((width + 7) // 8) * 8
+                padded = Image.new("L", (padded_width, image.height), 255)
+                padded.paste(image, (0, 0))
+                image = padded
+
+            threshold_raw = (os.getenv("ESC_POS_LOGO_THRESHOLD", "172") or "").strip()
+            try:
+                threshold = int(threshold_raw)
+            except ValueError:
+                threshold = 172
+            threshold = max(1, min(threshold, 254))
+
+            bw = image.point(lambda px: 0 if px < threshold else 255, mode="1")
+            bytes_per_row = bw.width // 8
+            data = bytearray()
+            pixels = bw.load()
+
+            for y in range(bw.height):
+                for x_byte in range(bytes_per_row):
+                    byte_val = 0
+                    for bit in range(8):
+                        x = x_byte * 8 + bit
+                        if pixels[x, y] == 0:
+                            byte_val |= 1 << (7 - bit)
+                    data.append(byte_val)
+
+            x_l = bytes_per_row & 0xFF
+            x_h = (bytes_per_row >> 8) & 0xFF
+            y_l = bw.height & 0xFF
+            y_h = (bw.height >> 8) & 0xFF
+            return b"\x1d\x76\x30\x00" + bytes([x_l, x_h, y_l, y_h]) + bytes(data)
+    except Exception:
+        return b""
+
+
+def _build_logo_command():
+    if not _logo_print_enabled():
+        return b""
+
+    max_width = _logo_max_width()
+    for path in _resolve_logo_path_candidates():
+        if not path.exists() or not path.is_file():
+            continue
+        command = _build_raster_logo_command(path, max_width=max_width)
+        if command:
+            return command
+    return b""
+
+
+def _delivery_charge(bill):
+    subtotal = Decimal(str(getattr(bill, "subtotal_amount", "0.00") or "0.00"))
+    discount = Decimal(str(getattr(bill, "discount_amount", "0.00") or "0.00"))
+    total = Decimal(str(getattr(bill, "total_amount", "0.00") or "0.00"))
+    subtotal_after_discount = max(subtotal - discount, Decimal("0.00"))
+    charge = total - subtotal_after_discount
+    if charge <= Decimal("0.00"):
+        return Decimal("0.00")
+    return charge.quantize(Decimal("0.01"))
+
+
+def _enable_cut():
+    return (os.getenv("ESC_POS_ENABLE_CUT", "false") or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
 def _build_payload(bill):
     width = 32
     item_width = 22
     amount_width = 10
 
-    chunks = [b"\x1b@", b"\x1ba\x01", b"\x1bE\x01"]  # init, center, bold on
-    chunks.append("Thathwamasi Bakery Cafe\n".encode("ascii", "replace"))
+    total_qty = sum(int(getattr(item, "quantity", 0) or 0) for item in bill.items.all())
+    status_text = str(getattr(getattr(bill, "order", None), "status", "Placed") or "Placed")
+    coupon_code = str(getattr(bill, "coupon_code", "") or "").strip()
+    discount_percent = int(getattr(bill, "discount_percent", 0) or 0)
+    printed_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    chunks = [b"\x1b@", b"\x1b\x32"]  # init + default line spacing
+
+    logo_command = _build_logo_command()
+    if logo_command:
+        chunks.append(b"\x1ba\x01")  # center
+        chunks.append(logo_command)
+        chunks.append(b"\n")
+
+    chunks.append(b"\x1ba\x01")  # center
+    chunks.append(b"\x1bE\x01")  # bold on
+    chunks.append("THATHWAMASI BAKERY CAFE\n".encode("ascii", "replace"))
     chunks.append(b"\x1bE\x00")  # bold off
-    chunks.append(f"Bill: {bill.bill_number}\n".encode("ascii", "replace"))
-    chunks.append(f"{bill.created_at.strftime('%Y-%m-%d %H:%M')}\n".encode("ascii", "replace"))
+    chunks.append("Fresh - Handmade - Pure\n".encode("ascii", "replace"))
+    chunks.append(("-" * width + "\n").encode("ascii"))
+
     chunks.append(b"\x1ba\x00")  # left
+    chunks.append(f"Bill No: {bill.bill_number}\n".encode("ascii", "replace"))
+    chunks.append(f"Date: {bill.created_at.strftime('%Y-%m-%d %H:%M')}\n".encode("ascii", "replace"))
+    chunks.append(f"Status: {status_text}\n".encode("ascii", "replace"))
+    chunks.append(f"Qty Total: {total_qty}\n".encode("ascii", "replace"))
+    if coupon_code:
+        chunks.append(f"Coupon: {coupon_code} (-{discount_percent}%)\n".encode("ascii", "replace"))
+
     chunks.append(("-" * width + "\n").encode("ascii"))
 
     chunks.append(f"Customer: {bill.customer_name}\n".encode("ascii", "replace"))
@@ -120,12 +262,19 @@ def _build_payload(bill):
         chunks.append(
             f"Discount: -{_money(bill.discount_amount)}\n".encode("ascii", "replace")
         )
+    delivery_charge = _delivery_charge(bill)
+    if delivery_charge > Decimal("0.00"):
+        chunks.append(f"Delivery: {_money(delivery_charge)}\n".encode("ascii", "replace"))
+
     chunks.append(b"\x1bE\x01")
-    chunks.append(f"Total: {_money(bill.total_amount)}\n".encode("ascii", "replace"))
+    chunks.append(f"Grand Total: {_money(bill.total_amount)}\n".encode("ascii", "replace"))
     chunks.append(b"\x1bE\x00")
     chunks.append(("-" * width + "\n").encode("ascii"))
-    chunks.append("Thank you!\n".encode("ascii"))
-    chunks.append(b"\n\n\n\x1dV\x00")  # feed and cut
+    chunks.append(f"Printed: {printed_at}\n".encode("ascii", "replace"))
+    chunks.append("Thank you for serving with care!\n".encode("ascii", "replace"))
+    chunks.append(b"\n\n\n")
+    if _enable_cut():
+        chunks.append(b"\x1dV\x00")
     return b"".join(chunks)
 
 
