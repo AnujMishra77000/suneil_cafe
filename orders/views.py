@@ -516,19 +516,16 @@ class AdminBillDetailView(TemplateView):
         return context
 
 
-class AdminBillThermalPrintView(APIView):
-    permission_classes = [IsAdminUser]
+@method_decorator(staff_member_required, name="dispatch")
+class AdminBillThermalPrintView(TemplateView):
+    template_name = "orders/admin_bill_thermal_print.html"
 
-    def get(self, request, bill_id):
-        bill = get_object_or_404(
-            Bill.objects.filter(recipient_type="ADMIN").select_related("order").prefetch_related("items"),
-            id=bill_id,
-        )
-        pdf_data = _build_admin_thermal_receipt_pdf(bill)
-        filename = f"thermal_2inch_{bill.bill_number or bill.id}.pdf"
-        response = HttpResponse(pdf_data, content_type="application/pdf")
-        response["Content-Disposition"] = f'inline; filename="{filename}"'
-        return response
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        bill_id = kwargs.get("bill_id")
+        context.update(AdminBillDetailView._build_bill_context(bill_id))
+        context["printed_at"] = timezone.localtime()
+        return context
 
 
 def _detect_default_printer_name():

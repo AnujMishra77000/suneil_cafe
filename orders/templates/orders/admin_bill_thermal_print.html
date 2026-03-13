@@ -235,21 +235,7 @@
     <div class="screen-toolbar">
         <a class="btn" href="/admin-dashboard/billing/{{ bill.id }}/">Back to Bill</a>
         <button class="btn btn-primary" type="button" onclick="window.print()">Print 2-inch</button>
-        <form class="toolbar-form" method="post" action="/admin-dashboard/billing/{{ bill.id }}/print/default/">
-            {% csrf_token %}
-            <button class="btn" type="submit">Print on Default Printer</button>
-        </form>
-        <form class="toolbar-form" method="post" action="/admin-dashboard/billing/{{ bill.id }}/print/direct-usb/">
-            {% csrf_token %}
-            <button class="btn" type="submit">Direct USB ESC/POS Print</button>
-        </form>
     </div>
-
-    {% if request.GET.server_print == "ok" %}
-    <p class="status status--ok">Print sent successfully via: {{ request.GET.printer }}</p>
-    {% elif request.GET.server_print == "error" %}
-    <p class="status status--error">{{ request.GET.error|default:"Unable to print on default printer." }}</p>
-    {% endif %}
 
     <main class="page">
         <section class="receipt">
