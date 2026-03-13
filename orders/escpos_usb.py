@@ -101,8 +101,10 @@ def _resolve_logo_path_candidates():
         base_dir = Path(settings.BASE_DIR)
         candidates.extend(
             [
+                base_dir / "products" / "static" / "products" / "images" / "thathwamasi-logo-mono.png",
                 base_dir / "products" / "static" / "products" / "images" / "thathwamasi-logo.png",
                 base_dir / "products" / "static" / "products" / "images" / "thathwamasi-logo.jpg",
+                base_dir / "staticfiles" / "products" / "images" / "thathwamasi-logo-mono.png",
                 base_dir / "staticfiles" / "products" / "images" / "thathwamasi-logo.png",
                 base_dir / "staticfiles" / "products" / "images" / "thathwamasi-logo.jpg",
             ]
